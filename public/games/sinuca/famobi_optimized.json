@@ -1,0 +1,159 @@
+{
+  "features": {
+    "highscores": 1,
+    "credits": 1,
+    "multiplayer_local": 1,
+    "auto_quality": 1,
+    "copyright": 1,
+    "external_achievements": 0,
+    "external_leaderboard": 0,
+    "external_mute": 0,
+    "external_pause": 0,
+    "external_start": 0,
+    "forced_mode": 0,
+    "leaderboard": 1,
+    "multiplayer": 0,
+    "skip_title": 0,
+    "skip_tutorial": 0,
+    "revive": 0,
+    "rewarded": 0,
+    "standalone": 1
+  },
+  "game_i18n": {
+    "default": {
+      "filename.png": "fg_i18n/{lang}/images/filename.png"
+    },
+    "pt": {
+      "play_button": "JOGAR",
+      "menu_button": "MENU",
+      "settings_button": "CONFIGURAÇÕES",
+      "help_button": "AJUDA",
+      "quit_button": "SAIR",
+      "player_vs_ai": "Jogador vs IA",
+      "player_vs_player": "Jogador vs Jogador",
+      "difficulty_easy": "Fácil",
+      "difficulty_medium": "Médio",
+      "difficulty_hard": "Difícil",
+      "game_paused": "Jogo Pausado",
+      "you_win": "Você Venceu!",
+      "you_lose": "Você Perdeu!",
+      "new_game": "Novo Jogo",
+      "continue": "Continuar"
+    }
+  },
+  "game_config": {
+    "name": "Sinuca - 8 Ball Billiards",
+    "version": "2.0.0",
+    "engine": "Phaser",
+    "target_fps": 60,
+    "preload_audio": true,
+    "enable_physics": true,
+    "physics_engine": "Box2D",
+    "canvas_renderer": "AUTO",
+    "antialias": true,
+    "transparent": false,
+    "preserve_drawing_buffer": false,
+    "fail_if_major_performance_caveat": false,
+    "power_preference": "high-performance"
+  },
+  "mobile_optimizations": {
+    "touch_enabled": true,
+    "gesture_recognition": true,
+    "auto_orientation": false,
+    "lock_orientation": "landscape",
+    "prevent_context_menu": true,
+    "prevent_selection": true,
+    "prevent_drag": true,
+    "prevent_zoom": true,
+    "disable_scroll": true
+  },
+  "performance": {
+    "memory_management": {
+      "auto_gc": true,
+      "texture_cleanup": true,
+      "audio_cleanup": true,
+      "cache_limit": "50MB"
+    },
+    "rendering": {
+      "batch_sprites": true,
+      "texture_atlases": true,
+      "mipmaps": false,
+      "anisotropic_filtering": false
+    },
+    "audio": {
+      "compress_audio": true,
+      "audio_format": "webm",
+      "fallback_format": "mp3",
+      "max_channels": 8
+    }
+  },
+  "debug": {
+    "show_fps": false,
+    "show_debug_info": false,
+    "console_logging": true,
+    "error_reporting": true,
+    "performance_monitoring": true
+  },
+  "assets": {
+    "base_path": "assets/",
+    "preload_critical": [
+      "img/bgLarge.png",
+      "img/tableTop.png",
+      "img/cloth.png",
+      "img/pockets.png",
+      "img/ballSpriteSheet9.png",
+      "img/ballSpriteSheet10.png",
+      "img/cue.png"
+    ],
+    "lazy_load": [
+      "audio/",
+      "img/gui*",
+      "img/menu*",
+      "img/bonus*"
+    ]
+  },
+  "controls": {
+    "mouse_enabled": true,
+    "touch_enabled": true,
+    "keyboard_enabled": true,
+    "gamepad_enabled": false,
+    "gesture_threshold": 10,
+    "double_tap_time": 300,
+    "long_press_time": 500
+  },
+  "gameplay": {
+    "physics": {
+      "world_gravity": [0, 0],
+      "ball_friction": 0.95,
+      "table_friction": 0.98,
+      "cushion_restitution": 0.8,
+      "ball_restitution": 0.9
+    },
+    "rules": {
+      "game_type": "8_ball",
+      "foul_detection": true,
+      "scratch_detection": true,
+      "time_limit": 0,
+      "shot_power_limit": 100
+    },
+    "ai": {
+      "difficulty_levels": 3,
+      "thinking_time": [1000, 2000, 3000],
+      "accuracy": [0.7, 0.8, 0.9],
+      "strategy": "adaptive"
+    }
+  },
+  "ui": {
+    "theme": "classic",
+    "animations": true,
+    "particles": true,
+    "shadows": true,
+    "reflections": false,
+    "hud_elements": [
+      "score",
+      "turn_indicator",
+      "power_bar",
+      "ball_groups"
+    ]
+  }
+}

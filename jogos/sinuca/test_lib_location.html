@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Sinuca - Lib Location</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            color: white;
+            max-width: 90%;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #333;
+        }
+        .success {
+            background-color: #4CAF50;
+        }
+        .error {
+            background-color: #f44336;
+        }
+        .loading {
+            background-color: #ff9800;
+        }
+        .info {
+            background-color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎱 Teste Sinuca - Lib Location</h1>
+        <div id="status" class="status loading">Carregando...</div>
+        <div id="game-container"></div>
+        <div id="debug-info"></div>
+    </div>
+
+    <script>
+        console.log('🎱 Iniciando teste do jogo de sinuca na localização lib/pages/jogos/sinuca/...');
+        
+        function updateStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            console.log('🎱 Status:', message);
+        }
+        
+        function addDebugInfo(info) {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.innerHTML += '<p>' + info + '</p>';
+            console.log('🎱 Debug:', info);
+        }
+        
+        // Verificar localização atual
+        function checkLocation() {
+            updateStatus('Verificando localização...', 'info');
+            addDebugInfo('📍 Localização atual: lib/pages/jogos/sinuca/');
+            addDebugInfo('📁 URL base: ' + window.location.href);
+            addDebugInfo('📂 Diretório: ' + window.location.pathname);
+        }
+        
+        // Verificar se os recursos estão disponíveis
+        function checkResources() {
+            updateStatus('Verificando recursos...', 'loading');
+            
+            const resources = [
+                'assets/src/01phaser.js',
+                'assets/src/02Ball.js',
+                'assets/src/03contactListener.js',
+                'assets/src/04billiardPhysics.js',
+                'assets/src/05levelData.js',
+                'assets/src/06maths.js',
+                'assets/src/07vector2d.js',
+                'assets/src/08render.js',
+                'assets/src/09sound.js',
+                'assets/src/10effects.js',
+                'assets/src/11timer.js',
+                'assets/src/12load.js',
+                'assets/src/13mainMenu.js',
+                'assets/src/14setup.js',
+                'assets/src/15gameController.js',
+                'assets/src/16boot.js'
+            ];
+            
+            let loadedCount = 0;
+            const totalResources = resources.length;
+            
+            resources.forEach((resource, index) => {
+                const script = document.createElement('script');
+                script.src = resource;
+                script.onload = () => {
+                    loadedCount++;
+                    addDebugInfo(`✅ ${resource} carregado`);
+                    if (loadedCount === totalResources) {
+                        updateStatus('Todos os recursos carregados com sucesso!', 'success');
+                        initializeGame();
+                    }
+                };
+                script.onerror = () => {
+                    addDebugInfo(`❌ Erro ao carregar ${resource}`);
+                    updateStatus(`Erro ao carregar ${resource}`, 'error');
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        function initializeGame() {
+            updateStatus('Inicializando jogo...', 'loading');
+            
+            try {
+                // Tentar inicializar o jogo
+                if (typeof window.gameID !== 'undefined') {
+                    addDebugInfo('✅ Game ID encontrado: ' + window.gameID);
+                } else {
+                    addDebugInfo('⚠️ Game ID não encontrado');
+                }
+                
+                // Verificar se o Phaser está disponível
+                if (typeof Phaser !== 'undefined') {
+                    addDebugInfo('✅ Phaser carregado');
+                    updateStatus('Jogo inicializado com sucesso!', 'success');
+                } else {
+                    addDebugInfo('❌ Phaser não encontrado');
+                    updateStatus('Erro: Phaser não encontrado', 'error');
+                }
+                
+            } catch (error) {
+                addDebugInfo('❌ Erro na inicialização: ' + error.message);
+                updateStatus('Erro na inicialização: ' + error.message, 'error');
+            }
+        }
+        
+        // Iniciar verificação quando a página carregar
+        window.addEventListener('load', () => {
+            addDebugInfo('📱 Página carregada');
+            addDebugInfo('🌐 User Agent: ' + navigator.userAgent);
+            addDebugInfo('📏 Tela: ' + window.innerWidth + 'x' + window.innerHeight);
+            checkLocation();
+            checkResources();
+        });
+        
+        // Capturar erros JavaScript
+        window.addEventListener('error', (event) => {
+            addDebugInfo('❌ Erro JavaScript: ' + event.message);
+            updateStatus('Erro JavaScript: ' + event.message, 'error');
+        });
+        
+        // Capturar erros de recursos
+        window.addEventListener('error', (event) => {
+            if (event.target !== window) {
+                addDebugInfo('❌ Erro de recurso: ' + event.target.src);
+            }
+        }, true);
+    </script>
+</body>
+</html>

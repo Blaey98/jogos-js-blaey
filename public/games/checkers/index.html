@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔴 Damas - Jogo Clássico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 2px solid #333;
+            border-radius: 5px;
+            overflow: hidden;
+            width: min(80vw, 80vh, 640px);
+            height: min(80vw, 80vh, 640px);
+            max-width: 640px;
+            max-height: 640px;
+        }
+
+        .cell {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .cell.light {
+            background-color: #f4d03f;
+        }
+
+        .cell.dark {
+            background-color: #1e8449;
+        }
+
+        .cell.selected {
+            background-color: #FFD700 !important;
+            box-shadow: inset 0 0 0 4px #FFA500, 0 0 20px rgba(255, 215, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .cell.possible-move {
+            background-color: #90EE90 !important;
+            box-shadow: inset 0 0 0 3px #32CD32, 0 0 15px rgba(50, 205, 50, 0.5);
+            transform: scale(1.02);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: inset 0 0 0 3px #32CD32, 0 0 15px rgba(50, 205, 50, 0.5); }
+            50% { box-shadow: inset 0 0 0 3px #32CD32, 0 0 25px rgba(50, 205, 50, 0.8); }
+            100% { box-shadow: inset 0 0 0 3px #32CD32, 0 0 15px rgba(50, 205, 50, 0.5); }
+        }
+
+        .piece {
+            width: 96%;
+            height: 96%;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .piece:hover {
+            transform: scale(1.1);
+        }
+
+        .piece.red {
+            background-image: url('assets/vermelho.png');
+        }
+
+        .piece.blue {
+            background-image: url('assets/azul.png');
+        }
+
+        .piece.red.king {
+            background-image: url('assets/rei_vermelho.png');
+        }
+
+        .piece.blue.king {
+            background-image: url('assets/rei_azul.png');
+        }
+
+        .btn {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #444;
+            border-color: #666;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: #444;
+        }
+
+
+        .difficulty-selector select {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .difficulty-selector option {
+            background: #333;
+            color: white;
+        }
+
+        /* Responsividade para mobile */
+        @media (max-width: 768px) {
+            .board {
+                width: 95vw;
+                height: 95vw;
+                max-width: 95vw;
+                max-height: 95vw;
+            }
+            
+            .game-container {
+                gap: 15px;
+                padding: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 12px 24px;
+                font-size: 16px;
+            }
+            
+            .difficulty-selector select {
+                padding: 10px 15px;
+                font-size: 16px;
+            }
+            
+            .back-button {
+                top: 10px;
+                left: 10px;
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .board {
+                width: 98vw;
+                height: 98vw;
+                max-width: 98vw;
+                max-height: 98vw;
+            }
+            
+            .piece:hover {
+                transform: none; /* Remove hover em mobile */
+            }
+            
+            .cell.selected {
+                transform: scale(1.02); /* Reduz escala em mobile */
+            }
+            
+            .cell.possible-move {
+                transform: scale(1.01); /* Reduz escala em mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-button">← Voltar</a>
+    
+    <div class="game-container">
+        <div class="controls">
+            <div class="difficulty-selector">
+                <select id="difficulty">
+                    <option value="1">Fácil</option>
+                    <option value="3" selected>Médio</option>
+                    <option value="5">Difícil</option>
+                    <option value="7">Expert</option>
+                </select>
+            </div>
+            <button class="btn" onclick="newGame()">Novo Jogo</button>
+        </div>
+
+        <div class="board" id="board"></div>
+    </div>
+
+    <script>
+        class CheckersGame {
+            constructor() {
+                this.board = [];
+                this.currentPlayer = 1; // 1 = jogador, 2 = IA
+                this.selectedPiece = null;
+                this.possibleMoves = [];
+                this.gameHistory = [];
+                this.difficulty = 3;
+                
+                // Sistema de cores aleatórias
+                this.playerColor = Math.random() < 0.5 ? 'red' : 'blue';
+                this.aiColor = this.playerColor === 'red' ? 'blue' : 'red';
+                
+                this.initializeBoard();
+                this.renderBoard();
+                this.setupEventListeners();
+            }
+
+            initializeBoard() {
+                // Inicializa o tabuleiro 8x8
+                this.board = Array(8).fill().map(() => Array(8).fill(0));
+                
+                // Coloca as peças da IA (cima)
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if ((row + col) % 2 === 1) {
+                            this.board[row][col] = 2; // Peça da IA
+                        }
+                    }
+                }
+                
+                // Coloca as peças do jogador (baixo)
+                for (let row = 5; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if ((row + col) % 2 === 1) {
+                            this.board[row][col] = 1; // Peça do jogador
+                        }
+                    }
+                }
+            }
+
+            renderBoard() {
+                const boardElement = document.getElementById('board');
+                if (!boardElement) {
+                    return;
+                }
+                
+                boardElement.innerHTML = '';
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        // Alterna cores das casas
+                        if ((row + col) % 2 === 0) {
+                            cell.classList.add('light');
+                        } else {
+                            cell.classList.add('dark');
+                        }
+                        
+                        // Adiciona peça se existir
+                        if (this.board[row][col] !== 0) {
+                            const piece = document.createElement('div');
+                            piece.className = 'piece';
+                            
+                            // Determina a cor baseada no jogador
+                            if (this.board[row][col] === 1) {
+                                // Peça do jogador
+                                piece.classList.add(this.playerColor);
+                            } else if (this.board[row][col] === 2) {
+                                // Peça da IA
+                                piece.classList.add(this.aiColor);
+                            }
+                            
+                            // Verifica se é dama (king)
+                            if (this.board[row][col] === 3) {
+                                // Dama do jogador
+                                piece.classList.add(this.playerColor, 'king');
+                            } else if (this.board[row][col] === 4) {
+                                // Dama da IA
+                                piece.classList.add(this.aiColor, 'king');
+                            }
+                            
+                            cell.appendChild(piece);
+                        }
+                        
+                        boardElement.appendChild(cell);
+                    }
+                }
+                
+                this.updateGameInfo();
+            }
+
+            setupEventListeners() {
+                document.getElementById('board').addEventListener('click', this.handleCellClick.bind(this));
+                document.getElementById('difficulty').addEventListener('change', (e) => {
+                    this.difficulty = parseInt(e.target.value);
+                });
+            }
+
+            handleCellClick(e) {
+                const cell = e.target.closest('.cell');
+                if (!cell) return;
+                
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                
+                if (this.currentPlayer === 1) { // Jogador humano
+                    this.handlePlayerMove(row, col);
+                }
+            }
+
+            handlePlayerMove(row, col) {
+                if (this.selectedPiece) {
+                    // Verifica se é um movimento válido
+                    const validMove = this.findValidMove(this.selectedPiece.row, this.selectedPiece.col, row, col);
+                    if (validMove) {
+                        // Executa o movimento
+                        if (validMove.capturedPieces && validMove.capturedPieces.length > 0) {
+                            this.makeMove(validMove.fromRow, validMove.fromCol, validMove.toRow, validMove.toCol, validMove.capturedPieces);
+                        } else {
+                            this.makeMove(validMove.fromRow, validMove.fromCol, validMove.toRow, validMove.toCol);
+                        }
+                        
+                        this.selectedPiece = null;
+                        this.clearHighlights();
+                        
+                        // Alterna o turno para a IA
+                        this.currentPlayer = 2;
+                        this.updateGameInfo();
+                        
+                        // Verifica se o jogo terminou
+                        if (!this.checkGameOver()) {
+                            // Passa a vez para a IA após um delay
+                            setTimeout(() => {
+                                this.makeAIMove();
+                            }, 500);
+                        }
+                    } else {
+                        // Seleciona nova peça se for válida
+                        this.selectPiece(row, col);
+                    }
+                } else {
+                    // Seleciona peça
+                    this.selectPiece(row, col);
+                }
+            }
+
+            // Encontra um movimento válido (incluindo capturas múltiplas)
+            findValidMove(fromRow, fromCol, toRow, toCol) {
+                const player = this.currentPlayer;
+                const moves = this.getAllPossibleMoves(player);
+                
+                // Procura por um movimento que corresponda à posição de destino
+                for (const move of moves) {
+                    if (move.fromRow === fromRow && move.fromCol === fromCol && 
+                        move.toRow === toRow && move.toCol === toCol) {
+                        return move;
+                    }
+                }
+                
+                return null;
+            }
+
+            selectPiece(row, col) {
+                // Só permite selecionar peças do jogador atual
+                if (this.board[row][col] === this.currentPlayer || 
+                    this.board[row][col] === this.currentPlayer + 2) {
+                    
+                    // Verifica se há capturas obrigatórias
+                    if (this.hasCaptures(this.currentPlayer)) {
+                        // Se há capturas, só permite selecionar peças que podem capturar
+                        const moves = this.getAllPossibleMoves(this.currentPlayer);
+                        const pieceMoves = moves.filter(move => move.fromRow === row && move.fromCol === col);
+                        
+                        if (pieceMoves.length > 0 && pieceMoves[0].type === 'capture') {
+                            this.selectedPiece = { row, col };
+                            this.highlightPossibleMoves(row, col);
+                        }
+                    } else {
+                        this.selectedPiece = { row, col };
+                        this.highlightPossibleMoves(row, col);
+                    }
+                } else {
+                    // Se clicou em uma peça inimiga ou casa vazia, limpa seleção
+                    this.selectedPiece = null;
+                    this.clearHighlights();
+                }
+            }
+
+            highlightPossibleMoves(row, col) {
+                this.clearHighlights();
+                
+                // Destaca a peça selecionada com efeito mais visível
+                const selectedCell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (selectedCell) {
+                    selectedCell.classList.add('selected');
+                    
+                    // Adiciona efeito de brilho na peça selecionada
+                    const piece = selectedCell.querySelector('.piece');
+                    if (piece) {
+                        piece.style.filter = 'brightness(1.3) drop-shadow(0 0 10px rgba(255, 215, 0, 0.8))';
+                    }
+                }
+                
+                // Obtém todos os movimentos possíveis para esta peça
+                const player = this.currentPlayer;
+                const moves = this.getAllPossibleMoves(player);
+                const pieceMoves = moves.filter(move => move.fromRow === row && move.fromCol === col);
+                
+                // Destaca movimentos possíveis com animação
+                for (const move of pieceMoves) {
+                    const cell = document.querySelector(`[data-row="${move.toRow}"][data-col="${move.toCol}"]`);
+                    if (cell) {
+                        cell.classList.add('possible-move');
+                        
+                        // Adiciona informação sobre capturas múltiplas
+                        if (move.type === 'capture' && move.capturedPieces && move.capturedPieces.length > 1) {
+                            cell.title = `Captura múltipla: ${move.capturedPieces.length} peças`;
+                        } else if (move.type === 'capture') {
+                            cell.title = 'Captura';
+                        } else {
+                            cell.title = 'Movimento';
+                        }
+                    }
+                }
+                
+            }
+
+            clearHighlights() {
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.classList.remove('selected', 'possible-move');
+                    
+                    // Remove efeitos visuais das peças
+                    const piece = cell.querySelector('.piece');
+                    if (piece) {
+                        piece.style.filter = '';
+                    }
+                });
+            }
+
+            isValidPosition(row, col) {
+                return row >= 0 && row < 8 && col >= 0 && col < 8;
+            }
+
+            isValidMove(fromRow, fromCol, toRow, toCol) {
+                // Verifica se a posição de destino está vazia
+                if (this.board[toRow][toCol] !== 0) return false;
+                
+                // Verifica se é uma casa escura
+                if ((toRow + toCol) % 2 === 0) return false;
+                
+                const piece = this.board[fromRow][fromCol];
+                const isKing = piece === 3 || piece === 4;
+                
+                // Movimento simples
+                if (Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 1) {
+                    if (isKing) return true;
+                    if (piece === 1 && toRow < fromRow) return true; // Vermelhas (jogador) sobem
+                    if (piece === 2 && toRow > fromRow) return true; // Pretas (IA) descem
+                }
+                
+                // Movimento de captura
+                if (Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 2) {
+                    const middleRow = (fromRow + toRow) / 2;
+                    const middleCol = (fromCol + toCol) / 2;
+                    const middlePiece = this.board[middleRow][middleCol];
+                    
+                    if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+
+            // Verifica se há capturas obrigatórias
+            hasCaptures(player) {
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if (this.board[row][col] === player || this.board[row][col] === player + 2) {
+                            const piece = this.board[row][col];
+                            const isKing = piece === 3 || piece === 4;
+                            const directions = isKing ? 
+                                [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                                (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
+                            
+                            for (const [dx, dy] of directions) {
+                                const jumpRow = row + 2 * dx;
+                                const jumpCol = col + 2 * dy;
+                                const middleRow = row + dx;
+                                const middleCol = col + dy;
+                                
+                                if (this.isValidPosition(jumpRow, jumpCol) && this.isValidPosition(middleRow, middleCol)) {
+                                    const middlePiece = this.board[middleRow][middleCol];
+                                    if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2 && 
+                                        this.board[jumpRow][jumpCol] === 0) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            // Gera todas as capturas possíveis para uma peça
+            generateCapturesForPiece(row, col, player) {
+                const captures = [];
+                const piece = this.board[row][col];
+                const isKing = piece === 3 || piece === 4;
+                const directions = isKing ? 
+                    [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                    (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
+                
+                for (const [dx, dy] of directions) {
+                    const jumpRow = row + 2 * dx;
+                    const jumpCol = col + 2 * dy;
+                    const middleRow = row + dx;
+                    const middleCol = col + dy;
+                    
+                    if (this.isValidPosition(jumpRow, jumpCol) && this.isValidPosition(middleRow, middleCol)) {
+                        const middlePiece = this.board[middleRow][middleCol];
+                        if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2 && 
+                            this.board[jumpRow][jumpCol] === 0) {
+                            captures.push({
+                                fromRow: row,
+                                fromCol: col,
+                                toRow: jumpRow,
+                                toCol: jumpCol,
+                                captureRow: middleRow,
+                                captureCol: middleCol,
+                                type: 'capture'
+                            });
+                        }
+                    }
+                }
+                
+                return captures;
+            }
+
+            // Gera capturas múltiplas recursivamente
+            generateMultipleCaptures(board, fromRow, fromCol, player, capturedPieces = []) {
+                const captures = [];
+                const piece = board[fromRow][fromCol];
+                const isKing = piece === 3 || piece === 4;
+                const directions = isKing ? 
+                    [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                    (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
+                
+                for (const [dx, dy] of directions) {
+                    const jumpRow = fromRow + 2 * dx;
+                    const jumpCol = fromCol + 2 * dy;
+                    const middleRow = fromRow + dx;
+                    const middleCol = fromCol + dy;
+                    
+                    if (this.isValidPosition(jumpRow, jumpCol) && this.isValidPosition(middleRow, middleCol)) {
+                        const middlePiece = board[middleRow][middleCol];
+                        if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2 && 
+                            board[jumpRow][jumpCol] === 0 && !capturedPieces.some(cp => cp.row === middleRow && cp.col === middleCol)) {
+                            
+                            // Cria nova captura
+                            const newCapture = {
+                                fromRow: fromRow,
+                                fromCol: fromCol,
+                                toRow: jumpRow,
+                                toCol: jumpCol,
+                                captureRow: middleRow,
+                                captureCol: middleCol,
+                                type: 'capture',
+                                capturedPieces: [...capturedPieces, { row: middleRow, col: middleCol }]
+                            };
+                            
+                            captures.push(newCapture);
+                            
+                            // Simula a captura e busca por mais capturas
+                            const newBoard = this.simulateCapture(board, fromRow, fromCol, jumpRow, jumpCol, middleRow, middleCol);
+                            const additionalCaptures = this.generateMultipleCaptures(newBoard, jumpRow, jumpCol, player, newCapture.capturedPieces);
+                            
+                            // Adiciona capturas múltiplas
+                            for (const additionalCapture of additionalCaptures) {
+                                captures.push({
+                                    fromRow: fromRow,
+                                    fromCol: fromCol,
+                                    toRow: additionalCapture.toRow,
+                                    toCol: additionalCapture.toCol,
+                                    type: 'capture',
+                                    capturedPieces: additionalCapture.capturedPieces
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                return captures;
+            }
+
+            // Simula uma captura no tabuleiro
+            simulateCapture(board, fromRow, fromCol, toRow, toCol, captureRow, captureCol) {
+                const newBoard = board.map(row => [...row]);
+                const piece = newBoard[fromRow][fromCol];
+                newBoard[fromRow][fromCol] = 0;
+                newBoard[toRow][toCol] = piece;
+                newBoard[captureRow][captureCol] = 0;
+                return newBoard;
+            }
+
+            makeMove(fromRow, fromCol, toRow, toCol, capturedPieces = null) {
+                // Salva o estado para desfazer
+                this.gameHistory.push({
+                    board: this.board.map(row => [...row]),
+                    currentPlayer: this.currentPlayer
+                });
+                
+                const piece = this.board[fromRow][fromCol];
+                this.board[fromRow][fromCol] = 0;
+                this.board[toRow][toCol] = piece;
+                
+                // Verifica captura (simples ou múltipla)
+                if (capturedPieces && capturedPieces.length > 0) {
+                    // Captura múltipla
+                    for (const captured of capturedPieces) {
+                        this.board[captured.row][captured.col] = 0;
+                    }
+                } else if (Math.abs(toRow - fromRow) === 2) {
+                    // Captura simples
+                    const middleRow = (fromRow + toRow) / 2;
+                    const middleCol = (fromCol + toCol) / 2;
+                    this.board[middleRow][middleCol] = 0;
+                }
+                
+                // Verifica promoção a dama
+                if (piece === 1 && toRow === 0) {
+                    this.board[toRow][toCol] = 3; // Dama do jogador
+                } else if (piece === 2 && toRow === 7) {
+                    this.board[toRow][toCol] = 4; // Dama da IA
+                }
+                
+                this.renderBoard();
+            }
+
+            makeAIMove() {
+                const moves = this.getAllPossibleMoves(2); // IA joga com peças pretas (2)
+                if (moves.length === 0) {
+                    return;
+                }
+                
+                // Para profundidades altas, adiciona um pequeno delay para simular "pensamento"
+                if (this.difficulty >= 5) {
+                    setTimeout(() => {
+                        this.executeAIMove(moves);
+                    }, 100);
+                } else {
+                    this.executeAIMove(moves);
+                }
+            }
+
+            executeAIMove(moves) {
+                // Motor de busca inteligente
+                const bestMove = this.getBestMove(moves);
+                
+                // Executa o movimento
+                if (bestMove.capturedPieces && bestMove.capturedPieces.length > 0) {
+                    this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol, bestMove.capturedPieces);
+                } else {
+                    this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol);
+                }
+                
+                // Alterna o turno de volta para o jogador
+                this.currentPlayer = 1;
+                this.updateGameInfo();
+                
+                this.checkGameOver();
+            }
+
+            // Motor de busca inteligente
+            getBestMove(moves) {
+                // Prioriza capturas múltiplas
+                const captures = moves.filter(move => move.type === 'capture');
+                if (captures.length > 0) {
+                    // Escolhe a captura com mais peças capturadas
+                    captures.sort((a, b) => {
+                        const aCaptures = a.capturedPieces ? a.capturedPieces.length : 1;
+                        const bCaptures = b.capturedPieces ? b.capturedPieces.length : 1;
+                        return bCaptures - aCaptures;
+                    });
+                    return captures[0];
+                }
+                
+                // Prioriza movimentos que levam ao centro
+                const centerMoves = moves.filter(move => {
+                    const centerDistance = Math.abs(move.toRow - 3.5) + Math.abs(move.toCol - 3.5);
+                    return centerDistance < 4;
+                });
+                
+                if (centerMoves.length > 0) {
+                    return centerMoves[Math.floor(Math.random() * centerMoves.length)];
+                }
+                
+                // Movimento aleatório
+                return moves[Math.floor(Math.random() * moves.length)];
+            }
+
+            getAllPossibleMoves(player) {
+                const moves = [];
+                const captures = [];
+                
+                // Primeiro, verifica se há capturas obrigatórias
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if (this.board[row][col] === player || this.board[row][col] === player + 2) {
+                            // Gera capturas múltiplas para esta peça
+                            const pieceCaptures = this.generateMultipleCaptures(this.board, row, col, player);
+                            captures.push(...pieceCaptures);
+                        }
+                    }
+                }
+                
+                // Se há capturas, elas são obrigatórias
+                if (captures.length > 0) {
+                    return captures;
+                }
+                
+                // Se não há capturas, gera movimentos regulares
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if (this.board[row][col] === player || this.board[row][col] === player + 2) {
+                            const piece = this.board[row][col];
+                            const isKing = piece === 3 || piece === 4;
+                            const directions = isKing ? 
+                                [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                                (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
+                            
+                            for (const [dx, dy] of directions) {
+                                const newRow = row + dx;
+                                const newCol = col + dy;
+                                
+                                if (this.isValidPosition(newRow, newCol) && this.board[newRow][newCol] === 0) {
+                                    moves.push({ 
+                                        fromRow: row, 
+                                        fromCol: col, 
+                                        toRow: newRow, 
+                                        toCol: newCol,
+                                        type: 'move'
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return moves;
+            }
+
+            checkGameOver() {
+                const playerMoves = this.getAllPossibleMoves(1); // Jogador (peças vermelhas)
+                const aiMoves = this.getAllPossibleMoves(2); // IA (peças pretas)
+                
+                if (playerMoves.length === 0) {
+                    return true;
+                }
+                
+                if (aiMoves.length === 0) {
+                    return true;
+                }
+                
+                return false;
+            }
+
+            updateGameInfo() {
+                // Mostra a cor do jogador no console para debug
+                console.log(`Jogador: ${this.playerColor}, IA: ${this.aiColor}`);
+            }
+
+        }
+
+        // Funções globais
+        let game;
+
+        function newGame() {
+            game = new CheckersGame();
+        }
+
+        // Funções removidas para interface limpa
+
+        // Inicializa o jogo
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new CheckersGame();
+        });
+    </script>
+</body>
+</html>

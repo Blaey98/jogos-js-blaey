@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="encoding" content="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+    <title>🎱 Sinuca - 8 Ball Billiards Classic</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        #mygame {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f4c3a, #1a5c4a);
+        }
+        
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f4c3a, #1a5c4a);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <script>
+        // Configuração global do jogo
+        window.gameID = "8-ball-billiards-classic";
+        
+        // Lista de arquivos JavaScript do jogo
+        window.gameJS = [
+            "assets/src/01phaser.js",
+            "assets/src/02Ball.js",
+            "assets/src/03contactListener.js",
+            "assets/src/04billiardPhysics.js",
+            "assets/src/05levelData.js",
+            "assets/src/06maths.js",
+            "assets/src/07vector2d.js",
+            "assets/src/08render.js",
+            "assets/src/09sound.js",
+            "assets/src/10effects.js",
+            "assets/src/11timer.js",
+            "assets/src/12load.js",
+            "assets/src/13mainMenu.js",
+            "assets/src/14setup.js",
+            "assets/src/15gameController.js",
+            "assets/src/16boot.js",
+            function() {
+                console.log('🎱 Todos os scripts carregados');
+                hideLoading();
+            }
+        ];
+        
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            console.log('🎱 Jogo carregado com sucesso!');
+        }
+        
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                        <div style="font-size: 16px; margin-bottom: 20px;">${message}</div>
+                        <button onclick="location.reload()" style="
+                            background: #4CAF50;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Detectar erros
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('🎱 Erro JavaScript:', {message, source, lineno, colno, error});
+            showError('Erro ao carregar o jogo: ' + message);
+            return true;
+        };
+        
+        // Carregar API do jogo
+        function loadGameAPI() {
+            console.log('🎱 Carregando API do jogo...');
+            
+            const script = document.createElement("script");
+            script.src = "html5games/gameapi/v1.js";
+            script.onload = function() {
+                console.log('🎱 API do jogo carregada com sucesso');
+            };
+            script.onerror = function() {
+                console.error('🎱 Erro ao carregar API do jogo');
+                showError('Erro ao carregar API do jogo');
+            };
+            
+            const firstScript = document.getElementsByTagName("script")[0];
+            firstScript.parentNode.insertBefore(script, firstScript);
+        }
+        
+        // Inicializar quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎱 Inicializando jogo de sinuca...');
+            loadGameAPI();
+        });
+    </script>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>🎱 Carregando Sinuca...</div>
+    </div>
+    
+    <center>
+        <div id="mygame"></div>
+    </center>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# Virtual environments
+venv*/
+env*/
+.venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Build directories
+build/
+dist/
+*.egg-info/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node modules (if any)
+node_modules/
+
+# Compiled files
+*.o
+*.exe
+*.dll
+*.dylib
+
+# Temporary files
+*.tmp
+*.temp

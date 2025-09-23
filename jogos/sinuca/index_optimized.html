@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🎱 Sinuca - 8 Ball Billiards Classic</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        #mygame {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f4c3a, #1a5c4a);
+        }
+        
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        
+        /* Loading screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f4c3a, #1a5c4a);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        #loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-ball {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #fff, #ddd);
+            border-radius: 50%;
+            margin-bottom: 20px;
+            animation: bounce 1.5s infinite ease-in-out;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+        
+        .loading-text {
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 2px;
+            width: 0%;
+            animation: loadingProgress 3s ease-out forwards;
+        }
+        
+        @keyframes loadingProgress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        /* Error screen */
+        #error-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4a0f0f, #5c1a1a);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            font-size: 16px;
+            margin-bottom: 20px;
+            max-width: 300px;
+        }
+        
+        .retry-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .retry-button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-ball"></div>
+        <div class="loading-text">🎱 Carregando Sinuca...</div>
+        <div class="loading-progress">
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+    
+    <!-- Error Screen -->
+    <div id="error-screen">
+        <div class="error-icon">❌</div>
+        <div class="error-message">Erro ao carregar o jogo de sinuca</div>
+        <button class="retry-button" onclick="retryLoad()">Tentar Novamente</button>
+    </div>
+    
+    <!-- Game Container -->
+    <div id="mygame"></div>
+
+    <script>
+        // 🎱 Configuração global do jogo
+        window.gameID = "8-ball-billiards-classic";
+        window.DEBUG_MODE = true;
+        
+        // Lista de arquivos JavaScript do jogo em ordem de carregamento
+        window.gameJS = [
+            "assets/src/01phaser.js",
+            "assets/src/02Ball.js", 
+            "assets/src/03contactListener.js",
+            "assets/src/04billiardPhysics.js",
+            "assets/src/05levelData.js",
+            "assets/src/06maths.js",
+            "assets/src/07vector2d.js",
+            "assets/src/08render.js",
+            "assets/src/09sound.js",
+            "assets/src/10effects.js",
+            "assets/src/11timer.js",
+            "assets/src/12load.js",
+            "assets/src/13mainMenu.js",
+            "assets/src/14setup.js",
+            "assets/src/15gameController.js",
+            "assets/src/16boot.js",
+            function() {
+                console.log('🎱 Todos os scripts carregados');
+                hideLoadingScreen();
+            }
+        ];
+        
+        // Configurações de performance
+        const PERFORMANCE_CONFIG = {
+            preloadAudio: true,
+            optimizeImages: true,
+            enableTouch: true,
+            targetFPS: 60
+        };
+        
+        // Sistema de carregamento otimizado
+        let loadingProgress = 0;
+        let totalAssets = window.gameJS.length;
+        
+        function updateLoadingProgress() {
+            loadingProgress++;
+            const percentage = (loadingProgress / totalAssets) * 100;
+            console.log(`🎱 Progresso: ${percentage.toFixed(1)}%`);
+            
+            // Atualizar barra visual se existir
+            const loadingBar = document.querySelector('.loading-bar');
+            if (loadingBar) {
+                loadingBar.style.width = percentage + '%';
+            }
+        }
+        
+        function hideLoadingScreen() {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+                console.log('🎱 Jogo totalmente carregado e pronto!');
+                
+                // Notificar Flutter que o jogo está pronto
+                if (window.flutter_inappwebview) {
+                    window.flutter_inappwebview.callHandler('gameReady', {status: 'ready'});
+                }
+            }, 1000);
+        }
+        
+        function showErrorScreen(message) {
+            const errorScreen = document.getElementById('error-screen');
+            const errorMessage = errorScreen.querySelector('.error-message');
+            
+            errorMessage.textContent = message || 'Erro desconhecido ao carregar o jogo';
+            errorScreen.style.display = 'flex';
+            
+            // Esconder loading screen
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            
+            console.error('🎱 Erro: ' + message);
+        }
+        
+        function retryLoad() {
+            console.log('🎱 Recarregando jogo...');
+            location.reload();
+        }
+        
+        // Detectar erros JavaScript
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('🎱 Erro JavaScript:', {message, source, lineno, colno, error});
+            showErrorScreen(`Erro JavaScript: ${message}`);
+            return true;
+        };
+        
+        // Detectar recursos não carregados
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('🎱 Promise rejeitada:', event.reason);
+            showErrorScreen('Erro ao carregar recursos do jogo');
+        });
+        
+        // Otimizações para dispositivos móveis
+        function optimizeForMobile() {
+            // Prevenir zoom accidental
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+            
+            // Otimizar touch events
+            document.addEventListener('touchstart', function(e) {
+                // Permitir apenas um toque por vez
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Configurar viewport para jogos
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                viewport.setAttribute('content', 
+                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, ' +
+                    'user-scalable=no, minimal-ui, viewport-fit=cover'
+                );
+            }
+            
+            console.log('🎱 Otimizações móveis aplicadas');
+        }
+        
+        // Carregar API do jogo
+        function loadGameAPI() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'html5games/gameapi/v1.js';
+                script.onload = () => {
+                    console.log('🎱 API do jogo carregada');
+                    updateLoadingProgress();
+                    resolve();
+                };
+                script.onerror = () => {
+                    console.error('🎱 Erro ao carregar API do jogo');
+                    reject(new Error('Falha ao carregar API do jogo'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Carregar scripts do jogo sequencialmente
+        async function loadGameScripts() {
+            try {
+                console.log('🎱 Iniciando carregamento dos scripts do jogo...');
+                
+                for (let i = 0; i < window.gameJS.length; i++) {
+                    const item = window.gameJS[i];
+                    
+                    if (typeof item === 'function') {
+                        console.log(`🎱 Executando função ${i + 1}`);
+                        await item();
+                        updateLoadingProgress();
+                    } else if (typeof item === 'string') {
+                        console.log(`🎱 Carregando script: ${item}`);
+                        await loadScript(item);
+                        updateLoadingProgress();
+                    }
+                }
+                
+                console.log('🎱 Todos os scripts carregados com sucesso!');
+                
+            } catch (error) {
+                console.error('🎱 Erro ao carregar scripts:', error);
+                showErrorScreen('Erro ao carregar scripts do jogo: ' + error.message);
+            }
+        }
+        
+        // Carregar script individual
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = false; // Manter ordem de carregamento
+                
+                script.onload = () => {
+                    console.log(`🎱 Script carregado: ${src}`);
+                    resolve();
+                };
+                
+                script.onerror = () => {
+                    console.error(`🎱 Erro ao carregar script: ${src}`);
+                    reject(new Error(`Falha ao carregar: ${src}`));
+                };
+                
+                document.body.appendChild(script);
+            });
+        }
+        
+        // Inicialização principal
+        async function initializeGame() {
+            try {
+                console.log('🎱 Inicializando jogo de sinuca...');
+                
+                // Aplicar otimizações móveis
+                optimizeForMobile();
+                
+                // Carregar API do jogo primeiro
+                await loadGameAPI();
+                
+                // Pequena pausa para garantir que a API está pronta
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Carregar scripts do jogo
+                await loadGameScripts();
+                
+            } catch (error) {
+                console.error('🎱 Erro na inicialização:', error);
+                showErrorScreen('Erro na inicialização: ' + error.message);
+            }
+        }
+        
+        // Aguardar o DOM carregar completamente
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeGame);
+        } else {
+            initializeGame();
+        }
+        
+        // Logs para debug
+        console.log('🎱 Sistema de carregamento otimizado inicializado');
+        console.log('🎱 Total de assets para carregar:', totalAssets);
+        console.log('🎱 Configurações de performance:', PERFORMANCE_CONFIG);
+        
+        // Comunicação com Flutter
+        window.flutterBridge = {
+            sendMessage: function(type, data) {
+                if (window.flutter_inappwebview) {
+                    window.flutter_inappwebview.callHandler(type, data);
+                }
+                console.log('🎱 Mensagem para Flutter:', type, data);
+            },
+            
+            gameReady: function() {
+                this.sendMessage('gameReady', {
+                    status: 'ready',
+                    timestamp: Date.now()
+                });
+            },
+            
+            error: function(message) {
+                this.sendMessage('gameError', {
+                    error: message,
+                    timestamp: Date.now()
+                });
+            }
+        };
+    </script>
+</body>
+</html>

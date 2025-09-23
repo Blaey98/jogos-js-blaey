@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎱 Teste de Caminhos - Sinuca</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #111;
+        }
+        .success { border-color: #4CAF50; background: #1a4a1a; }
+        .error { border-color: #f44336; background: #4a1a1a; }
+        .loading { border-color: #ff9800; background: #4a3a1a; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎱 Teste de Caminhos dos Assets - Sinuca</h1>
+    <p>Testando se os caminhos dos assets estão corretos...</p>
+    
+    <div id="results"></div>
+    
+    <br>
+    <button onclick="testAllPaths()">🔄 Testar Novamente</button>
+    <button onclick="location.reload()">🔄 Recarregar Página</button>
+    
+    <script>
+        const paths = [
+            // 🎯 Scripts JavaScript (lib/pages/jogos/sinuca/assets/src/)
+            { name: 'Phaser.js', path: 'assets/src/01phaser.js', type: 'script' },
+            { name: 'Ball.js', path: 'assets/src/02Ball.js', type: 'script' },
+            { name: 'ContactListener.js', path: 'assets/src/03contactListener.js', type: 'script' },
+            { name: 'BilliardPhysics.js', path: 'assets/src/04billiardPhysics.js', type: 'script' },
+            
+            // 🎮 APIs do jogo (lib/pages/jogos/sinuca/html5games/)
+            { name: 'GameAPI v1.js', path: 'html5games/gameapi/v1.js', type: 'script' },
+            { name: 'Detection.js', path: 'html5games/gameapi/detection.js', type: 'script' },
+            { name: 'Zepto.js', path: 'html5games/gameapi/zepto.min.js', type: 'script' },
+            { name: 'CSS Principal', path: 'html5games/gameapi/v1/play.css', type: 'css' },
+            
+            // 🖼️ Imagens (lib/pages/jogos/sinuca/assets/img/)
+            { name: 'Mesa de Sinuca', path: 'assets/img/tableTop.png', type: 'image' },
+            { name: 'Bola 8', path: 'assets/img/8ball.png', type: 'image' },
+            { name: 'Fundo Grande', path: 'assets/img/bgLarge.png', type: 'image' },
+            { name: 'Tecido da Mesa', path: 'assets/img/cloth.png', type: 'image' },
+            { name: 'Taco de Sinuca', path: 'assets/img/cue.png', type: 'image' },
+            { name: 'Caçapas', path: 'assets/img/pockets.png', type: 'image' },
+            
+            // 🔊 Áudios (lib/pages/jogos/sinuca/assets/audio/)
+            { name: 'Som Taco', path: 'assets/audio/cueHit.wav', type: 'audio' },
+            { name: 'Som Bola Batendo', path: 'assets/audio/ballHit2.wav', type: 'audio' },
+            { name: 'Som Caçapa', path: 'assets/audio/pocketHit.wav', type: 'audio' },
+            { name: 'Som Aplausos', path: 'assets/audio/cheer.wav', type: 'audio' }
+        ];
+        
+        function addResult(name, path, status, message) {
+            const div = document.createElement('div');
+            div.className = `test-item ${status}`;
+            div.innerHTML = `
+                <strong>${name}</strong><br>
+                <small>📁 ${path}</small><br>
+                <span>${message}</span>
+            `;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        function testScript(name, path) {
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = path;
+                script.onload = () => {
+                    addResult(name, path, 'success', '✅ Script carregado com sucesso');
+                    resolve(true);
+                };
+                script.onerror = () => {
+                    addResult(name, path, 'error', '❌ Erro ao carregar script');
+                    resolve(false);
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        function testCSS(name, path) {
+            return new Promise((resolve) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = path;
+                link.onload = () => {
+                    addResult(name, path, 'success', '✅ CSS carregado com sucesso');
+                    resolve(true);
+                };
+                link.onerror = () => {
+                    addResult(name, path, 'error', '❌ Erro ao carregar CSS');
+                    resolve(false);
+                };
+                document.head.appendChild(link);
+            });
+        }
+        
+        function testImage(name, path) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    addResult(name, path, 'success', `✅ Imagem carregada (${img.width}x${img.height})`);
+                    resolve(true);
+                };
+                img.onerror = () => {
+                    addResult(name, path, 'error', '❌ Erro ao carregar imagem');
+                    resolve(false);
+                };
+                img.src = path;
+            });
+        }
+        
+        function testAudio(name, path) {
+            return new Promise((resolve) => {
+                const audio = new Audio();
+                audio.onloadeddata = () => {
+                    addResult(name, path, 'success', `✅ Áudio carregado (${audio.duration.toFixed(2)}s)`);
+                    resolve(true);
+                };
+                audio.onerror = () => {
+                    addResult(name, path, 'error', '❌ Erro ao carregar áudio');
+                    resolve(false);
+                };
+                audio.src = path;
+            });
+        }
+        
+        async function testAllPaths() {
+            document.getElementById('results').innerHTML = '';
+            addResult('Teste Iniciado', '', 'loading', '🔄 Testando todos os caminhos...');
+            
+            let successCount = 0;
+            let totalCount = paths.length;
+            
+            for (const item of paths) {
+                try {
+                    let success = false;
+                    
+                    switch (item.type) {
+                        case 'script':
+                            success = await testScript(item.name, item.path);
+                            break;
+                        case 'css':
+                            success = await testCSS(item.name, item.path);
+                            break;
+                        case 'image':
+                            success = await testImage(item.name, item.path);
+                            break;
+                        case 'audio':
+                            success = await testAudio(item.name, item.path);
+                            break;
+                    }
+                    
+                    if (success) successCount++;
+                    
+                } catch (error) {
+                    addResult(item.name, item.path, 'error', `❌ Erro: ${error.message}`);
+                }
+            }
+            
+            // Resultado final
+            const percentage = ((successCount / totalCount) * 100).toFixed(1);
+            const finalStatus = successCount === totalCount ? 'success' : (successCount > 0 ? 'loading' : 'error');
+            
+            addResult(
+                'Resultado Final', 
+                '', 
+                finalStatus, 
+                `📊 ${successCount}/${totalCount} assets carregados (${percentage}%)`
+            );
+            
+            console.log('🎱 Teste concluído:', {
+                sucessos: successCount,
+                total: totalCount,
+                percentual: percentage + '%'
+            });
+        }
+        
+        // Executar teste automaticamente ao carregar
+        window.addEventListener('load', () => {
+            console.log('🎱 Página de teste carregada');
+            console.log('🎱 URL atual:', window.location.href);
+            console.log('🎱 Iniciando testes de caminhos...');
+            
+            setTimeout(testAllPaths, 1000);
+        });
+    </script>
+</body>
+</html>
