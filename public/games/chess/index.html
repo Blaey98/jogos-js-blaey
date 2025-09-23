@@ -1,329 +1,806 @@
 <!DOCTYPE html>
-<html>
-
-<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>Chess - Stockfish 16</title>
-    <meta name="description" content="Play chess against Stockfish 16 online for free." />
-
-    <meta property="og:url" content="index.html">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Play Chess Against Stockfish 16 Online For Free">
-    <meta property="og:description" content="Play chess against Stockfish 16 online for free.">
+    <title>Xadrez - Stockfish 16</title>
+    <meta name="description" content="Jogue xadrez contra o Stockfish 16 online gratuitamente." />
 
     <link rel="icon" type="image/svg" href="img/icons/favicon.svg" />
-
     <link rel="stylesheet" id="chessboard-css" href="css/chessboard.css" />
     <link rel="stylesheet" href="css/board.css" />
+    
     <style>
-        /* Remove qualquer texto BoldChess que possa aparecer */
-        body::before, body::after,
-        html::before, html::after,
-        .content::before, .content::after {
-            content: '' !important;
-            display: none !important;
-        }
-        
-        /* Esconder qualquer elemento que contenha BoldChess */
-        [title*="BoldChess"],
-        [alt*="BoldChess"],
-        [data-text*="BoldChess"] {
-            display: none !important;
-        }
-        
-        /* Remover margem top para compensar espaço */
-        .chess-area {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-        
-        /* CSS mais agressivo para esconder BoldChess */
         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #1a1a1a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .game-container {
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
         }
         
-        /* Esconder qualquer texto que contenha BoldChess */
-        *:contains("BoldChess") {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-        }
-        
-        /* Esconder elementos específicos que podem conter BoldChess */
-        h1, h2, h3, h4, h5, h6 {
-            font-size: 0 !important;
-            line-height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 0 !important;
-            overflow: hidden !important;
-        }
-        
-        /* Esconder qualquer span ou div que possa conter BoldChess */
-        span, div {
+        .board-container {
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
         
-        /* Forçar esconder elementos no topo */
-        .content > *:first-child {
-            display: none !important;
+        #board {
+            border: 2px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            width: min(80vw, 80vh, 640px);
+            height: min(80vw, 80vh, 640px);
+            max-width: 640px;
+            max-height: 640px;
         }
         
-        .content > span {
-            display: none !important;
+        /* Estilo para as peças do xadrez ficarem grandes */
+        #board img {
+            width: 80px !important;
+            height: 80px !important;
+            max-width: 80px !important;
+            max-height: 80px !important;
+        }
+        
+        /* Estilo para as casas do tabuleiro */
+        #board .square {
+            width: 80px !important;
+            height: 80px !important;
+        }
+        
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .settings-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 300px;
+            backdrop-filter: blur(20px);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .settings-panel.open {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .settings-panel h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .setting-group {
+            margin-bottom: 20px;
+        }
+        
+        .setting-group label {
+            color: #ccc;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .difficulty-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .difficulty-btn.selected {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin: 5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 0.3);
+        }
+        
+        .btn-success {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .btn-success:hover {
+            background: rgba(76, 175, 80, 0.3);
+        }
+        
+        .side-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .side-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .side-btn.selected {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4CAF50;
+        }
+        
+        .status-display {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .promotion {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+        }
+        
+        .promotion.hidden {
+            display: none;
+        }
+        
+        .promotion-options {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .promotion-piece {
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .promotion-piece:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .settings-panel {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+            
+            .difficulty-selector {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            #board {
+                width: 95vw;
+                height: 95vw;
+                max-width: 95vw;
+                max-height: 95vw;
+            }
+            
+            .game-container {
+                gap: 15px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #board {
+                width: 98vw;
+                height: 98vw;
+                max-width: 98vw;
+                max-height: 98vw;
+            }
         }
     </style>
-    
-    <script>
-        // Script para remover qualquer elemento BoldChess após carregamento
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🧹 Removendo elementos BoldChess...');
-            
-            // Remover elementos que contenham BoldChess
-            const elements = document.querySelectorAll('*');
-            elements.forEach(function(element) {
-                if (element.textContent && element.textContent.includes('BoldChess')) {
-                    console.log('🗑️ Removendo elemento com BoldChess:', element);
-                    element.remove();
-                }
-            });
-            
-            // Remover elementos por atributos
-            const titleElements = document.querySelectorAll('[title*="BoldChess"]');
-            titleElements.forEach(function(element) {
-                console.log('🗑️ Removendo elemento por title:', element);
-                element.remove();
-            });
-            
-            // Remover elementos por alt
-            const altElements = document.querySelectorAll('[alt*="BoldChess"]');
-            altElements.forEach(function(element) {
-                console.log('🗑️ Removendo elemento por alt:', element);
-                element.remove();
-            });
-            
-            // Remover elementos por data attributes
-            const dataElements = document.querySelectorAll('[data-text*="BoldChess"]');
-            dataElements.forEach(function(element) {
-                console.log('🗑️ Removendo elemento por data-text:', element);
-                element.remove();
-            });
-            
-            console.log('✅ Limpeza BoldChess concluída');
-        });
-        
-        // Executar também após um delay para pegar elementos carregados dinamicamente
-        setTimeout(function() {
-            console.log('🧹 Segunda limpeza BoldChess...');
-            const elements = document.querySelectorAll('*');
-            elements.forEach(function(element) {
-                if (element.textContent && element.textContent.includes('BoldChess')) {
-                    console.log('🗑️ Removendo elemento tardio com BoldChess:', element);
-                    element.remove();
-                }
-            });
-        }, 2000);
-    </script>
 </head>
 
-<body bgcolor="#000000">
-    <div class="content">
-            <div class="chess-area">
-                <div class="board-table">
-                    <div id="board-top-controls" class="top-controls">
-                        <div id="game-promotion" class="promotion hidden">
-                            <span figure="q">Queen</span>
-                            <span figure="b">Bishop</span>
-                            <span figure="n">Knight</span>
-                            <span figure="r">Rook</span>
-                        </div>
-                        <div id="board-save-pgn-area" class="popup hidden">
-                            <span class="close"></span>
-                            <label>Save PGN Notation:</label>
-                            <textarea readonly></textarea>
-                            <button>Close</button>
-                        </div>
-                        <div id="board-load-fen-area" class="popup hidden">
-                            <span class="close"></span>
-                            <label>Load FEN Notation:</label>
-                            <textarea></textarea>
-                            <button>Load</button>
-                        </div>
-                        <div id="board-load-pgn-area" class="popup large hidden">
-                            <span class="close"></span>
-                            <label>Load PGN Notation:</label>
-                            <textarea></textarea>
-                            <button>Load</button>
-                        </div>
-                        <div id="board-resign-game-area" class="popup hidden">
-                            <span class="close"></span>
-                            <label>Do you want to resign?</label>
-                            <button class="yes">Yes</button>
-                            <button class="no">No</button>
-                        </div>
-                    </div>
-                    <div id="board" class="board"></div>
-                    <div id="board-controls" class="controls">
-                        <div class="buttons">
-                            <button id="btn-switch-sides" title="Switch Sides"><i class="icon"></i></button>
-                            <button id="btn-flip-board" title="Flip Board"><i class="icon"></i></button>
-                            <button id="btn-save-pgn" title="Save PGN"><i class="icon"></i></button>
-                            <button id="btn-engine-disable" title="Engine Toggle (On/Off)">Engine</button>
-                            <button id="btn-show-hint" title="Show Hint"><i class="icon"></i></button>
-                            <button id="btn-take-back" class="disabled" title="Take Back"><i class="icon"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="board-settings">
-                    <div class="apex">
-                        <span class="label-history">Game History</span>
-                        <div class="game-level" id="game-difficulty-option" title="Choose The Engine's Skill Level">
-                            <span class="label">Level</span>
-                            <span class="value" id="game-difficulty-skill-value">10</span>
-                        </div>
-                    </div>
-                    <div class="game-difficulty hidden" id="game-difficulty-skill-settings">
-                        <span class="label">Select Engine's Level:</span>
-                        <span class="close"></span>
-                        <div class="values">
-                            <span class="1">1</span>
-                            <span class="2">2</span>
-                            <span class="3">3</span>
-                            <span class="4">4</span>
-                            <span class="5">5</span>
-                            <span class="6">6</span>
-                            <span class="7">7</span>
-                            <span class="8">8</span>
-                            <span class="9">9</span>
-                            <span class="10 selected">10</span>
-                            <span class="11">11</span>
-                            <span class="12">12</span>
-                            <span class="13">13</span>
-                            <span class="14">14</span>
-                            <span class="15">15</span>
-                            <span class="16">16</span>
-                            <span class="17">17</span>
-                            <span class="18">18</span>
-                            <span class="19">19</span>
-                            <span class="20">20</span>
-                        </div>
-                    </div>
-                    <div class="turns-history" id="game-turns-history">
-                        <ol></ol>
-                    </div>
-                    <div class="game-analyze hidden" id="game-analyze-string"></div>
-                    <div class="game-menu hidden" id="game-settings">
-                        <span class="label-choose-side">Select Side</span>
-                        <span class="btn game-white-side selected" id="btn-choose-white-side"></span>
-                        <span class="btn game-black-side" id="btn-choose-black-side"></span>
-                    </div>
-                    <div class="tunes">
-                        <span id="btn-new-game" title="Start New Game" class="btn-new-game">
-            <span class="icon"></span>
-                        <span class="label">New Game</span>
-                        </span>
-                        <span id="btn-settings" title="Choose The Engine's Skill Level" class="btn settings"></span>
-                        <span id="btn-resign" title="Resign" class="btn resign"></span>
-                        <span id="btn-analyze" title="Request Engine Evaluation" class="btn analyze">
-            <i class="icon"></i>
-          </span>
-                    </div>
-                    <div class="params">
-                        <div class="cell side" id="game-player-side" style="display: none;">
-                            <label>Your Side:</label>
-                            <span class="white active">White</span>
-                            <span class="black">Black</span>
-                        </div>
-                        <div class="cell first-turn" id="game-first-turn" style="display: none;">
-                            <label>First Turn:</label>
-                            <span class="player active">Player</span>
-                            <span class="computer">Computer</span>
-                        </div>
-                    </div>
+<body>
+    <div class="game-container">
+        <!-- Botão de configurações -->
+        <button id="settings-btn" class="settings-btn" title="Configurações">⚙️</button>
+        
+        <!-- Painel de configurações -->
+        <div id="settings-panel" class="settings-panel">
+            <button class="close-btn" id="close-settings">×</button>
+            <h3>⚙️ Configurações</h3>
+            
+            <!-- Informação do lado -->
+            <div class="setting-group">
+                <label>Configuração do jogo:</label>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                    <div style="color: #4CAF50; font-weight: bold; margin-bottom: 5px;">⚪ Você: Brancas</div>
+                    <div style="color: #f44336; font-weight: bold;">⚫ Stockfish: Pretas</div>
                 </div>
             </div>
-            <div class="chess-log"></div>
+            
+            <!-- Dificuldade da IA -->
+            <div class="setting-group">
+                <label>Dificuldade da IA:</label>
+                <div class="difficulty-selector">
+                    <div class="difficulty-btn" data-level="1">1</div>
+                    <div class="difficulty-btn" data-level="2">2</div>
+                    <div class="difficulty-btn" data-level="3">3</div>
+                    <div class="difficulty-btn" data-level="4">4</div>
+                    <div class="difficulty-btn" data-level="5">5</div>
+                    <div class="difficulty-btn" data-level="6">6</div>
+                    <div class="difficulty-btn" data-level="7">7</div>
+                    <div class="difficulty-btn" data-level="8">8</div>
+                    <div class="difficulty-btn" data-level="9">9</div>
+                    <div class="difficulty-btn selected" data-level="10">10</div>
+                    <div class="difficulty-btn" data-level="11">11</div>
+                    <div class="difficulty-btn" data-level="12">12</div>
+                    <div class="difficulty-btn" data-level="13">13</div>
+                    <div class="difficulty-btn" data-level="14">14</div>
+                    <div class="difficulty-btn" data-level="15">15</div>
+                    <div class="difficulty-btn" data-level="16">16</div>
+                    <div class="difficulty-btn" data-level="17">17</div>
+                    <div class="difficulty-btn" data-level="18">18</div>
+                    <div class="difficulty-btn" data-level="19">19</div>
+                    <div class="difficulty-btn" data-level="20">20</div>
+                </div>
+                <p style="color: #999; font-size: 12px; margin-top: 5px;">
+                    Nível atual: <span id="current-difficulty">10</span> (1 = Fácil, 20 = Muito Difícil)
+                </p>
+            </div>
+            
+            <!-- Controles do jogo -->
+            <div class="setting-group">
+                <label>Controles:</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    <button id="btn-new-game" class="btn btn-success">🆕 Novo Jogo</button>
+                    <button id="btn-resign" class="btn btn-danger">🏳️ Desistir</button>
+                    <button id="btn-analyze" class="btn">📊 Análise</button>
+                    <button id="btn-show-hint" class="btn">💡 Dica</button>
+                    <button id="btn-take-back" class="btn disabled">↶ Desfazer</button>
+                    <button id="btn-flip-board" class="btn">🔄 Virar</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Container do tabuleiro -->
+        <div class="board-container">
+            <!-- Popup para promoção de peão -->
+            <div id="game-promotion" class="promotion hidden">
+                <div class="promotion-options">
+                    <span figure="q" class="promotion-piece">♕</span>
+                    <span figure="r" class="promotion-piece">♖</span>
+                    <span figure="b" class="promotion-piece">♗</span>
+                    <span figure="n" class="promotion-piece">♘</span>
+                </div>
+            </div>
+            
+            <!-- Tabuleiro de xadrez -->
+            <div id="board" class="board"></div>
+        </div>
+        
+        <!-- Status do jogo -->
+        <div id="game-status" class="status-display">
+            Clique em "Novo Jogo" para começar
+        </div>
     </div>
 
+    <!-- Scripts JavaScript -->
     <script src="js/libs/jquery-3.6.0.min.js"></script>
     <script src="js/libs/chess.min.js"></script>
-    <script src="js/libs/ltpgnviewer.js"></script>
-
+    <script src="js/libs/chessboard.min.js"></script>
+    
     <script>
-        function is_touch_device() {
-            return 'ontouchstart' in window || navigator.maxTouchPoints;
-        };
-
-        function loadCss(cssId, cssHref) {
-            $('#' + cssId).attr('href', cssHref);
+        // Variáveis globais
+        let settingsOpen = false;
+        
+        // Inicialização do jogo
+        $(document).ready(function() {
+            console.log('🎮 Inicializando jogo de xadrez minimalista...');
+            
+            // Configurar botão de configurações
+            $('#settings-btn').click(function() {
+                toggleSettings();
+            });
+            
+            $('#close-settings').click(function() {
+                closeSettings();
+            });
+            
+            // Fechar configurações ao clicar fora
+            $(document).click(function(e) {
+                if (!$(e.target).closest('#settings-panel, #settings-btn').length) {
+                    closeSettings();
+                }
+            });
+            
+            // Configurar seleção de dificuldade
+            $('.difficulty-btn').click(function() {
+                $('.difficulty-btn').removeClass('selected');
+                $(this).addClass('selected');
+                const level = $(this).data('level');
+                $('#current-difficulty').text(level);
+                updateEngineSkill(level);
+                updateStatus(`Dificuldade alterada para nível ${level}`);
+            });
+            
+            // Configuração fixa: jogador sempre branco, Stockfish sempre preto
+            playerSide = 'w';
+            opponentSide = 'b';
+            
+            // Configurar botão de novo jogo
+            $('#btn-new-game').click(function() {
+                startNewGame();
+                closeSettings();
+            });
+            
+            // Configurar botão de desistir
+            $('#btn-resign').click(function() {
+                if (confirm('Tem certeza que deseja desistir?')) {
+                    resignGame();
+                    closeSettings();
+                }
+            });
+            
+            // Configurar botão de análise
+            $('#btn-analyze').click(function() {
+                if (!$(this).hasClass('disabled')) {
+                    analyzePosition();
+                }
+            });
+            
+            // Configurar botão de dica
+            $('#btn-show-hint').click(function() {
+                if (!$(this).hasClass('disabled')) {
+                    showHint();
+                }
+            });
+            
+            // Configurar botão de desfazer
+            $('#btn-take-back').click(function() {
+                if (!$(this).hasClass('disabled')) {
+                    takeBackMove();
+                }
+            });
+            
+            // Configurar botão de virar tabuleiro
+            $('#btn-flip-board').click(function() {
+                if (typeof board !== 'undefined' && board.flip) {
+                    board.flip();
+                    updateStatus('Tabuleiro virado');
+                }
+            });
+            
+            // Inicializar o tabuleiro e Stockfish
+            setTimeout(function() {
+                console.log('🎮 Inicializando jogo...');
+                initStockfish();
+                initializeBoard();
+                
+                // Verificar se o tabuleiro foi criado
+                setTimeout(function() {
+                    if (typeof board === 'undefined' || !board) {
+                        console.log('⚠️ Tentando reinicializar tabuleiro...');
+                        initializeBoard();
+                    }
+                }, 2000);
+            }, 1000);
+        });
+        
+        // Função para alternar painel de configurações
+        function toggleSettings() {
+            settingsOpen = !settingsOpen;
+            if (settingsOpen) {
+                $('#settings-panel').addClass('open');
+            } else {
+                $('#settings-panel').removeClass('open');
+            }
         }
-
-        var mobileLibs = 8;
-        var desktopLibs = 8;
-
-        var isMobile = is_touch_device();
-
-        if (isMobile == true) {
-
-            var chess, board;
-
-            loadCss('chessboard-css', 'css/caustique-chessboard.css');
-
-            $.getScript('js/mobile/chessboard-caustique-min.js', initGameBoard('mobile'));
-            $.getScript('js/board-controls-side.js', initGameBoard('mobile'));
-            $.getScript('js/board-controls-bottom.js', initGameBoard('mobile'));
-            $.getScript('js/board-sets.js', initGameBoard('mobile'));
-
-            $.getScript('js/board-time.js', initGameBoard('mobile'));
-            $.getScript('js/board-actions.js', initGameBoard('mobile'));
-            $.getScript('js/mobile/board-actions-mobile.js', initGameBoard('mobile'));
-            $.getScript('js/board-init.js', initGameBoard('mobile'));
-
+        
+        // Função para fechar configurações
+        function closeSettings() {
+            settingsOpen = false;
+            $('#settings-panel').removeClass('open');
+        }
+        
+        // Função para atualizar status
+        function updateStatus(message) {
+            $('#game-status').text(message);
+            setTimeout(function() {
+                if (typeof game !== 'undefined' && game.turn()) {
+                    const turn = game.turn() === 'w' ? 'Brancas' : 'Pretas';
+                    $('#game-status').text(`Vez das ${turn}`);
+                }
+            }, 2000);
+        }
+        
+        // Função para atualizar nível da IA
+        function updateEngineSkill(level) {
+            engineSkill = level;
+            if (typeof stockfish !== 'undefined') {
+                stockfish.postMessage('setoption name skill level value ' + level);
+                console.log('🎯 Nível da IA alterado para: ' + level);
+            }
+        }
+        
+        // Função para iniciar novo jogo
+        function startNewGame() {
+            console.log('🆕 Iniciando novo jogo...');
+            updateStatus('Novo jogo iniciado! Você joga com as Brancas.');
+            
+            // Forçar jogador a ser sempre branco
+            playerSide = 'w';
+            opponentSide = 'b';
+            
+            // Resetar variáveis do jogo
+            gameStarted = true;
+            gameEnd = false;
+            
+            // Habilitar controles
+            $('#btn-take-back').addClass('disabled');
+            $('#btn-analyze').removeClass('disabled');
+            $('#btn-show-hint').removeClass('disabled');
+            
+            // Inicializar tabuleiro se necessário
+            if (typeof board === 'undefined') {
+                initializeBoard();
         } else {
-
-            loadCss('chessboard-css', 'css/chessboard.css');
-
-            $.getScript('js/libs/chessboard.min.js', initGameBoard('desktop'));
-            $.getScript('js/board-controls-side.js', initGameBoard('desktop'));
-            $.getScript('js/board-controls-bottom.js', initGameBoard('desktop'));
-            $.getScript('js/board-sets.js', initGameBoard('desktop'));
-
-            $.getScript('js/board-time.js', initGameBoard('desktop'));
-            $.getScript('js/board-actions.js', initGameBoard('desktop'));
-            $.getScript('js/board-actions-desktop.js', initGameBoard('desktop'));
-            $.getScript('js/board-init.js', initGameBoard('desktop'));
-
+                board.position('start');
+                board.orientation('white');
+                if (typeof game !== 'undefined') {
+                    game = new Chess();
+                }
+            }
+            
+            // Desbloquear tabuleiro para o jogador começar
+            $('#board').removeClass('locked');
+            updateStatus('Sua vez! Faça o primeiro movimento (Brancas)');
         }
-
-        function initGameBoard(lib = false) {
-
-            if (lib == 'mobile') {
-                mobileLibs--;
-                if (mobileLibs == 0) {
-                    console.log('Mobile loaded');
-                    setTimeout(function() {
-                        setMobileBoard();
-                    }, 1000);
-                }
+        
+        // Função para desistir do jogo
+        function resignGame() {
+            console.log('🏳️ Jogador desistiu do jogo');
+            gameEnd = true;
+            updateStatus('Você desistiu do jogo!');
+            
+            // Desabilitar controles
+            $('#btn-analyze').addClass('disabled');
+            $('#btn-show-hint').addClass('disabled');
+            $('#btn-take-back').addClass('disabled');
+        }
+        
+        // Função para analisar posição
+        function analyzePosition() {
+            if (typeof stockfish !== 'undefined' && typeof game !== 'undefined') {
+                console.log('📊 Analisando posição...');
+                $('#btn-analyze').addClass('disabled');
+                updateStatus('Analisando posição...');
+                
+                stateAnalyze = 'grep';
+                stockfish.postMessage('position fen ' + game.fen());
+                stockfish.postMessage('go depth ' + staticSkill);
             }
-
-            if (lib == 'desktop') {
-                desktopLibs--;
-                if (desktopLibs == 0) {
-                    console.log('Desktop loaded');
-                    setTimeout(function() {
-                        setDesktopBoard();
-                    }, 1000);
-                }
+        }
+        
+        // Função para mostrar dica
+        function showHint() {
+            if (typeof stockfish !== 'undefined' && typeof game !== 'undefined') {
+                console.log('💡 Mostrando dica...');
+                $('#btn-show-hint').addClass('disabled');
+                updateStatus('Calculando melhor movimento...');
+                
+                stateHint = 'grep';
+                stockfish.postMessage('position fen ' + game.fen());
+                stockfish.postMessage('go depth ' + engineSkill);
             }
-
+        }
+        
+        // Função para desfazer movimento
+        function takeBackMove() {
+            if (typeof game !== 'undefined' && game.history().length > 0) {
+                console.log('↶ Desfazendo movimento...');
+                game.undo();
+                if (typeof board !== 'undefined') {
+                    board.position(game.fen());
+                }
+                listMoves();
+                updateStatus('Movimento desfeito!');
+            }
+        }
+        
+        // Função para inicializar tabuleiro manualmente
+        function initializeBoard() {
+            try {
+                console.log('🔧 Inicializando tabuleiro...');
+                console.log('ChessBoard disponível:', typeof ChessBoard !== 'undefined');
+                console.log('Chess disponível:', typeof Chess !== 'undefined');
+                
+                // Garantir que o jogador é sempre branco
+                playerSide = 'w';
+                opponentSide = 'b';
+                
+                // Inicializar jogo
+                game = new Chess();
+                console.log('✅ Jogo Chess inicializado');
+                
+                // Verificar se o elemento board existe
+                const boardElement = document.getElementById('board');
+                console.log('Board element:', boardElement);
+                
+                if (boardElement && typeof ChessBoard !== 'undefined') {
+                    // Inicializar tabuleiro
+                    board = ChessBoard('board', {
+                        draggable: true,
+                        position: 'start',
+                        orientation: 'white',
+                        onDragStart: onDragStart,
+                        onDrop: onDrop,
+                        onSnapEnd: onSnapEnd,
+                        pieceTheme: 'img/pieces/{piece}.svg',
+                        showNotation: false,
+                        sparePieces: false
+                    });
+                    
+                    console.log('✅ Tabuleiro inicializado com sucesso!');
+                    console.log('Board object:', board);
+                    
+                    updateStatus('Tabuleiro pronto! Clique em "Novo Jogo" para começar');
+                } else {
+                    console.error('❌ Elemento board não encontrado ou ChessBoard não disponível');
+                    updateStatus('Erro: Elemento board não encontrado');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao inicializar tabuleiro:', error);
+                updateStatus('Erro ao inicializar tabuleiro: ' + error.message);
+            }
+        }
+        
+        // Inicializar Stockfish
+        let stockfish;
+        let gameStarted = false;
+        let gameEnd = false;
+        let engineSkill = 10;
+        
+        function initStockfish() {
+            try {
+                stockfish = new Worker('js/engine/stockfish-nnue-16-single.js');
+                
+                stockfish.onmessage = function(event) {
+                    console.log('Stockfish:', event.data);
+                    
+                    const eventStr = event.data;
+                    
+                    // Processar movimento do Stockfish
+                    if (eventStr.indexOf('bestmove') !== -1) {
+                        const match = eventStr.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/);
+                        
+                        if (match) {
+                            console.log('Stockfish move:', match[1], 'to', match[2]);
+                            
+                            const move = game.move({
+                                from: match[1],
+                                to: match[2],
+                                promotion: match[3] || 'q'
+                            });
+                            
+                            if (move) {
+                                board.position(game.fen());
+                                updateStatus('Sua vez! (Brancas)');
+                                $('#board').removeClass('locked');
+                                
+                                // Verificar fim de jogo
+                                if (game.isGameOver()) {
+                                    if (game.isCheckmate()) {
+                                        updateStatus('Xeque-mate! Você venceu!');
+                                    } else if (game.isDraw()) {
+                                        updateStatus('Empate!');
+                                    }
+                                    gameEnd = true;
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                // Configurar Stockfish
+                stockfish.postMessage('uci');
+                stockfish.postMessage('setoption name skill level value ' + engineSkill);
+                stockfish.postMessage('isready');
+                
+                console.log('✅ Stockfish inicializado com sucesso!');
+            } catch (error) {
+                console.error('❌ Erro ao inicializar Stockfish:', error);
+            }
+        }
+        
+        // Funções de callback do tabuleiro
+        function onDragStart(source, piece, position, orientation) {
+            if (gameEnd) return false;
+            if (game.turn() !== playerSide) return false;
+            if (piece.search(/^b/) !== -1 && game.turn() === 'w') return false;
+            if (piece.search(/^w/) !== -1 && game.turn() === 'b') return false;
+        }
+        
+        function onDrop(source, target) {
+            try {
+                const move = game.move({
+                    from: source,
+                    to: target,
+                    promotion: 'q'
+                });
+                
+                if (move === null) return 'snapback';
+                
+                board.position(game.fen());
+                
+                // Atualizar status
+                updateStatus('Stockfish está pensando... (Pretas)');
+                $('#board').addClass('locked');
+                
+                // Verificar fim de jogo
+                if (game.isGameOver()) {
+                    if (game.isCheckmate()) {
+                        updateStatus('Xeque-mate! Stockfish venceu!');
+                    } else if (game.isDraw()) {
+                        updateStatus('Empate!');
+                    }
+                    gameEnd = true;
+                    return true;
+                }
+                
+                // Fazer Stockfish jogar
+                if (game.turn() === 'b' && !gameEnd) {
+                    setTimeout(() => {
+                        stockfish.postMessage('position fen ' + game.fen());
+                        stockfish.postMessage('go depth ' + engineSkill);
+                    }, 500);
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Erro no movimento:', error);
+                return 'snapback';
+            }
+        }
+        
+        function onSnapEnd() {
+            board.position(game.fen());
         }
     </script>
-
 </body>
-
 </html>

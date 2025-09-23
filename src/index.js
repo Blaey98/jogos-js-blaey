@@ -74,13 +74,15 @@ app.use((req, res) => {
 });
 
 // Iniciar servidor
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📱 Acesse: http://localhost:${PORT}`);
+  console.log(`📱 Acesso local: http://localhost:${PORT}`);
+  console.log(`🌐 Acesso na rede: http://192.168.15.31:${PORT}`);
   console.log(`🎮 Jogos disponíveis:`);
-  console.log(`   - Xadrez: http://localhost:${PORT}/games/chess/`);
-  console.log(`   - Damas: http://localhost:${PORT}/games/checkers/`);
-  console.log(`   - Sinuca: http://localhost:${PORT}/games/sinuca/`);
+  console.log(`   - Xadrez: http://192.168.15.31:${PORT}/games/chess/`);
+  console.log(`   - Damas: http://192.168.15.31:${PORT}/games/checkers/`);
+  console.log(`   - Sinuca: http://192.168.15.31:${PORT}/games/sinuca/`);
+  console.log(`\n🎯 Link direto do Xadrez: http://192.168.15.31:${PORT}/games/chess/`);
 });
 
 module.exports = app;
