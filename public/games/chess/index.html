@@ -312,6 +312,78 @@
             display: none;
         }
         
+        /* Estilos para indicador de nível do Stockfish */
+        .stockfish-level-indicator {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 10px 20px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .level-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .level-label {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .level-value {
+            color: #4CAF50;
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .level-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .level-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .level-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .level-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .level-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .promotion {
             position: absolute;
             top: 50%;
@@ -485,6 +557,18 @@
         
         <!-- Container do tabuleiro -->
         <div class="board-container">
+            <!-- Indicador de nível do Stockfish -->
+            <div class="stockfish-level-indicator">
+                <div class="level-display">
+                    <span class="level-label">🤖 Stockfish Nível:</span>
+                    <span id="current-level-display" class="level-value">10</span>
+                </div>
+                <div class="level-controls">
+                    <button id="level-down" class="level-btn">-</button>
+                    <button id="level-up" class="level-btn">+</button>
+                </div>
+            </div>
+            
             <!-- Popup para promoção de peão -->
             <div id="game-promotion" class="promotion hidden">
                 <div class="promotion-options">
@@ -647,6 +731,15 @@
                 diagnoseGame();
             });
             
+            // Botões de controle de nível do Stockfish
+            $('#level-up').click(function() {
+                increaseLevel();
+            });
+            
+            $('#level-down').click(function() {
+                decreaseLevel();
+            });
+            
             // Botões de logs
             $('#clear-logs').click(function() {
                 clearLogs();
@@ -661,6 +754,9 @@
                 addLog('🎮 Inicializando jogo...', 'info');
                 initStockfish();
                 initializeBoard();
+                
+                // Inicializar display do nível
+                updateLevelDisplay();
                 
                 // Verificar se o tabuleiro foi criado
                 setTimeout(function() {
@@ -720,9 +816,9 @@
         // Função para atualizar nível da IA
         function updateEngineSkill(level) {
             engineSkill = level;
-            if (typeof stockfish !== 'undefined') {
+            if (stockfish && stockfishReady) {
                 stockfish.postMessage('setoption name skill level value ' + level);
-                console.log('🎯 Nível da IA alterado para: ' + level);
+                addLog(`⚙️ Stockfish skill level definido para: ${level}`, 'info');
             }
         }
         
@@ -1133,6 +1229,29 @@
             addLog(`Opponent side: ${opponentSide} (${opponentSide === 'w' ? 'Brancas' : 'Pretas'})`, 'info');
             addLog(`Stockfish ready: ${stockfishReady}`, 'info');
         }
+        
+        // Funções para controlar nível do Stockfish
+        function updateLevelDisplay() {
+            document.getElementById('current-level-display').textContent = engineSkill;
+            addLog(`🎯 Nível do Stockfish alterado para: ${engineSkill}`, 'info');
+        }
+        
+        function increaseLevel() {
+            if (engineSkill < 20) {
+                engineSkill++;
+                updateLevelDisplay();
+                updateEngineSkill(engineSkill);
+            }
+        }
+        
+        function decreaseLevel() {
+            if (engineSkill > 1) {
+                engineSkill--;
+                updateLevelDisplay();
+                updateEngineSkill(engineSkill);
+            }
+        }
+        
     </script>
 </body>
 </html>
