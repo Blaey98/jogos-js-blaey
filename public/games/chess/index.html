@@ -54,12 +54,180 @@
             max-height: 640px;
         }
         
-        /* Estilo para as peças do xadrez ficarem grandes */
+        /* Cores do tabuleiro - dois tons de cinza - FORÇA MÁXIMA */
+        #board .square {
+            background-color: #D3D3D3 !important; /* Cinza claro padrão */
+        }
+        
+        /* Forçar cores alternadas - método mais direto */
+        #board .square:nth-child(odd) {
+            background-color: #D3D3D3 !important; /* Cinza claro */
+        }
+        
+        #board .square:nth-child(even) {
+            background-color: #696969 !important; /* Cinza escuro */
+        }
+        
+        /* Padrão xadrez real - linha por linha */
+        #board .square:nth-child(8n+1),
+        #board .square:nth-child(8n+3),
+        #board .square:nth-child(8n+5),
+        #board .square:nth-child(8n+7) {
+            background-color: #D3D3D3 !important; /* Cinza claro - linhas ímpares */
+        }
+        
+        #board .square:nth-child(8n+2),
+        #board .square:nth-child(8n+4),
+        #board .square:nth-child(8n+6),
+        #board .square:nth-child(8n+8) {
+            background-color: #696969 !important; /* Cinza escuro - linhas ímpares */
+        }
+        
+        #board .square:nth-child(16n+9),
+        #board .square:nth-child(16n+11),
+        #board .square:nth-child(16n+13),
+        #board .square:nth-child(16n+15) {
+            background-color: #696969 !important; /* Cinza escuro - linhas pares */
+        }
+        
+        #board .square:nth-child(16n+10),
+        #board .square:nth-child(16n+12),
+        #board .square:nth-child(16n+14),
+        #board .square:nth-child(16n+16) {
+            background-color: #D3D3D3 !important; /* Cinza claro - linhas pares */
+        }
+        
+        /* Animações para Check e Check Mate */
+        .check-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e, #ff6b6b);
+            color: white;
+            font-size: 4rem;
+            font-weight: bold;
+            padding: 30px 60px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(255, 107, 107, 0.8);
+            z-index: 1000;
+            animation: checkPulse 2s ease-in-out;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            border: 3px solid #fff;
+        }
+        
+        .checkmate-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff4757, #ff3838, #ff4757);
+            color: white;
+            font-size: 5rem;
+            font-weight: bold;
+            padding: 40px 80px;
+            border-radius: 25px;
+            box-shadow: 0 0 80px rgba(255, 71, 87, 0.9);
+            z-index: 1000;
+            animation: checkmateExplosion 3s ease-in-out;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            border: 4px solid #fff;
+        }
+        
+        @keyframes checkPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            40% {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            80% {
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes checkmateExplosion {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+                filter: blur(10px);
+            }
+            15% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 1;
+                filter: blur(0px);
+            }
+            30% {
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            45% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            75% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            90% {
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+                filter: blur(5px);
+            }
+        }
+        
+        /* Efeito de partículas para Check Mate */
+        .checkmate-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #ff4757;
+            border-radius: 50%;
+            animation: particleFall 2s linear infinite;
+        }
+        
+        @keyframes particleFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Estilo para as peças do xadrez (10% menor que o tamanho original) */
         #board img {
-            width: 80px !important;
-            height: 80px !important;
-            max-width: 80px !important;
-            max-height: 80px !important;
+            width: 72px !important;
+            height: 72px !important;
+            max-width: 72px !important;
+            max-height: 72px !important;
         }
         
         /* Estilo para as casas do tabuleiro */
@@ -551,6 +719,12 @@
                     <button id="btn-test-stockfish" class="btn">🧪 Testar Stockfish</button>
                     <button id="btn-force-move" class="btn">🔄 Forçar IA</button>
                     <button id="btn-diagnose" class="btn">🔍 Diagnosticar</button>
+                    <button id="btn-reload-pieces" class="btn">♟️ Recarregar Peças</button>
+                    <button id="btn-apply-gray" class="btn">⚫ Aplicar Cores Cinza</button>
+                    <button id="btn-force-colors" class="btn">🎨 Forçar Cores</button>
+                    <button id="btn-diagnose-colors" class="btn">🔍 Diagnosticar Cores</button>
+                    <button id="btn-test-check" class="btn">⚠️ Testar Check</button>
+                    <button id="btn-test-checkmate" class="btn">🏆 Testar Check Mate</button>
                 </div>
             </div>
         </div>
@@ -729,6 +903,34 @@
             
             $('#btn-diagnose').click(function() {
                 diagnoseGame();
+            });
+            
+            $('#btn-reload-pieces').click(function() {
+                reloadPieces();
+            });
+            
+            // Event listener para aplicar cores cinza
+            $('#btn-apply-gray').click(function() {
+                applyGrayColors();
+            });
+            
+            // Event listener para forçar cores
+            $('#btn-force-colors').click(function() {
+                forceColors();
+            });
+            
+            // Event listener para diagnosticar cores
+            $('#btn-diagnose-colors').click(function() {
+                diagnoseColors();
+            });
+            
+            // Event listeners para testar Check e Check Mate
+            $('#btn-test-check').click(function() {
+                showCheckNotification();
+            });
+            
+            $('#btn-test-checkmate').click(function() {
+                showCheckmateNotification();
             });
             
             // Botões de controle de nível do Stockfish
@@ -952,6 +1154,21 @@
                     addLog('✅ Tabuleiro inicializado com sucesso!', 'info');
                     addLog(`Board object: ${board ? 'existe' : 'não existe'}`, 'info');
                     
+                    // Forçar recarregamento das peças para garantir que as novas sejam carregadas
+                    setTimeout(() => {
+                        if (board) {
+                            board.position(board.position());
+                            addLog('♟️ Peças atualizadas carregadas!', 'info');
+                            addLog('📏 Tamanho das peças: 72px (10% menor)', 'info');
+                            
+                            // Aplicar cores cinza automaticamente
+                            setTimeout(() => {
+                                applyGrayColors();
+                                addLog('🎨 Cores aplicadas na inicialização', 'info');
+                            }, 200);
+                        }
+                    }, 500);
+                    
                     updateStatus('Tabuleiro pronto! Clique em "Novo Jogo" para começar');
                 } else {
                     addLog('❌ Elemento board não encontrado ou ChessBoard não disponível', 'error');
@@ -1035,17 +1252,20 @@
                                         // Desbloquear tabuleiro para o jogador
                                         $('#board').removeClass('locked');
                                         
-                                        // Verificar fim de jogo
-                                        if (game && typeof game.isGameOver === 'function' && game.isGameOver()) {
-                                            if (game.isCheckmate()) {
-                                                addLog('🏆 Xeque-mate! Você venceu!', 'info');
-                                                updateStatus('Xeque-mate! Você venceu!');
-                                            } else if (game.isDraw()) {
-                                                addLog('🤝 Empate!', 'info');
-                                                updateStatus('Empate!');
-                                            }
-                                            gameEnd = true;
-                                        } else {
+                    // Verificar Check e Check Mate
+                    const gameEnded = checkGameStatus();
+                    
+                    // Verificar fim de jogo
+                    if (game && typeof game.isGameOver === 'function' && game.isGameOver()) {
+                        if (game.isCheckmate()) {
+                            addLog('🏆 Xeque-mate! Você venceu!', 'info');
+                            updateStatus('Xeque-mate! Você venceu!');
+                        } else if (game.isDraw()) {
+                            addLog('🤝 Empate!', 'info');
+                            updateStatus('Empate!');
+                        }
+                        gameEnd = true;
+                    } else {
                                             addLog('👤 Sua vez! (Brancas)', 'info');
                                             updateStatus('Sua vez! (Brancas)');
                                         }
@@ -1127,6 +1347,9 @@
                 
                 addLog(`✅ Movimento do jogador: ${JSON.stringify(move)}`, 'info');
                 board.position(game.fen());
+                
+                // Verificar Check e Check Mate
+                const gameEnded = checkGameStatus();
                 
                 // Verificar fim de jogo
                 if (game && typeof game.isGameOver === 'function' && game.isGameOver()) {
@@ -1234,6 +1457,261 @@
         function updateLevelDisplay() {
             document.getElementById('current-level-display').textContent = engineSkill;
             addLog(`🎯 Nível do Stockfish alterado para: ${engineSkill}`, 'info');
+        }
+        
+        // Função para recarregar peças
+        function reloadPieces() {
+            addLog('🔄 Recarregando peças do tabuleiro...', 'info');
+            if (board) {
+                // Forçar recarregamento das peças
+                board.position(board.position());
+                addLog('✅ Peças recarregadas com sucesso!', 'info');
+            } else {
+                addLog('⚠️ Tabuleiro não está inicializado', 'warning');
+            }
+        }
+        
+        // Função para aplicar novo tamanho das peças
+        function applyPieceSize() {
+            addLog('📏 Aplicando novo tamanho das peças (72px)...', 'info');
+            // Forçar recarregamento para aplicar o novo tamanho
+            if (board) {
+                board.position(board.position());
+                addLog('✅ Tamanho das peças aplicado!', 'info');
+            }
+        }
+        
+        // Função para aplicar cores cinza ao tabuleiro - MÉTODO AGRESSIVO
+        function applyGrayColors() {
+            addLog('⚫ Aplicando cores cinza ao tabuleiro...', 'info');
+            
+            // Aguardar um pouco para garantir que o tabuleiro esteja carregado
+            setTimeout(() => {
+                // Múltiplos seletores para garantir que encontre as casas
+                const selectors = [
+                    '#board .square',
+                    '#board div[class*="square"]',
+                    '#board > div > div',
+                    '.chessboard .square'
+                ];
+                
+                let allSquares = [];
+                selectors.forEach(selector => {
+                    const squares = document.querySelectorAll(selector);
+                    squares.forEach(square => {
+                        if (!allSquares.includes(square)) {
+                            allSquares.push(square);
+                        }
+                    });
+                });
+                
+                addLog(`🔍 Encontradas ${allSquares.length} casas`, 'info');
+                
+                let lightCount = 0;
+                let darkCount = 0;
+                
+                allSquares.forEach((square, index) => {
+                    const row = Math.floor(index / 8);
+                    const col = index % 8;
+                    
+                    // Padrão xadrez: casas claras e escuras alternadas
+                    if ((row + col) % 2 === 0) {
+                        // Cinza claro
+                        square.style.setProperty('background-color', '#D3D3D3', 'important');
+                        square.style.backgroundColor = '#D3D3D3';
+                        square.setAttribute('style', square.getAttribute('style') + '; background-color: #D3D3D3 !important;');
+                        lightCount++;
+                    } else {
+                        // Cinza escuro
+                        square.style.setProperty('background-color', '#696969', 'important');
+                        square.style.backgroundColor = '#696969';
+                        square.setAttribute('style', square.getAttribute('style') + '; background-color: #696969 !important;');
+                        darkCount++;
+                    }
+                });
+                
+                addLog('✅ Cores cinza aplicadas!', 'info');
+                addLog(`⚪ Cinza claro: #D3D3D3 (${lightCount} casas)`, 'info');
+                addLog(`⚫ Cinza escuro: #696969 (${darkCount} casas)`, 'info');
+                addLog(`📊 Total de casas: ${allSquares.length}`, 'info');
+                
+                // Verificar se as cores foram aplicadas
+                if (lightCount === 0 && darkCount === 0) {
+                    addLog('⚠️ Nenhuma casa encontrada, tentando método alternativo...', 'warning');
+                    forceColorsAlternative();
+                }
+            }, 100);
+        }
+        
+        // Método alternativo para aplicar cores
+        function forceColorsAlternative() {
+            addLog('🔄 Tentando método alternativo...', 'info');
+            
+            // Procurar por todos os elementos div dentro do board
+            const board = document.getElementById('board');
+            if (board) {
+                const allDivs = board.querySelectorAll('div');
+                addLog(`🔍 Encontrados ${allDivs.length} divs no tabuleiro`, 'info');
+                
+                allDivs.forEach((div, index) => {
+                    // Verificar se é uma casa do tabuleiro (tem classes específicas ou está na posição correta)
+                    if (div.classList.contains('square') || div.style.width || div.style.height) {
+                        const row = Math.floor(index / 8);
+                        const col = index % 8;
+                        
+                        if ((row + col) % 2 === 0) {
+                            div.style.setProperty('background-color', '#D3D3D3', 'important');
+                        } else {
+                            div.style.setProperty('background-color', '#696969', 'important');
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Função para diagnosticar o problema das cores
+        function diagnoseColors() {
+            addLog('🔍 Diagnosticando problema das cores...', 'info');
+            
+            const board = document.getElementById('board');
+            if (!board) {
+                addLog('❌ Elemento #board não encontrado!', 'error');
+                return;
+            }
+            
+            addLog(`✅ Elemento #board encontrado`, 'info');
+            
+            // Verificar todos os elementos dentro do board
+            const allElements = board.querySelectorAll('*');
+            addLog(`📊 Total de elementos no board: ${allElements.length}`, 'info');
+            
+            // Procurar por elementos com classes específicas
+            const squareElements = board.querySelectorAll('.square');
+            addLog(`🔲 Elementos com classe 'square': ${squareElements.length}`, 'info');
+            
+            // Procurar por divs
+            const divElements = board.querySelectorAll('div');
+            addLog(`📦 Elementos div: ${divElements.length}`, 'info');
+            
+            // Verificar estilos aplicados
+            squareElements.forEach((square, index) => {
+                const bgColor = window.getComputedStyle(square).backgroundColor;
+                addLog(`🏠 Casa ${index + 1}: ${bgColor}`, 'info');
+            });
+            
+            // Tentar aplicar cores diretamente
+            addLog('🎨 Tentando aplicar cores diretamente...', 'info');
+            squareElements.forEach((square, index) => {
+                const row = Math.floor(index / 8);
+                const col = index % 8;
+                
+                if ((row + col) % 2 === 0) {
+                    square.style.cssText += '; background-color: #D3D3D3 !important;';
+                } else {
+                    square.style.cssText += '; background-color: #696969 !important;';
+                }
+            });
+            
+            addLog('✅ Diagnóstico concluído!', 'info');
+        }
+        
+        // Função para forçar aplicação das cores
+        function forceColors() {
+            addLog('🎨 Forçando aplicação das cores...', 'info');
+            
+            // Aguardar um pouco para garantir que o tabuleiro esteja carregado
+            setTimeout(() => {
+                applyGrayColors();
+                
+                // Forçar recarregamento do tabuleiro
+                if (board) {
+                    board.position(board.position());
+                    addLog('🔄 Tabuleiro recarregado para aplicar cores', 'info');
+                }
+            }, 100);
+        }
+        
+        // Função para criar partículas de Check Mate
+        function createCheckmateParticles() {
+            const particleContainer = document.createElement('div');
+            particleContainer.className = 'checkmate-particles';
+            document.body.appendChild(particleContainer);
+            
+            // Criar 50 partículas
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particle.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                particleContainer.appendChild(particle);
+            }
+            
+            // Remover partículas após 3 segundos
+            setTimeout(() => {
+                if (particleContainer.parentNode) {
+                    particleContainer.parentNode.removeChild(particleContainer);
+                }
+            }, 3000);
+        }
+        
+        // Função para exibir notificação de Check
+        function showCheckNotification() {
+            addLog('⚠️ CHECK!', 'warning');
+            
+            const notification = document.createElement('div');
+            notification.className = 'check-notification';
+            notification.textContent = 'CHECK!';
+            document.body.appendChild(notification);
+            
+            // Remover após a animação
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 2000);
+        }
+        
+        // Função para exibir notificação de Check Mate
+        function showCheckmateNotification() {
+            addLog('🏆 CHECK MATE!', 'info');
+            
+            // Criar partículas primeiro
+            createCheckmateParticles();
+            
+            // Criar notificação
+            const notification = document.createElement('div');
+            notification.className = 'checkmate-notification';
+            notification.textContent = 'CHECK MATE!';
+            document.body.appendChild(notification);
+            
+            // Remover após a animação
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+        
+        // Função para verificar Check e Check Mate
+        function checkGameStatus() {
+            if (!game) return;
+            
+            try {
+                if (game.isCheckmate()) {
+                    showCheckmateNotification();
+                    addLog('🏆 Jogo terminou em Check Mate!', 'info');
+                    return true;
+                } else if (game.isCheck()) {
+                    showCheckNotification();
+                    addLog('⚠️ Rei em Check!', 'warning');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`❌ Erro ao verificar status do jogo: ${error.message}`, 'error');
+            }
+            
+            return false;
         }
         
         function increaseLevel() {
