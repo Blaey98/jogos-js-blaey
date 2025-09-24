@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste do Tabuleiro</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 2px solid #333;
+            border-radius: 5px;
+            overflow: hidden;
+            width: min(80vw, 80vh, 640px);
+            height: min(80vw, 80vh, 640px);
+            max-width: 640px;
+            max-height: 640px;
+        }
+
+        .cell {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .cell.light {
+            background-color: #f4d03f;
+        }
+
+        .cell.dark {
+            background-color: #1e8449;
+        }
+
+        .piece {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .piece.red {
+            background-color: #dc3545;
+        }
+
+        .piece.blue {
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🧪 Teste do Tabuleiro</h1>
+        <div class="board" id="board"></div>
+        <button onclick="createBoard()">Criar Tabuleiro</button>
+    </div>
+
+    <script>
+        function createBoard() {
+            console.log('Criando tabuleiro...');
+            const boardElement = document.getElementById('board');
+            if (!boardElement) {
+                console.error('Elemento board não encontrado!');
+                return;
+            }
+            
+            boardElement.innerHTML = '';
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // Alterna cores das casas
+                    if ((row + col) % 2 === 0) {
+                        cell.classList.add('light');
+                    } else {
+                        cell.classList.add('dark');
+                    }
+                    
+                    // Adiciona peças de teste
+                    if ((row + col) % 2 === 1) {
+                        if (row < 3) {
+                            // Peças vermelhas (IA)
+                            const piece = document.createElement('div');
+                            piece.className = 'piece red';
+                            cell.appendChild(piece);
+                        } else if (row > 4) {
+                            // Peças azuis (jogador)
+                            const piece = document.createElement('div');
+                            piece.className = 'piece blue';
+                            cell.appendChild(piece);
+                        }
+                    }
+                    
+                    boardElement.appendChild(cell);
+                }
+            }
+            
+            console.log('Tabuleiro criado com sucesso!');
+        }
+        
+        // Cria o tabuleiro automaticamente
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM carregado, criando tabuleiro...');
+            createBoard();
+        });
+    </script>
+</body>
+</html>

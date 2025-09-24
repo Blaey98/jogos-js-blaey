@@ -17,9 +17,15 @@
         html, body {
             width: 100%;
             height: 100%;
-            background: #000;
+            background: #000000 !important;
+            background-color: #000000 !important;
+            background-image: none !important;
             overflow: hidden;
             touch-action: manipulation;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            border: none !important;
+            outline: none !important;
+            border-radius: 0 !important;
         }
         
         #mygame {
@@ -28,13 +34,74 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #0f4c3a, #1a5c4a);
+            background: #000000 !important;
+            background-color: #000000 !important;
+            background-image: none !important;
+            border: none !important;
+            outline: none !important;
+            border-radius: 0 !important;
+            position: relative;
         }
+        
+        /* Coluna vertical à esquerda da mesa - dentro do container */
+        .left-sidebar {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 20px 10px;
+            z-index: 1000;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-element {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-element:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .sidebar-element img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        
+        .sidebar-element .icon-text {
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
         
         canvas {
             max-width: 100%;
             max-height: 100%;
             display: block;
+            border: none;
+            outline: none;
+            background: transparent !important;
+            border-radius: 0 !important;
         }
         
         #loading {
@@ -43,14 +110,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #0f4c3a, #1a5c4a);
+            background: #000000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
         
         .spinner {
@@ -66,6 +133,251 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Apple-style Button Overrides */
+        .apple-button {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .apple-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .apple-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .apple-button-primary {
+            background: linear-gradient(135deg, #007AFF, #0056CC);
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+
+        .apple-button-primary:hover {
+            background: linear-gradient(135deg, #0056CC, #0044AA);
+        }
+
+        .apple-button-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .apple-button-danger {
+            background: linear-gradient(135deg, #FF3B30, #D70015);
+            border: none;
+            color: white;
+        }
+
+        .apple-button-danger:hover {
+            background: linear-gradient(135deg, #D70015, #B50012);
+        }
+
+        /* Override game button styles */
+        .game-button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Menu button styles */
+        .menu-button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 50% !important;
+            width: 44px !important;
+            height: 44px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Play button special style */
+        .play-button {
+            background: linear-gradient(135deg, #34C759, #28A745) !important;
+            border: none !important;
+            border-radius: 50% !important;
+            box-shadow: 0 6px 25px rgba(52, 199, 89, 0.3) !important;
+        }
+
+        .play-button:hover {
+            background: linear-gradient(135deg, #28A745, #1E7E34) !important;
+            transform: scale(1.05) !important;
+        }
+
+        /* Settings and stats buttons */
+        .settings-button, .stats-button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Quit button */
+        .quit-button {
+            background: linear-gradient(135deg, #FF3B30, #D70015) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            color: white !important;
+            box-shadow: 0 4px 20px rgba(255, 59, 48, 0.3) !important;
+        }
+
+        /* Replay button */
+        .replay-button {
+            background: linear-gradient(135deg, #007AFF, #0056CC) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            color: white !important;
+            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3) !important;
+        }
+
+        /* Mute button */
+        .mute-button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Plus/Minus buttons */
+        .plus-button, .minus-button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 50% !important;
+            width: 32px !important;
+            height: 32px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Switch toggle */
+        .switch-button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Help button */
+        .help-button {
+            background: linear-gradient(135deg, #FF9500, #FF8C00) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            color: white !important;
+            box-shadow: 0 4px 20px rgba(255, 149, 0, 0.3) !important;
+        }
+
+        /* PvP and PvAI buttons */
+        .pvp-button, .pvai-button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Animation for button interactions */
+        @keyframes appleButtonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .apple-button:active {
+            animation: appleButtonPress 0.1s ease;
+        }
+
+        /* Glassmorphism effect for panels */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+
+        /* Mobile-specific styles to ensure clean black background */
+        @media (max-width: 768px) {
+            html, body {
+                background: #000000 !important;
+                background-color: #000000 !important;
+                background-image: none !important;
+                border-radius: 0 !important;
+                border: none !important;
+                outline: none !important;
+            }
+            
+            #mygame {
+                background: #000000 !important;
+                background-color: #000000 !important;
+                background-image: none !important;
+                border-radius: 0 !important;
+                border: none !important;
+                outline: none !important;
+            }
+            
+        canvas {
+            background: transparent !important;
+            border-radius: 0 !important;
+            border: none !important;
+            outline: none !important;
+        }
+        
+        /* Ocultar texto "famobi" */
+        *[class*="debug"]:not(canvas),
+        *[id*="debug"]:not(canvas),
+        *:contains("famobi"):not(canvas),
+        *:contains("Famobi"):not(canvas),
+        *:contains("FAMOBI"):not(canvas) {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+            
+            .left-sidebar {
+                left: 10px;
+                width: 60px;
+                height: 300px;
+                padding: 15px 5px;
+            }
+            
+            .sidebar-element {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .sidebar-element img {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .sidebar-element .icon-text {
+                font-size: 10px;
+            }
+            
         }
     </style>
     
@@ -151,10 +463,198 @@
             firstScript.parentNode.insertBefore(script, firstScript);
         }
         
+        // Aplicar estilos Apple aos botões do jogo
+        function applyAppleStyles() {
+            console.log('🍎 Aplicando estilos Apple aos botões...');
+            
+            // Função para aplicar estilos aos botões quando eles forem criados
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                // Aplicar estilos aos botões do jogo
+                                applyButtonStyles(node);
+                                
+                                // Aplicar estilos aos filhos também
+                                const buttons = node.querySelectorAll ? node.querySelectorAll('button, [class*="button"], [class*="Button"]') : [];
+                                buttons.forEach(applyButtonStyles);
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Observar mudanças no DOM
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Aplicar estilos aos botões existentes
+            setTimeout(() => {
+                const allButtons = document.querySelectorAll('button, [class*="button"], [class*="Button"]');
+                allButtons.forEach(applyButtonStyles);
+            }, 1000);
+        }
+        
+        function applyButtonStyles(element) {
+            if (!element || !element.classList) return;
+            
+            const className = element.className.toLowerCase();
+            
+            // Mapear classes do jogo para estilos Apple
+            if (className.includes('playbutton') || className.includes('play-button')) {
+                element.classList.add('play-button');
+            } else if (className.includes('menubutton') || className.includes('menu-button')) {
+                element.classList.add('menu-button');
+            } else if (className.includes('settingsbutton') || className.includes('settings-button')) {
+                element.classList.add('settings-button');
+            } else if (className.includes('statsbutton') || className.includes('stats-button')) {
+                element.classList.add('stats-button');
+            } else if (className.includes('helpbutton') || className.includes('help-button')) {
+                element.classList.add('help-button');
+            } else if (className.includes('quitbutton') || className.includes('quit-button')) {
+                element.classList.add('quit-button');
+            } else if (className.includes('replaybutton') || className.includes('replay-button')) {
+                element.classList.add('replay-button');
+            } else if (className.includes('mutebutton') || className.includes('mute-button')) {
+                element.classList.add('mute-button');
+            } else if (className.includes('plusbutton') || className.includes('plus-button')) {
+                element.classList.add('plus-button');
+            } else if (className.includes('minusbutton') || className.includes('minus-button')) {
+                element.classList.add('minus-button');
+            } else if (className.includes('switch') || className.includes('switch-button')) {
+                element.classList.add('switch-button');
+            } else if (className.includes('pvpbutton') || className.includes('pvp-button')) {
+                element.classList.add('pvp-button');
+            } else if (className.includes('pvaibutton') || className.includes('pvai-button')) {
+                element.classList.add('pvai-button');
+            } else {
+                element.classList.add('game-button');
+            }
+            
+            // Aplicar estilos inline para garantir que funcionem
+            element.style.background = element.style.background || 'rgba(255, 255, 255, 0.1)';
+            element.style.backdropFilter = element.style.backdropFilter || 'blur(20px)';
+            element.style.border = element.style.border || '1px solid rgba(255, 255, 255, 0.2)';
+            element.style.borderRadius = element.style.borderRadius || '12px';
+            element.style.boxShadow = element.style.boxShadow || '0 4px 20px rgba(0, 0, 0, 0.15)';
+            element.style.transition = 'all 0.2s ease';
+        }
+        
+        // Função para abrir diálogo de posicionamento da bolinha branca
+        function openCueBallPositionDialog() {
+            console.log('🎱 Abrindo diálogo de posicionamento da bolinha branca...');
+            
+            // Tentar encontrar e clicar no elemento de posicionamento da bolinha branca
+            setTimeout(() => {
+                // Procurar por elementos relacionados à bolinha branca
+                const cueBallElements = document.querySelectorAll('[class*="cue"], [class*="ball"], [class*="spot"]');
+                console.log('🎱 Elementos encontrados:', cueBallElements.length);
+                
+                // Tentar encontrar o spinSetterZoom que controla a posição
+                const spinSetter = document.querySelector('[class*="spinSetter"], [class*="spin"]');
+                if (spinSetter) {
+                    console.log('🎱 Clicando no spinSetter...');
+                    spinSetter.click();
+                } else {
+                    console.log('🎱 SpinSetter não encontrado, tentando outros elementos...');
+                    
+                    // Tentar clicar em elementos que possam abrir o diálogo
+                    const possibleElements = document.querySelectorAll('img[src*="cue"], img[src*="ball"], img[src*="spot"]');
+                    possibleElements.forEach((element, index) => {
+                        console.log(`🎱 Tentando elemento ${index}:`, element);
+                        element.click();
+                    });
+                }
+            }, 1000);
+        }
+        
+        // Função para remover texto "famobi"
+        function removeFamobiText() {
+            console.log('🚫 Removendo texto "famobi"...');
+            
+            // Encontrar e remover elementos que contenham "famobi"
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(element => {
+                if (element.textContent && 
+                    (element.textContent.toLowerCase().includes('famobi') || 
+                     element.innerHTML.toLowerCase().includes('famobi'))) {
+                    
+                    console.log('🚫 Removendo elemento com texto famobi:', element);
+                    element.style.display = 'none';
+                    element.style.visibility = 'hidden';
+                    element.style.opacity = '0';
+                    element.textContent = '';
+                    
+                    // Se for um elemento de debug, remover completamente
+                    if (element.className && 
+                        (element.className.includes('debug') || 
+                         element.id.includes('debug'))) {
+                        element.remove();
+                    }
+                }
+            });
+            
+            // Usar MutationObserver para detectar novos elementos com "famobi"
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1 && node.textContent && 
+                            node.textContent.toLowerCase().includes('famobi')) {
+                            console.log('🚫 Novo elemento com famobi detectado:', node);
+                            node.style.display = 'none';
+                            node.style.visibility = 'hidden';
+                            node.style.opacity = '0';
+                            node.textContent = '';
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+        
         // Inicializar quando o DOM estiver pronto
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎱 Inicializando jogo de sinuca...');
+            
+            // Aplicar fundo preto imediatamente
+            document.body.style.backgroundColor = 'black';
+            document.body.style.backgroundImage = 'none';
+            document.body.style.background = '#000000';
+            
+            // Remover texto "famobi"
+            removeFamobiText();
+            
+            // Carregar API do jogo
             loadGameAPI();
+            applyAppleStyles();
+            
+            // Adicionar evento de clique na bolinha da coluna vertical
+            setTimeout(() => {
+                const cueBallElement = document.querySelector('.sidebar-element[title="Spin Setter"]');
+                if (cueBallElement) {
+                    cueBallElement.addEventListener('click', openCueBallPositionDialog);
+                    console.log('🎱 Evento de clique adicionado à bolinha da coluna');
+                }
+            }, 2000);
+            
+            // Forçar fundo preto após o jogo carregar
+            setTimeout(() => {
+                document.body.style.backgroundColor = 'black';
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#000000';
+                console.log('🎱 Fundo preto aplicado');
+            }, 3000);
+            
+            // Remover texto "famobi" após carregar o jogo
+            setTimeout(removeFamobiText, 2000);
+            setTimeout(removeFamobiText, 5000);
         });
     </script>
 </head>
@@ -166,7 +666,31 @@
     </div>
     
     <center>
-        <div id="mygame"></div>
+        <div id="mygame">
+            <!-- Coluna vertical à esquerda da mesa - dentro do container -->
+            <div class="left-sidebar">
+                <div class="sidebar-element" title="Rack BG">
+                    <img src="assets/img/rackBG.png" alt="Rack BG" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="icon-text" style="display: none;">Rack</div>
+                </div>
+                
+                <div class="sidebar-element" title="Jogador Humano">
+                    <img src="assets/img/humanIcon.png" alt="Human Icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="icon-text" style="display: none;">Humano</div>
+                </div>
+                
+                <div class="sidebar-element" title="IA">
+                    <img src="assets/img/aiIcon.png" alt="AI Icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="icon-text" style="display: none;">IA</div>
+                </div>
+                
+                <div class="sidebar-element" title="Spin Setter">
+                    <img src="assets/img/spinSetterZoom.png" alt="Spin Setter" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="icon-text" style="display: none;">Spin</div>
+                </div>
+            </div>
+            
+        </div>
     </center>
 </body>
 </html>

@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔴 Damas - Versão Simples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border-radius: 20px;
+            border: 1px solid #444;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            font-size: 16px;
+        }
+
+        .status-indicator.online {
+            color: #51cf66;
+        }
+
+        .status-indicator.loading {
+            color: #ffd43b;
+        }
+
+        .status-indicator.offline {
+            color: #ff6b6b;
+        }
+
+        .debug-panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+            display: none;
+        }
+
+        .debug-panel.show {
+            display: block;
+        }
+
+        .debug-logs {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .debug-logs div {
+            margin-bottom: 5px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            border: 2px solid #444;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cell.light {
+            background: #f0d9b5;
+        }
+
+        .cell.dark {
+            background: #b58863;
+        }
+
+        .cell.selected {
+            background: #ffd43b !important;
+            box-shadow: inset 0 0 0 3px #ff6b6b;
+        }
+
+        .cell.possible-move {
+            background: #51cf66 !important;
+            box-shadow: inset 0 0 0 2px #fff;
+        }
+
+        .cell.capture-move {
+            background: #ff6b6b !important;
+            box-shadow: inset 0 0 0 3px #fff;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .piece {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .piece:hover {
+            transform: scale(1.1);
+        }
+
+        .piece.player {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .piece.ai {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .piece.king {
+            border: 3px solid #ffd43b;
+        }
+
+        .info {
+            text-align: center;
+            color: #ccc;
+            margin: 10px 0;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        select {
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            padding: 8px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🔴 Damas - Versão Simples</h1>
+        
+        <div class="controls">
+            <div class="bot-status">
+                <span id="statusIndicator" class="status-indicator loading">🔄</span>
+                <span id="statusText">Carregando Bot...</span>
+            </div>
+            
+            <div class="difficulty-selector">
+                <label for="difficulty">Dificuldade:</label>
+                <select id="difficulty">
+                    <option value="1">Fácil (Profundidade 1)</option>
+                    <option value="2">Médio (Profundidade 2)</option>
+                    <option value="3" selected>Difícil (Profundidade 3)</option>
+                    <option value="4">Expert (Profundidade 4)</option>
+                    <option value="5">Mestre (Profundidade 5)</option>
+                    <option value="6">Grande Mestre (Profundidade 6)</option>
+                    <option value="7">Impossível (Profundidade 7)</option>
+                    <option value="8">Lendário (Profundidade 8)</option>
+                    <option value="9">Divino (Profundidade 9)</option>
+                    <option value="10">Perfeito (Profundidade 10)</option>
+                </select>
+            </div>
+            
+            <button onclick="newGame()">Novo Jogo</button>
+            <button onclick="toggleDebugPanel()">🔧 Ver Logs</button>
+        </div>
+
+        <div class="info">
+            <p>Clique em uma peça para selecioná-la, depois clique no destino</p>
+            <p><strong>Dificuldade:</strong> <span id="currentDifficulty">Difícil (Profundidade 3)</span></p>
+        </div>
+
+        <div id="board" class="board"></div>
+
+        <div id="debugPanel" class="debug-panel">
+            <h3>🔧 Debug Panel</h3>
+            <div id="debugLogs" class="debug-logs"></div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de logs para debug
+        function addDebugLog(message, type = 'info') {
+            const debugLogs = document.getElementById('debugLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? '#ff6b6b' : 
+                                 type === 'success' ? '#51cf66' : 
+                                 type === 'warning' ? '#ffd43b' : '#74c0fc';
+            debugLogs.appendChild(logEntry);
+            debugLogs.scrollTop = debugLogs.scrollHeight;
+        }
+
+        // Função para alternar painel de debug
+        function toggleDebugPanel() {
+            const debugPanel = document.getElementById('debugPanel');
+            debugPanel.classList.toggle('show');
+            addDebugLog('🔧 Painel de debug aberto', 'info');
+        }
+
+        // Classe do jogo simplificada
+        class SimpleCheckersGame {
+            constructor() {
+                this.board = Array(8).fill().map(() => Array(8).fill(0));
+                this.selectedPiece = null;
+                this.currentPlayer = 1; // 1 = jogador, 2 = IA
+                this.difficulty = 3;
+                this.gameOver = false;
+                
+                addDebugLog('🎯 Inicializando jogo simplificado...', 'info');
+                this.initializeBoard();
+                this.renderBoard();
+                this.checkBotStatus();
+            }
+
+            initializeBoard() {
+                addDebugLog('🎯 Inicializando tabuleiro...', 'info');
+                
+                // Peças da IA (vermelhas) - linhas 0, 1, 2
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if ((row + col) % 2 === 1) { // Casas escuras
+                            this.board[row][col] = 2; // IA
+                            addDebugLog(`🔴 Peça IA colocada em (${row},${col})`, 'info');
+                        }
+                    }
+                }
+                
+                // Peças do jogador (azuis) - linhas 5, 6, 7
+                for (let row = 5; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if ((row + col) % 2 === 1) { // Casas escuras
+                            this.board[row][col] = 1; // Jogador
+                            addDebugLog(`🔵 Peça jogador colocada em (${row},${col})`, 'info');
+                        }
+                    }
+                }
+                
+                addDebugLog('✅ Tabuleiro inicializado!', 'success');
+            }
+
+            renderBoard() {
+                const boardElement = document.getElementById('board');
+                boardElement.innerHTML = '';
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        // Alterna cores das casas
+                        if ((row + col) % 2 === 0) {
+                            cell.classList.add('light');
+                        } else {
+                            cell.classList.add('dark');
+                        }
+                        
+                        // Adiciona peça se houver
+                        const piece = this.board[row][col];
+                        if (piece !== 0) {
+                            const pieceElement = document.createElement('div');
+                            pieceElement.className = 'piece';
+                            
+                            if (piece === 1) {
+                                pieceElement.classList.add('player');
+                                pieceElement.textContent = '●';
+                            } else if (piece === 2) {
+                                pieceElement.classList.add('ai');
+                                pieceElement.textContent = '●';
+                            } else if (piece === 3) {
+                                pieceElement.classList.add('player', 'king');
+                                pieceElement.textContent = '♔';
+                            } else if (piece === 4) {
+                                pieceElement.classList.add('ai', 'king');
+                                pieceElement.textContent = '♔';
+                            }
+                            
+                            cell.appendChild(pieceElement);
+                        }
+                        
+                        // Adiciona evento de clique
+                        cell.addEventListener('click', () => this.handleCellClick(row, col));
+                        
+                        boardElement.appendChild(cell);
+                    }
+                }
+            }
+
+            handleCellClick(row, col) {
+                if (this.gameOver) return;
+                
+                const piece = this.board[row][col];
+                
+                if (this.selectedPiece) {
+                    // Tentando mover
+                        if (this.isValidMove(this.selectedPiece.row, this.selectedPiece.col, row, col)) {
+                            this.makeMove(this.selectedPiece.row, this.selectedPiece.col, row, col);
+                            this.selectedPiece = null;
+                            this.clearSelection();
+                            
+                            // Verifica se há capturas múltiplas
+                            if (!this.hasMoreCaptures(row, col)) {
+                                // Verifica se o jogo acabou
+                                if (!this.checkGameOver()) {
+                                    // IA joga
+                                    setTimeout(() => this.aiMove(), 1000);
+                                }
+                            } else {
+                                addDebugLog('🎯 Captura múltipla! Continue jogando...', 'warning');
+                            }
+                        } else {
+                        // Seleciona nova peça
+                        this.selectedPiece = { row, col };
+                        this.clearSelection();
+                        this.highlightCell(row, col);
+                    }
+                } else {
+                    // Seleciona peça
+                    if (piece === 1) { // Apenas peças do jogador
+                        this.selectedPiece = { row, col };
+                        this.clearSelection();
+                        this.highlightCell(row, col);
+                    }
+                }
+            }
+
+            isValidMove(fromRow, fromCol, toRow, toCol) {
+                const piece = this.board[fromRow][fromCol];
+                const targetPiece = this.board[toRow][toCol];
+                
+                // Verifica se o destino está vazio
+                if (targetPiece !== 0) return false;
+                
+                // Verifica se é uma dama (rei)
+                const isKing = piece === 3 || piece === 4; // 3 = rei jogador, 4 = rei IA
+                const isPlayer = piece === 1 || piece === 3;
+                const isAI = piece === 2 || piece === 4;
+                
+                // REGRA OBRIGATÓRIA: Se há capturas possíveis, deve capturar
+                const hasCaptures = this.hasCapturesAvailable(fromRow, fromCol);
+                const isCapture = Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 2;
+                
+                // Se há capturas possíveis, só permite capturas
+                if (hasCaptures && !isCapture) {
+                    return false;
+                }
+                
+                // Se não há capturas possíveis, permite movimentos normais
+                if (!hasCaptures) {
+                    // Movimento simples para frente (jogador)
+                    if (isPlayer && !isKing && toRow === fromRow - 1 && Math.abs(toCol - fromCol) === 1) {
+                        return true;
+                    }
+                    
+                    // Movimento simples para frente (IA)
+                    if (isAI && !isKing && toRow === fromRow + 1 && Math.abs(toCol - fromCol) === 1) {
+                        return true;
+                    }
+                    
+                    // Movimento de dama (qualquer direção diagonal)
+                    if (isKing && Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 1) {
+                        return true;
+                    }
+                }
+                
+                // Captura (jogador)
+                if (isPlayer && toRow === fromRow - 2 && Math.abs(toCol - fromCol) === 2) {
+                    const middleRow = fromRow - 1;
+                    const middleCol = fromCol + (toCol - fromCol) / 2;
+                    const middlePiece = this.board[middleRow][middleCol];
+                    return middlePiece === 2 || middlePiece === 4; // Peça da IA no meio
+                }
+                
+                // Captura (IA)
+                if (isAI && toRow === fromRow + 2 && Math.abs(toCol - fromCol) === 2) {
+                    const middleRow = fromRow + 1;
+                    const middleCol = fromCol + (toCol - fromCol) / 2;
+                    const middlePiece = this.board[middleRow][middleCol];
+                    return middlePiece === 1 || middlePiece === 3; // Peça do jogador no meio
+                }
+                
+                // Captura de dama (qualquer direção)
+                if (isKing && Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 2) {
+                    const middleRow = fromRow + (toRow - fromRow) / 2;
+                    const middleCol = fromCol + (toCol - fromCol) / 2;
+                    const middlePiece = this.board[middleRow][middleCol];
+                    
+                    if (isPlayer) {
+                        return middlePiece === 2 || middlePiece === 4; // Peça da IA no meio
+                    } else {
+                        return middlePiece === 1 || middlePiece === 3; // Peça do jogador no meio
+                    }
+                }
+                
+                return false;
+            }
+
+            hasCapturesAvailable(fromRow, fromCol) {
+                const piece = this.board[fromRow][fromCol];
+                const isKing = piece === 3 || piece === 4;
+                const isPlayer = piece === 1 || piece === 3;
+                const isAI = piece === 2 || piece === 4;
+                
+                if (isPlayer) { // Jogador
+                    // Verifica capturas para cima
+                    if (fromRow > 1 && fromCol > 1 && 
+                        (this.board[fromRow - 1][fromCol - 1] === 2 || this.board[fromRow - 1][fromCol - 1] === 4) && 
+                        this.board[fromRow - 2][fromCol - 2] === 0) {
+                        return true;
+                    }
+                    if (fromRow > 1 && fromCol < 6 && 
+                        (this.board[fromRow - 1][fromCol + 1] === 2 || this.board[fromRow - 1][fromCol + 1] === 4) && 
+                        this.board[fromRow - 2][fromCol + 2] === 0) {
+                        return true;
+                    }
+                    
+                    // Se é dama, verifica capturas para baixo também
+                    if (isKing) {
+                        if (fromRow < 6 && fromCol > 1 && 
+                            (this.board[fromRow + 1][fromCol - 1] === 2 || this.board[fromRow + 1][fromCol - 1] === 4) && 
+                            this.board[fromRow + 2][fromCol - 2] === 0) {
+                            return true;
+                        }
+                        if (fromRow < 6 && fromCol < 6 && 
+                            (this.board[fromRow + 1][fromCol + 1] === 2 || this.board[fromRow + 1][fromCol + 1] === 4) && 
+                            this.board[fromRow + 2][fromCol + 2] === 0) {
+                            return true;
+                        }
+                    }
+                } else if (isAI) { // IA
+                    // Verifica capturas para baixo
+                    if (fromRow < 6 && fromCol > 1 && 
+                        (this.board[fromRow + 1][fromCol - 1] === 1 || this.board[fromRow + 1][fromCol - 1] === 3) && 
+                        this.board[fromRow + 2][fromCol - 2] === 0) {
+                        return true;
+                    }
+                    if (fromRow < 6 && fromCol < 6 && 
+                        (this.board[fromRow + 1][fromCol + 1] === 1 || this.board[fromRow + 1][fromCol + 1] === 3) && 
+                        this.board[fromRow + 2][fromCol + 2] === 0) {
+                        return true;
+                    }
+                    
+                    // Se é dama, verifica capturas para cima também
+                    if (isKing) {
+                        if (fromRow > 1 && fromCol > 1 && 
+                            (this.board[fromRow - 1][fromCol - 1] === 1 || this.board[fromRow - 1][fromCol - 1] === 3) && 
+                            this.board[fromRow - 2][fromCol - 2] === 0) {
+                            return true;
+                        }
+                        if (fromRow > 1 && fromCol < 6 && 
+                            (this.board[fromRow - 1][fromCol + 1] === 1 || this.board[fromRow - 1][fromCol + 1] === 3) && 
+                            this.board[fromRow - 2][fromCol + 2] === 0) {
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+
+            makeMove(fromRow, fromCol, toRow, toCol) {
+                addDebugLog(`🎯 Movimento: (${fromRow},${fromCol}) -> (${toRow},${toCol})`, 'info');
+                
+                const piece = this.board[fromRow][fromCol];
+                this.board[toRow][toCol] = piece;
+                this.board[fromRow][fromCol] = 0;
+                
+                // Verifica se é uma captura
+                if (Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 2) {
+                    const middleRow = fromRow + (toRow - fromRow) / 2;
+                    const middleCol = fromCol + (toCol - fromCol) / 2;
+                    const capturedPiece = this.board[middleRow][middleCol];
+                    
+                    if (capturedPiece !== 0) {
+                        this.board[middleRow][middleCol] = 0;
+                        addDebugLog(`🎯 CAPTURA! Peça capturada em (${middleRow},${middleCol})`, 'success');
+                        
+                        // Verifica se há mais capturas possíveis
+                        if (this.hasMoreCaptures(toRow, toCol)) {
+                            addDebugLog(`🎯 Captura múltipla possível!`, 'warning');
+                            // Para capturas múltiplas, o jogador deve continuar
+                            this.currentPlayer = this.currentPlayer; // Mantém o mesmo jogador
+                        }
+                    }
+                }
+                
+                // Promove a dama se chegou ao final do tabuleiro
+                this.promoteToKing(toRow, toCol);
+                
+                this.renderBoard();
+            }
+
+            promoteToKing(row, col) {
+                const piece = this.board[row][col];
+                
+                // Jogador chega à linha 0 (primeira linha da IA)
+                if (piece === 1 && row === 0) {
+                    this.board[row][col] = 3; // Rei do jogador
+                    addDebugLog(`👑 DAMA! Peça do jogador promovida a dama em (${row},${col})`, 'success');
+                }
+                
+                // IA chega à linha 7 (primeira linha do jogador)
+                if (piece === 2 && row === 7) {
+                    this.board[row][col] = 4; // Rei da IA
+                    addDebugLog(`👑 DAMA! Peça da IA promovida a dama em (${row},${col})`, 'success');
+                }
+            }
+
+            aiMove() {
+                if (this.gameOver) return;
+                
+                addDebugLog(`🤖 IA pensando (profundidade: ${this.difficulty})...`, 'info');
+                
+                // Obtém a dificuldade selecionada
+                const difficultySelect = document.getElementById('difficulty');
+                this.difficulty = parseInt(difficultySelect.value);
+                
+                // Usa algoritmo avançado baseado na dificuldade
+                const bestMove = this.getBestMove(this.difficulty);
+                
+                if (bestMove) {
+                    this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol);
+                    addDebugLog(`🤖 IA moveu: (${bestMove.fromRow},${bestMove.fromCol}) -> (${bestMove.toRow},${bestMove.toCol})`, 'info');
+                } else {
+                    addDebugLog('🤖 IA não encontrou movimento válido', 'warning');
+                }
+            }
+
+            getBestMove(depth) {
+                const moves = this.getAllValidMoves(2); // Movimentos da IA
+                if (moves.length === 0) return null;
+                
+                let bestMove = null;
+                let bestScore = -Infinity;
+                
+                for (const move of moves) {
+                    // Simula o movimento
+                    const originalBoard = this.cloneBoard();
+                    this.simulateMove(move);
+                    
+                    // Avalia a posição com profundidade
+                    const score = this.minimax(depth - 1, false, -Infinity, Infinity);
+                    
+                    // Restaura o tabuleiro
+                    this.restoreBoard(originalBoard);
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = move;
+                    }
+                }
+                
+                addDebugLog(`🤖 Melhor movimento encontrado (score: ${bestScore})`, 'info');
+                return bestMove;
+            }
+
+            minimax(depth, isMaximizing, alpha, beta) {
+                if (depth === 0) {
+                    return this.evaluatePosition();
+                }
+                
+                const moves = this.getAllValidMoves(isMaximizing ? 2 : 1);
+                if (moves.length === 0) {
+                    return this.evaluatePosition();
+                }
+                
+                if (isMaximizing) {
+                    let maxEval = -Infinity;
+                    for (const move of moves) {
+                        const originalBoard = this.cloneBoard();
+                        this.simulateMove(move);
+                        const eval = this.minimax(depth - 1, false, alpha, beta);
+                        this.restoreBoard(originalBoard);
+                        
+                        maxEval = Math.max(maxEval, eval);
+                        alpha = Math.max(alpha, eval);
+                        if (beta <= alpha) break; // Alpha-beta pruning
+                    }
+                    return maxEval;
+                } else {
+                    let minEval = Infinity;
+                    for (const move of moves) {
+                        const originalBoard = this.cloneBoard();
+                        this.simulateMove(move);
+                        const eval = this.minimax(depth - 1, true, alpha, beta);
+                        this.restoreBoard(originalBoard);
+                        
+                        minEval = Math.min(minEval, eval);
+                        beta = Math.min(beta, eval);
+                        if (beta <= alpha) break; // Alpha-beta pruning
+                    }
+                    return minEval;
+                }
+            }
+
+            evaluatePosition() {
+                let score = 0;
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = this.board[row][col];
+                        
+                        if (piece === 1) { // Peça normal do jogador
+                            score -= 10;
+                            score -= (7 - row) * 2; // Incentiva avanço
+                        } else if (piece === 2) { // Peça normal da IA
+                            score += 10;
+                            score += row * 2; // Incentiva avanço
+                        } else if (piece === 3) { // Dama do jogador
+                            score -= 30;
+                        } else if (piece === 4) { // Dama da IA
+                            score += 30;
+                        }
+                    }
+                }
+                
+                // Bonus por posição central
+                for (let row = 2; row < 6; row++) {
+                    for (let col = 2; col < 6; col++) {
+                        const piece = this.board[row][col];
+                        if (piece === 2 || piece === 4) score += 2;
+                        if (piece === 1 || piece === 3) score -= 2;
+                    }
+                }
+                
+                return score;
+            }
+
+            getAllValidMoves(player) {
+                const moves = [];
+                const captures = [];
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = this.board[row][col];
+                        const isPlayerPiece = (player === 1 && (piece === 1 || piece === 3)) || 
+                                           (player === 2 && (piece === 2 || piece === 4));
+                        
+                        if (isPlayerPiece) {
+                            for (let toRow = 0; toRow < 8; toRow++) {
+                                for (let toCol = 0; toCol < 8; toCol++) {
+                                    if (this.isValidMove(row, col, toRow, toCol)) {
+                                        const move = {
+                                            fromRow: row,
+                                            fromCol: col,
+                                            toRow: toRow,
+                                            toCol: toCol
+                                        };
+                                        
+                                        // Verifica se é captura
+                                        const isCapture = Math.abs(toRow - row) === 2 && Math.abs(toCol - col) === 2;
+                                        
+                                        if (isCapture) {
+                                            captures.push(move);
+                                        } else {
+                                            moves.push(move);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // REGRA OBRIGATÓRIA: Se há capturas, retorna apenas capturas
+                if (captures.length > 0) {
+                    addDebugLog(`⚠️ CAPTURA OBRIGATÓRIA! ${captures.length} capturas disponíveis`, 'warning');
+                    return captures;
+                }
+                
+                return moves;
+            }
+
+            cloneBoard() {
+                return this.board.map(row => [...row]);
+            }
+
+            simulateMove(move) {
+                this.board[move.toRow][move.toCol] = this.board[move.fromRow][move.fromCol];
+                this.board[move.fromRow][move.fromCol] = 0;
+                
+                // Simula captura se necessário
+                if (Math.abs(move.toRow - move.fromRow) === 2 && Math.abs(move.toCol - move.fromCol) === 2) {
+                    const middleRow = move.fromRow + (move.toRow - move.fromRow) / 2;
+                    const middleCol = move.fromCol + (move.toCol - move.fromCol) / 2;
+                    this.board[middleRow][middleCol] = 0;
+                }
+                
+                // Simula promoção
+                this.promoteToKing(move.toRow, move.toCol);
+            }
+
+            restoreBoard(originalBoard) {
+                this.board = originalBoard.map(row => [...row]);
+            }
+
+            hasMoreCaptures(row, col) {
+                const piece = this.board[row][col];
+                const isKing = piece === 3 || piece === 4;
+                const isPlayer = piece === 1 || piece === 3;
+                const isAI = piece === 2 || piece === 4;
+                
+                if (isPlayer) { // Jogador
+                    // Verifica capturas para cima
+                    if (row > 1 && col > 1 && (this.board[row - 1][col - 1] === 2 || this.board[row - 1][col - 1] === 4) && this.board[row - 2][col - 2] === 0) {
+                        return true;
+                    }
+                    if (row > 1 && col < 6 && (this.board[row - 1][col + 1] === 2 || this.board[row - 1][col + 1] === 4) && this.board[row - 2][col + 2] === 0) {
+                        return true;
+                    }
+                    
+                    // Se é dama, verifica capturas para baixo também
+                    if (isKing) {
+                        if (row < 6 && col > 1 && (this.board[row + 1][col - 1] === 2 || this.board[row + 1][col - 1] === 4) && this.board[row + 2][col - 2] === 0) {
+                            return true;
+                        }
+                        if (row < 6 && col < 6 && (this.board[row + 1][col + 1] === 2 || this.board[row + 1][col + 1] === 4) && this.board[row + 2][col + 2] === 0) {
+                            return true;
+                        }
+                    }
+                } else if (isAI) { // IA
+                    // Verifica capturas para baixo
+                    if (row < 6 && col > 1 && (this.board[row + 1][col - 1] === 1 || this.board[row + 1][col - 1] === 3) && this.board[row + 2][col - 2] === 0) {
+                        return true;
+                    }
+                    if (row < 6 && col < 6 && (this.board[row + 1][col + 1] === 1 || this.board[row + 1][col + 1] === 3) && this.board[row + 2][col + 2] === 0) {
+                        return true;
+                    }
+                    
+                    // Se é dama, verifica capturas para cima também
+                    if (isKing) {
+                        if (row > 1 && col > 1 && (this.board[row - 1][col - 1] === 1 || this.board[row - 1][col - 1] === 3) && this.board[row - 2][col - 2] === 0) {
+                            return true;
+                        }
+                        if (row > 1 && col < 6 && (this.board[row - 1][col + 1] === 1 || this.board[row - 1][col + 1] === 3) && this.board[row - 2][col + 2] === 0) {
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+
+            clearSelection() {
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.classList.remove('selected', 'possible-move');
+                });
+            }
+
+            highlightCell(row, col) {
+                const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.classList.add('selected');
+                }
+                
+                // Destaca movimentos possíveis
+                this.highlightPossibleMoves(row, col);
+            }
+
+            highlightPossibleMoves(fromRow, fromCol) {
+                const hasCaptures = this.hasCapturesAvailable(fromRow, fromCol);
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if (this.isValidMove(fromRow, fromCol, row, col)) {
+                            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                            if (cell) {
+                                const isCapture = Math.abs(row - fromRow) === 2 && Math.abs(col - fromCol) === 2;
+                                
+                                if (isCapture) {
+                                    cell.classList.add('possible-move', 'capture-move');
+                                    addDebugLog(`🎯 CAPTURA OBRIGATÓRIA disponível: (${fromRow},${fromCol}) -> (${row},${col})`, 'warning');
+                                } else {
+                                    cell.classList.add('possible-move');
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (hasCaptures) {
+                    addDebugLog(`⚠️ ATENÇÃO: Você DEVE capturar! Movimentos normais não são permitidos.`, 'error');
+                }
+            }
+
+            checkGameOver() {
+                // Verifica se o jogo acabou
+                const playerPieces = this.countPieces(1);
+                const aiPieces = this.countPieces(2);
+                
+                if (playerPieces === 0) {
+                    addDebugLog('🎯 IA venceu!', 'success');
+                    this.gameOver = true;
+                    return true;
+                }
+                if (aiPieces === 0) {
+                    addDebugLog('🎯 Jogador venceu!', 'success');
+                    this.gameOver = true;
+                    return true;
+                }
+                
+                return false;
+            }
+
+            countPieces(player) {
+                let count = 0;
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if (this.board[row][col] === player) count++;
+                    }
+                }
+                return count;
+            }
+
+            checkBotStatus() {
+                const statusIndicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('statusText');
+                
+                if (typeof window.EnglishDraughts !== 'undefined' && typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
+                    statusIndicator.textContent = '✅';
+                    statusIndicator.className = 'status-indicator online';
+                    statusText.textContent = 'Bot Ativo';
+                    addDebugLog('✅ Bot carregado com sucesso!', 'success');
+                } else {
+                    statusIndicator.textContent = '🔄';
+                    statusIndicator.className = 'status-indicator loading';
+                    statusText.textContent = 'Carregando Bot...';
+                    addDebugLog('⏳ Aguardando carregamento do bot...', 'warning');
+                    
+                    setTimeout(() => this.checkBotStatus(), 1000);
+                }
+            }
+        }
+
+        // Variável global do jogo
+        let game;
+
+        // Função para novo jogo
+        function newGame() {
+            addDebugLog('🎮 Iniciando novo jogo...', 'info');
+            game = new SimpleCheckersGame();
+        }
+
+        // Inicializa o jogo quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('🚀 Página carregada, iniciando jogo...', 'info');
+            newGame();
+            
+            // Atualiza a dificuldade em tempo real
+            const difficultySelect = document.getElementById('difficulty');
+            const currentDifficultySpan = document.getElementById('currentDifficulty');
+            
+            difficultySelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                currentDifficultySpan.textContent = selectedOption.text;
+                addDebugLog(`🎯 Dificuldade alterada para: ${selectedOption.text}`, 'info');
+            });
+        });
+    </script>
+
+    <!-- Carrega rapid-draughts -->
+    <script src="rapid-draughts-integration.js"></script>
+</body>
+</html>
+
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌍 Damas Internacionais - Jogo Avançado</title>
+    <title>🔴 Damas - Jogo Clássico</title>
     <style>
         * {
             margin: 0;
@@ -97,11 +97,11 @@
         }
 
         .cell.light {
-            background-color: #ffffff; /* Branco */
+            background-color: #f4d03f;
         }
 
         .cell.dark {
-            background-color: #006400; /* Verde escuro */
+            background-color: #1e8449;
         }
 
         .cell.selected {
@@ -173,12 +173,6 @@
             border-color: #666;
         }
 
-        .btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
         .back-button {
             position: absolute;
             top: 20px;
@@ -198,6 +192,7 @@
             background: #444;
         }
 
+
         .difficulty-selector select {
             background: #333;
             color: white;
@@ -210,72 +205,6 @@
         .difficulty-selector option {
             background: #333;
             color: white;
-        }
-
-        .rules-info {
-            background: #2c5530;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 12px;
-            text-align: center;
-            max-width: 600px;
-            margin-bottom: 10px;
-        }
-
-        .rules-info strong {
-            color: #90EE90;
-        }
-
-        .api-status {
-            background: #444;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 11px;
-            margin-bottom: 10px;
-        }
-
-        .api-status.connected {
-            background: #2c5530;
-            color: #90EE90;
-        }
-
-        .api-status.error {
-            background: #8b0000;
-            color: #ffcccc;
-        }
-
-        .loading {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 1000;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         /* Responsividade para mobile */
@@ -313,11 +242,6 @@
                 padding: 10px 15px;
                 font-size: 14px;
             }
-
-            .rules-info {
-                font-size: 11px;
-                padding: 8px 12px;
-            }
         }
 
         @media (max-width: 480px) {
@@ -346,14 +270,6 @@
     <a href="/" class="back-button">← Voltar</a>
     
     <div class="game-container">
-        <div class="rules-info">
-            <strong>🌍 Regras Internacionais:</strong> Captura para trás • Dama livre • Captura múltipla • Tabuleiro branco/verde
-        </div>
-        
-        <div class="api-status" id="apiStatus">
-            🔌 Conectando ao motor de busca...
-        </div>
-        
         <div class="controls">
             <div class="bot-status" id="botStatus">
                 <span class="status-indicator" id="statusIndicator">🔄</span>
@@ -383,11 +299,6 @@
         </div>
 
         <div class="board" id="board"></div>
-    </div>
-
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <div>IA pensando...</div>
     </div>
 
     <script>
@@ -448,7 +359,7 @@
         // Verificar status do bot ao carregar a página
         document.addEventListener('DOMContentLoaded', checkBotStatus);
 
-        class InternationalCheckersGame {
+        class CheckersGame {
             constructor() {
                 this.board = [];
                 this.currentPlayer = 1; // 1 = jogador, 2 = IA
@@ -456,8 +367,6 @@
                 this.possibleMoves = [];
                 this.gameHistory = [];
                 this.difficulty = 3;
-                this.apiUrl = 'http://localhost:8081';
-                this.apiConnected = false;
                 
                 // Sistema de cores aleatórias
                 this.playerColor = Math.random() < 0.5 ? 'red' : 'blue';
@@ -466,70 +375,105 @@
                 this.initializeBoard();
                 this.renderBoard();
                 this.setupEventListeners();
-                this.checkApiConnection();
-            }
-
-            async checkApiConnection() {
-                try {
-                    const response = await fetch(`${this.apiUrl}/api/health`);
-                    const data = await response.json();
-                    
-                    if (data.status === 'ok') {
-                        this.apiConnected = true;
-                        this.updateApiStatus('connected', `✅ Motor ${data.engine_type} conectado`);
-                    } else {
-                        this.updateApiStatus('error', '❌ Motor não disponível');
-                    }
-                } catch (error) {
-                    this.updateApiStatus('error', '❌ Erro de conexão com o motor');
-                    console.error('Erro de conexão com API:', error);
-                }
-            }
-
-            updateApiStatus(type, message) {
-                const statusElement = document.getElementById('apiStatus');
-                statusElement.className = `api-status ${type}`;
-                statusElement.textContent = message;
-            }
-
-            showLoading(show = true) {
-                const loading = document.getElementById('loading');
-                if (show) {
-                    loading.classList.add('show');
-                } else {
-                    loading.classList.remove('show');
-                }
             }
 
             initializeBoard() {
+                addDebugLog('🎯 Inicializando tabuleiro de damas...', 'info');
+                
                 // Inicializa o tabuleiro 8x8
                 this.board = Array(8).fill().map(() => Array(8).fill(0));
                 
-                // Coloca as peças da IA (cima)
+                addDebugLog('📋 Tabuleiro vazio criado: 8x8', 'info');
+                
+                // POSIÇÕES CORRETAS DAS PEÇAS NO JOGO DE DAMAS
+                // As peças ficam nas casas escuras (pretas) do tabuleiro
+                // Linhas 0, 1, 2: Peças da IA (vermelhas) - cima
+                // Linhas 5, 6, 7: Peças do jogador (azuis) - baixo
+                
+                // Coloca as peças da IA (vermelhas) - linhas 0, 1, 2
                 for (let row = 0; row < 3; row++) {
                     for (let col = 0; col < 8; col++) {
+                        // Nas damas, as peças ficam apenas nas casas escuras
+                        // Casa escura: (row + col) % 2 === 1
                         if ((row + col) % 2 === 1) {
-                            this.board[row][col] = 2; // Peça da IA
+                            this.board[row][col] = 2; // Peça da IA (vermelha)
+                            addDebugLog(`🔴 Peça IA colocada em (${row},${col})`, 'info');
                         }
                     }
                 }
                 
-                // Coloca as peças do jogador (baixo)
+                // Coloca as peças do jogador (azuis) - linhas 5, 6, 7
                 for (let row = 5; row < 8; row++) {
                     for (let col = 0; col < 8; col++) {
+                        // Nas damas, as peças ficam apenas nas casas escuras
+                        // Casa escura: (row + col) % 2 === 1
                         if ((row + col) % 2 === 1) {
-                            this.board[row][col] = 1; // Peça do jogador
+                            this.board[row][col] = 1; // Peça do jogador (azul)
+                            addDebugLog(`🔵 Peça jogador colocada em (${row},${col})`, 'info');
+                        }
+                    }
+                }
+                
+                addDebugLog('✅ Tabuleiro inicializado com posições corretas!', 'success');
+                addDebugLog('📊 Layout do tabuleiro:', 'info');
+                this.logBoardState();
+                
+                // Log das posições das peças da IA (vermelhas)
+                addDebugLog('🔴 PEÇAS DA IA (VERMELHAS) - Posições iniciais:', 'info');
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if ((row + col) % 2 === 1 && this.board[row][col] === 2) {
+                            const coord = String.fromCharCode(97 + col) + (8 - row);
+                            addDebugLog(`   🔴 IA: ${coord} (${row},${col})`, 'info');
+                        }
+                    }
+                }
+                
+                // Log das posições das peças do jogador (azuis)
+                addDebugLog('🔵 PEÇAS DO JOGADOR (AZUIS) - Posições iniciais:', 'info');
+                for (let row = 5; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if ((row + col) % 2 === 1 && this.board[row][col] === 1) {
+                            const coord = String.fromCharCode(97 + col) + (8 - row);
+                            addDebugLog(`   🔵 Jogador: ${coord} (${row},${col})`, 'info');
                         }
                     }
                 }
             }
+            
+            // Função para logar o estado do tabuleiro
+            logBoardState() {
+                let boardStr = '\n';
+                for (let row = 0; row < 8; row++) {
+                    let rowStr = `${row}: `;
+                    for (let col = 0; col < 8; col++) {
+                        const piece = this.board[row][col];
+                        if (piece === 0) {
+                            rowStr += '· '; // Casa vazia
+                        } else if (piece === 1) {
+                            rowStr += '🔵 '; // Peça azul (jogador)
+                        } else if (piece === 2) {
+                            rowStr += '🔴 '; // Peça vermelha (IA)
+                        } else if (piece === 3) {
+                            rowStr += '👑🔵 '; // Rei azul
+                        } else if (piece === 4) {
+                            rowStr += '👑🔴 '; // Rei vermelho
+                        }
+                    }
+                    boardStr += rowStr + '\n';
+                }
+                addDebugLog(boardStr, 'info');
+            }
 
             renderBoard() {
+                addDebugLog('🎨 Renderizando tabuleiro...', 'info');
                 const boardElement = document.getElementById('board');
                 if (!boardElement) {
+                    addDebugLog('❌ Elemento board não encontrado!', 'error');
                     return;
                 }
                 
+                addDebugLog('✅ Elemento board encontrado, limpando...', 'info');
                 boardElement.innerHTML = '';
                 
                 for (let row = 0; row < 8; row++) {
@@ -539,12 +483,29 @@
                         cell.dataset.row = row;
                         cell.dataset.col = col;
                         
-                        // Alterna cores das casas (branco/verde escuro)
+                        // Alterna cores das casas
                         if ((row + col) % 2 === 0) {
                             cell.classList.add('light');
                         } else {
                             cell.classList.add('dark');
                         }
+                        
+                        // Adiciona coordenadas da casa (a1, a2, b1, b2, etc.)
+                        const coordinate = String.fromCharCode(97 + col) + (8 - row);
+                        const coordElement = document.createElement('div');
+                        coordElement.className = 'coordinate';
+                        coordElement.textContent = coordinate;
+                        coordElement.style.cssText = `
+                            position: absolute;
+                            top: 2px;
+                            left: 2px;
+                            font-size: 10px;
+                            font-weight: bold;
+                            color: #666;
+                            pointer-events: none;
+                            z-index: 1;
+                        `;
+                        cell.appendChild(coordElement);
                         
                         // Adiciona peça se existir
                         if (this.board[row][col] !== 0) {
@@ -576,6 +537,7 @@
                     }
                 }
                 
+                addDebugLog('✅ Tabuleiro renderizado com sucesso!', 'success');
                 this.updateGameInfo();
             }
 
@@ -619,8 +581,10 @@
                         
                         // Verifica se o jogo terminou
                         if (!this.checkGameOver()) {
-                            // Passa a vez para a IA
-                            this.makeAIMove();
+                            // Passa a vez para a IA após um delay
+                            setTimeout(() => {
+                                this.makeAIMove();
+                            }, 500);
                         }
                     } else {
                         // Seleciona nova peça se for válida
@@ -710,6 +674,7 @@
                         }
                     }
                 }
+                
             }
 
             clearHighlights() {
@@ -728,6 +693,37 @@
                 return row >= 0 && row < 8 && col >= 0 && col < 8;
             }
 
+            isValidMove(fromRow, fromCol, toRow, toCol) {
+                // Verifica se a posição de destino está vazia
+                if (this.board[toRow][toCol] !== 0) return false;
+                
+                // Verifica se é uma casa escura
+                if ((toRow + toCol) % 2 === 0) return false;
+                
+                const piece = this.board[fromRow][fromCol];
+                const isKing = piece === 3 || piece === 4;
+                
+                // Movimento simples
+                if (Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 1) {
+                    if (isKing) return true;
+                    if (piece === 1 && toRow < fromRow) return true; // Vermelhas (jogador) sobem
+                    if (piece === 2 && toRow > fromRow) return true; // Pretas (IA) descem
+                }
+                
+                // Movimento de captura
+                if (Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 2) {
+                    const middleRow = (fromRow + toRow) / 2;
+                    const middleCol = (fromCol + toCol) / 2;
+                    const middlePiece = this.board[middleRow][middleCol];
+                    
+                    if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+
             // Verifica se há capturas obrigatórias
             hasCaptures(player) {
                 for (let row = 0; row < 8; row++) {
@@ -735,9 +731,9 @@
                         if (this.board[row][col] === player || this.board[row][col] === player + 2) {
                             const piece = this.board[row][col];
                             const isKing = piece === 3 || piece === 4;
-                            
-                            // Para regras internacionais, todas as peças podem capturar em todas as direções
-                            const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+                            const directions = isKing ? 
+                                [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                                (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
                             
                             for (const [dx, dy] of directions) {
                                 const jumpRow = row + 2 * dx;
@@ -759,103 +755,89 @@
                 return false;
             }
 
-            // Gera capturas múltiplas recursivamente para regras internacionais
+            // Gera todas as capturas possíveis para uma peça
+            generateCapturesForPiece(row, col, player) {
+                const captures = [];
+                const piece = this.board[row][col];
+                const isKing = piece === 3 || piece === 4;
+                const directions = isKing ? 
+                    [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                    (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
+                
+                for (const [dx, dy] of directions) {
+                    const jumpRow = row + 2 * dx;
+                    const jumpCol = col + 2 * dy;
+                    const middleRow = row + dx;
+                    const middleCol = col + dy;
+                    
+                    if (this.isValidPosition(jumpRow, jumpCol) && this.isValidPosition(middleRow, middleCol)) {
+                        const middlePiece = this.board[middleRow][middleCol];
+                        if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2 && 
+                            this.board[jumpRow][jumpCol] === 0) {
+                            captures.push({
+                                fromRow: row,
+                                fromCol: col,
+                                toRow: jumpRow,
+                                toCol: jumpCol,
+                                captureRow: middleRow,
+                                captureCol: middleCol,
+                                type: 'capture'
+                            });
+                        }
+                    }
+                }
+                
+                return captures;
+            }
+
+            // Gera capturas múltiplas recursivamente
             generateMultipleCaptures(board, fromRow, fromCol, player, capturedPieces = []) {
                 const captures = [];
                 const piece = board[fromRow][fromCol];
                 const isKing = piece === 3 || piece === 4;
-                
-                // Para regras internacionais, todas as peças podem capturar em todas as direções
-                const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+                const directions = isKing ? 
+                    [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                    (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
                 
                 for (const [dx, dy] of directions) {
-                    if (isKing) {
-                        // Dama pode capturar em qualquer distância
-                        for (let distance = 1; distance < 8; distance++) {
-                            const jumpRow = fromRow + (distance + 1) * dx;
-                            const jumpCol = fromCol + (distance + 1) * dy;
-                            const middleRow = fromRow + distance * dx;
-                            const middleCol = fromCol + distance * dy;
+                    const jumpRow = fromRow + 2 * dx;
+                    const jumpCol = fromCol + 2 * dy;
+                    const middleRow = fromRow + dx;
+                    const middleCol = fromCol + dy;
+                    
+                    if (this.isValidPosition(jumpRow, jumpCol) && this.isValidPosition(middleRow, middleCol)) {
+                        const middlePiece = board[middleRow][middleCol];
+                        if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2 && 
+                            board[jumpRow][jumpCol] === 0 && !capturedPieces.some(cp => cp.row === middleRow && cp.col === middleCol)) {
                             
-                            if (!this.isValidPosition(jumpRow, jumpCol) || !this.isValidPosition(middleRow, middleCol)) break;
+                            // Cria nova captura
+                            const newCapture = {
+                                fromRow: fromRow,
+                                fromCol: fromCol,
+                                toRow: jumpRow,
+                                toCol: jumpCol,
+                                captureRow: middleRow,
+                                captureCol: middleCol,
+                                type: 'capture',
+                                capturedPieces: [...capturedPieces, { row: middleRow, col: middleCol }]
+                            };
                             
-                            const middlePiece = board[middleRow][middleCol];
-                            if (middlePiece === 0) continue;
+                            captures.push(newCapture);
                             
-                            if (middlePiece !== piece && middlePiece !== piece + 2 && 
-                                board[jumpRow][jumpCol] === 0 && 
-                                !capturedPieces.some(cp => cp.row === middleRow && cp.col === middleCol)) {
-                                
-                                const newCapture = {
+                            // Simula a captura e busca por mais capturas
+                            const newBoard = this.simulateCapture(board, fromRow, fromCol, jumpRow, jumpCol, middleRow, middleCol);
+                            const additionalCaptures = this.generateMultipleCaptures(newBoard, jumpRow, jumpCol, player, newCapture.capturedPieces);
+                            
+                            // Adiciona capturas múltiplas
+                            for (const additionalCapture of additionalCaptures) {
+                                captures.push({
                                     fromRow: fromRow,
                                     fromCol: fromCol,
-                                    toRow: jumpRow,
-                                    toCol: jumpCol,
-                                    captureRow: middleRow,
-                                    captureCol: middleCol,
+                                    toRow: additionalCapture.toRow,
+                                    toCol: additionalCapture.toCol,
                                     type: 'capture',
-                                    capturedPieces: [...capturedPieces, { row: middleRow, col: middleCol }]
-                                };
-                                
-                                captures.push(newCapture);
-                                
-                                // Simula a captura e busca por mais capturas
-                                const newBoard = this.simulateCapture(board, fromRow, fromCol, jumpRow, jumpCol, middleRow, middleCol);
-                                const additionalCaptures = this.generateMultipleCaptures(newBoard, jumpRow, jumpCol, player, newCapture.capturedPieces);
-                                
-                                for (const additionalCapture of additionalCaptures) {
-                                    captures.push({
-                                        fromRow: fromRow,
-                                        fromCol: fromCol,
-                                        toRow: additionalCapture.toRow,
-                                        toCol: additionalCapture.toCol,
-                                        type: 'capture',
-                                        capturedPieces: additionalCapture.capturedPieces
-                                    });
-                                }
-                            }
-                            break; // Para após encontrar uma peça
-                        }
-                    } else {
-                        // Peão normal - captura simples
-                        const jumpRow = fromRow + 2 * dx;
-                        const jumpCol = fromCol + 2 * dy;
-                        const middleRow = fromRow + dx;
-                        const middleCol = fromCol + dy;
-                        
-                        if (this.isValidPosition(jumpRow, jumpCol) && this.isValidPosition(middleRow, middleCol)) {
-                            const middlePiece = board[middleRow][middleCol];
-                            if (middlePiece !== 0 && middlePiece !== piece && middlePiece !== piece + 2 && 
-                                board[jumpRow][jumpCol] === 0 && 
-                                !capturedPieces.some(cp => cp.row === middleRow && cp.col === middleCol)) {
-                                
-                                const newCapture = {
-                                    fromRow: fromRow,
-                                    fromCol: fromCol,
-                                    toRow: jumpRow,
-                                    toCol: jumpCol,
-                                    captureRow: middleRow,
-                                    captureCol: middleCol,
-                                    type: 'capture',
-                                    capturedPieces: [...capturedPieces, { row: middleRow, col: middleCol }]
-                                };
-                                
-                                captures.push(newCapture);
-                                
-                                // Simula a captura e busca por mais capturas
-                                const newBoard = this.simulateCapture(board, fromRow, fromCol, jumpRow, jumpCol, middleRow, middleCol);
-                                const additionalCaptures = this.generateMultipleCaptures(newBoard, jumpRow, jumpCol, player, newCapture.capturedPieces);
-                                
-                                for (const additionalCapture of additionalCaptures) {
-                                    captures.push({
-                                        fromRow: fromRow,
-                                        fromCol: fromCol,
-                                        toRow: additionalCapture.toRow,
-                                        toCol: additionalCapture.toCol,
-                                        type: 'capture',
-                                        capturedPieces: additionalCapture.capturedPieces
-                                    });
-                                }
+                                    capturedPieces: additionalCapture.capturedPieces
+                                });
                             }
                         }
                     }
@@ -874,121 +856,133 @@
                 return newBoard;
             }
 
-            makeMove(fromRow, fromCol, toRow, toCol, capturedPieces = null) {
-                console.log(`makeMove: (${fromRow},${fromCol}) -> (${toRow},${toCol})`);
-                
-                // Validação de coordenadas
-                if (fromRow < 0 || fromRow >= 8 || fromCol < 0 || fromCol >= 8 ||
-                    toRow < 0 || toRow >= 8 || toCol < 0 || toCol >= 8) {
-                    console.error('Coordenadas inválidas:', {fromRow, fromCol, toRow, toCol});
+    makeMove(fromRow, fromCol, toRow, toCol, capturedPieces = null) {
+        console.log(`makeMove: (${fromRow},${fromCol}) -> (${toRow},${toCol})`);
+        addDebugLog(`🎯 Executando movimento: origem(${fromRow},${fromCol}) -> destino(${toRow},${toCol})`, 'info');
+        
+        // Logs detalhados das coordenadas das peças do bot
+        addDebugLog(`🔍 COORDENADAS DO BOT - Verificando movimento:`, 'info');
+        addDebugLog(`📍 Origem: linha ${fromRow}, coluna ${fromCol}`, 'info');
+        addDebugLog(`📍 Destino: linha ${toRow}, coluna ${toCol}`, 'info');
+        
+        // Validação de coordenadas
+        if (fromRow < 0 || fromRow >= 8 || fromCol < 0 || fromCol >= 8 ||
+            toRow < 0 || toRow >= 8 || toCol < 0 || toCol >= 8) {
+            console.error('Coordenadas inválidas:', {fromRow, fromCol, toRow, toCol});
+            addDebugLog(`❌ COORDENADAS INVÁLIDAS: origem(${fromRow},${fromCol}) destino(${toRow},${toCol})`, 'error');
+            addDebugLog(`❌ Bot jogou em coordenadas inválidas!`, 'error');
+            return;
+        }
+        
+        // Verifica se há uma peça na posição de origem
+        const piece = this.board[fromRow][fromCol];
+        addDebugLog(`🔍 Peça na origem (${fromRow},${fromCol}): ${piece}`, 'info');
+        
+        if (piece === 0) {
+            console.error('Não há peça na posição de origem:', {fromRow, fromCol, piece});
+            addDebugLog(`❌ NÃO HÁ PEÇA NA ORIGEM: (${fromRow},${fromCol})`, 'error');
+            addDebugLog(`❌ Bot tentou mover de posição vazia!`, 'error');
+            return;
+        }
+        
+        // Verifica se o destino está ocupado
+        const destinationPiece = this.board[toRow][toCol];
+        addDebugLog(`🔍 Peça no destino (${toRow},${toCol}): ${destinationPiece}`, 'info');
+        
+        if (destinationPiece !== 0) {
+            addDebugLog(`❌ DESTINO OCUPADO: (${toRow},${toCol}) tem peça ${destinationPiece}`, 'error');
+            addDebugLog(`❌ Bot tentou mover para posição ocupada!`, 'error');
+            addDebugLog(`❌ Movimento inválido - destino ocupado!`, 'error');
+            return;
+        }
+        
+        console.log(`Movendo peça ${piece} de (${fromRow},${fromCol}) para (${toRow},${toCol})`);
+        addDebugLog(`📋 Movendo peça ${piece} de (${fromRow},${fromCol}) para (${toRow},${toCol})`, 'info');
+        
+        // Salva o estado para desfazer
+        this.gameHistory.push({
+            board: this.board.map(row => [...row]),
+            currentPlayer: this.currentPlayer
+        });
+        
+        addDebugLog(`📋 Estado antes: origem(${fromRow},${fromCol})=${this.board[fromRow][fromCol]}, destino(${toRow},${toCol})=${this.board[toRow][toCol]}`, 'info');
+        
+        this.board[fromRow][fromCol] = 0;
+        this.board[toRow][toCol] = piece;
+        
+        addDebugLog(`📋 Estado após: origem(${fromRow},${fromCol})=${this.board[fromRow][fromCol]}, destino(${toRow},${toCol})=${this.board[toRow][toCol]}`, 'info');
+        
+        // Logs de validação do movimento do bot
+        addDebugLog(`✅ COORDENADAS DO BOT VALIDADAS:`, 'success');
+        addDebugLog(`✅ Origem (${fromRow},${fromCol}) tinha peça ${piece}`, 'success');
+        addDebugLog(`✅ Destino (${toRow},${toCol}) agora tem peça ${piece}`, 'success');
+        
+        // Verifica captura (simples ou múltipla)
+        if (capturedPieces && capturedPieces.length > 0) {
+            // Captura múltipla
+            addDebugLog(`🎯 CAPTURA MÚLTIPLA: ${capturedPieces.length} peças capturadas`, 'info');
+            for (const captured of capturedPieces) {
+                addDebugLog(`🎯 Capturando peça em (${captured.row},${captured.col})`, 'info');
+                this.board[captured.row][captured.col] = 0;
+            }
+        } else if (Math.abs(toRow - fromRow) === 2) {
+            // Captura simples
+            const middleRow = (fromRow + toRow) / 2;
+            const middleCol = (fromCol + toCol) / 2;
+            addDebugLog(`🎯 CAPTURA SIMPLES: removendo peça em (${middleRow},${middleCol})`, 'info');
+            this.board[middleRow][middleCol] = 0;
+        }
+        
+        // Verifica promoção a dama
+        if (piece === 1 && toRow === 0) {
+            this.board[toRow][toCol] = 3; // Dama do jogador
+            addDebugLog(`👑 PROMOÇÃO: Peça do jogador virou dama em (${toRow},${toCol})`, 'info');
+        } else if (piece === 2 && toRow === 7) {
+            this.board[toRow][toCol] = 4; // Dama da IA
+            addDebugLog(`👑 PROMOÇÃO: Peça da IA virou dama em (${toRow},${toCol})`, 'info');
+        }
+        
+        // Log final de validação
+        addDebugLog(`🎯 MOVIMENTO DO BOT EXECUTADO COM SUCESSO!`, 'success');
+        addDebugLog(`🎯 Bot moveu de (${fromRow},${fromCol}) para (${toRow},${toCol})`, 'success');
+        
+        this.renderBoard();
+    }
+
+            makeAIMove() {
+                const moves = this.getAllPossibleMoves(2); // IA joga com peças pretas (2)
+                if (moves.length === 0) {
                     return;
                 }
                 
-                // Verifica se há uma peça na posição de origem
-                const piece = this.board[fromRow][fromCol];
-                if (piece === 0) {
-                    console.error('Não há peça na posição de origem:', {fromRow, fromCol, piece});
-                    return;
+                // Para profundidades altas, adiciona um pequeno delay para simular "pensamento"
+                if (this.difficulty >= 5) {
+                    setTimeout(() => {
+                        this.executeAIMove(moves);
+                    }, 100);
+                } else {
+                    this.executeAIMove(moves);
                 }
-                
-                console.log(`Movendo peça ${piece} de (${fromRow},${fromCol}) para (${toRow},${toCol})`);
-                
-                // Salva o estado para desfazer
-                this.gameHistory.push({
-                    board: this.board.map(row => [...row]),
-                    currentPlayer: this.currentPlayer
-                });
-                
-                this.board[fromRow][fromCol] = 0;
-                this.board[toRow][toCol] = piece;
-                
-                // Verifica captura (simples ou múltipla)
-                if (capturedPieces && capturedPieces.length > 0) {
-                    // Captura múltipla
-                    for (const captured of capturedPieces) {
-                        this.board[captured.row][captured.col] = 0;
-                    }
-                } else if (Math.abs(toRow - fromRow) === 2) {
-                    // Captura simples
-                    const middleRow = (fromRow + toRow) / 2;
-                    const middleCol = (fromCol + toCol) / 2;
-                    this.board[middleRow][middleCol] = 0;
-                }
-                
-                // Verifica promoção a dama
-                if (piece === 1 && toRow === 0) {
-                    this.board[toRow][toCol] = 3; // Dama do jogador
-                } else if (piece === 2 && toRow === 7) {
-                    this.board[toRow][toCol] = 4; // Dama da IA
-                }
-                
-                this.renderBoard();
             }
 
-            async makeAIMove() {
-                if (!this.apiConnected) {
-                    // Fallback para motor JavaScript simples
-                    this.makeAIMoveJS();
-                    return;
-                }
-
-                this.showLoading(true);
-                
-                try {
-                    const response = await fetch(`${this.apiUrl}/api/move`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            board: this.board,
-                            player: 2, // IA
-                            difficulty: this.difficulty,
-                            game_type: 'international'
-                        })
-                    });
-
-                    const data = await response.json();
-                    
-                    if (data.success && data.move) {
-                        const move = data.move;
-                        this.makeMove(move.fromRow, move.fromCol, move.toRow, move.toCol);
-                        
-                        // Alterna o turno de volta para o jogador
-                        this.currentPlayer = 1;
-                        this.updateGameInfo();
-                        
-                        this.checkGameOver();
-                    } else {
-                        console.error('Erro na resposta da API:', data.message);
-                        // Fallback para motor JS
-                        this.makeAIMoveJS();
-                    }
-                } catch (error) {
-                    console.error('Erro ao chamar API:', error);
-                    // Fallback para motor JS
-                    this.makeAIMoveJS();
-                } finally {
-                    this.showLoading(false);
-                }
-            }
-
-            async makeAIMoveJS() {
-                console.log(`🤖 Executando movimento da IA (dificuldade: ${this.difficulty})`);
+            async executeAIMove(moves) {
+                addDebugLog(`🤖 Executando movimento da IA (dificuldade: ${this.difficulty})`, 'info');
                 
                 // Usa APENAS rapid-draughts para todas as dificuldades
-                console.log('🚀 Usando rapid-draughts para movimento inteligente...');
+                addDebugLog('🚀 Usando rapid-draughts para movimento inteligente...', 'info');
                 try {
                     const bestMove = await this.getServerMove();
-                    console.log('✅ Movimento do rapid-draughts obtido:', bestMove);
+                    addDebugLog('✅ Movimento do rapid-draughts obtido', 'success');
+                    addDebugLog(`📋 Movimento: ${JSON.stringify(bestMove)}`, 'info');
                     
-                    console.log('🎯 Melhor movimento escolhido:', bestMove);
+                    addDebugLog(`🎯 Melhor movimento escolhido: ${JSON.stringify(bestMove)}`, 'info');
                     
+                    // Executa o movimento
                     if (bestMove.capturedPieces && bestMove.capturedPieces.length > 0) {
-                        console.log('⚔️ Executando movimento com captura');
+                        addDebugLog('⚔️ Executando movimento com captura', 'info');
                         this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol, bestMove.capturedPieces);
                     } else {
-                        console.log('➡️ Executando movimento simples');
+                        addDebugLog('➡️ Executando movimento simples', 'info');
                         this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol);
                     }
                     
@@ -998,15 +992,15 @@
                     
                     this.checkGameOver();
                 } catch (error) {
-                    console.error('❌ Erro ao usar rapid-draughts:', error);
-                    console.log('❌ Motor não disponível - jogo pausado');
+                    addDebugLog(`❌ Erro ao usar rapid-draughts: ${error.message}`, 'error');
+                    addDebugLog('❌ Motor não disponível - jogo pausado', 'error');
                     // Não há fallback - apenas rapid-draughts
                 }
             }
 
             // Função para obter movimento usando rapid-draughts local
             async getServerMove() {
-                console.log('🔍 Buscando movimento com rapid-draughts local...');
+                addDebugLog('🔍 Buscando movimento com rapid-draughts local...', 'info');
                 
                 try {
                     // Verifica se a biblioteca está carregada
@@ -1014,12 +1008,20 @@
                         throw new Error('Biblioteca rapid-draughts não carregada');
                     }
                     
-                    console.log('📋 Estado atual do tabuleiro:', this.board);
+                    addDebugLog('📋 Estado atual do tabuleiro: ' + JSON.stringify(this.board), 'info');
                     
                     // Converte o tabuleiro local para o formato esperado pelo rapid-draughts
                     const rapidDraughtsBoard = this.convertLocalBoardToRapidDraughtsFormat(this.board);
                     
-                    const game = window.EnglishDraughts.setup(rapidDraughtsBoard);
+                    // Cria o formato correto para o rapid-draughts
+                    const gameData = {
+                        player: 2, // IA joga com peças escuras
+                        board: rapidDraughtsBoard
+                    };
+                    
+                    addDebugLog('📋 Dados do jogo para rapid-draughts: ' + JSON.stringify(gameData), 'info');
+                    
+                    const game = window.EnglishDraughts.setup(gameData);
                     
                     // Configura o computador com a profundidade desejada
                     const computer = window.EnglishDraughtsComputerFactory.alphaBeta({
@@ -1027,46 +1029,52 @@
                         quiescence: true
                     });
                     
-                    console.log(`🤖 Usando rapid-draughts com profundidade ${this.difficulty}`);
+                    addDebugLog(`🤖 Usando rapid-draughts com profundidade ${this.difficulty}`, 'info');
                     
                     // Obtém o melhor movimento
                     const move = await computer(game);
                     
                     if (move) {
-                        console.log('✅ Movimento encontrado:', move);
+                        addDebugLog('✅ Movimento encontrado pelo rapid-draughts: ' + JSON.stringify(move), 'success');
                         // Converte o movimento para formato local
                         const localMove = this.convertRapidDraughtsMoveToLocal(move);
-                        console.log('✅ Movimento convertido:', localMove);
+                        addDebugLog('✅ Movimento convertido para formato local: ' + JSON.stringify(localMove), 'success');
                         return localMove;
                     } else {
-                        throw new Error('Nenhum movimento encontrado');
+                        throw new Error('Nenhum movimento encontrado pelo rapid-draughts');
                     }
                 } catch (error) {
-                    console.error('❌ Erro ao usar rapid-draughts:', error);
+                    addDebugLog(`❌ Erro ao usar rapid-draughts: ${error.message}`, 'error');
                     throw error;
                 }
             }
             
             // Converte tabuleiro local para formato rapid-draughts
             convertLocalBoardToRapidDraughtsFormat(localBoard) {
+                addDebugLog('🔄 Convertendo tabuleiro local para rapid-draughts...', 'info');
+                
                 const rapidDraughtsFormat = {
-                    light: 0, // Bitmask para peças claras
-                    dark: 0,  // Bitmask para peças escuras
+                    light: 0, // Bitmask para peças claras (jogador)
+                    dark: 0,  // Bitmask para peças escuras (IA)
                     king: 0   // Bitmask para reis
                 };
 
-                // Mapeamento de posições do tabuleiro 8x8 para bitmask (0-31)
-                // O rapid-draughts usa um tabuleiro de 32 casas jogáveis
+                // Mapeamento correto de posições do tabuleiro 8x8 para bitmask (0-31)
+                // O rapid-draughts usa um tabuleiro de 32 casas jogáveis (apenas casas escuras)
                 const boardMap = [
-                    -1, 0, -1, 1, -1, 2, -1, 3,
-                    4, -1, 5, -1, 6, -1, 7, -1,
-                    -1, 8, -1, 9, -1, 10, -1, 11,
-                    12, -1, 13, -1, 14, -1, 15, -1,
-                    -1, 16, -1, 17, -1, 18, -1, 19,
-                    20, -1, 21, -1, 22, -1, 23, -1,
-                    -1, 24, -1, 25, -1, 26, -1, 27,
-                    28, -1, 29, -1, 30, -1, 31, -1
+                    -1, 0, -1, 1, -1, 2, -1, 3,     // Linha 0: a8, c8, e8, g8
+                    4, -1, 5, -1, 6, -1, 7, -1,      // Linha 1: b7, d7, f7, h7
+                    -1, 8, -1, 9, -1, 10, -1, 11,    // Linha 2: a6, c6, e6, g6
+                    12, -1, 13, -1, 14, -1, 15, -1,  // Linha 3: b5, d5, f5, h5
+                    -1, 16, -1, 17, -1, 18, -1, 19,  // Linha 4: a4, c4, e4, g4
+                    20, -1, 21, -1, 22, -1, 23, -1,  // Linha 5: b3, d3, f3, h3
+                    -1, 24, -1, 25, -1, 26, -1, 27,  // Linha 6: a2, c2, e2, g2
+                    28, -1, 29, -1, 30, -1, 31, -1   // Linha 7: b1, d1, f1, h1
                 ];
+
+                addDebugLog('📋 Mapeamento de posições:', 'info');
+                addDebugLog('   -1 = Casa clara (não jogável)', 'info');
+                addDebugLog('   0-31 = Casa escura (jogável)', 'info');
 
                 for (let row = 0; row < 8; row++) {
                     for (let col = 0; col < 8; col++) {
@@ -1076,22 +1084,32 @@
 
                         if (rapidDraughtsIndex !== -1) { // Se for uma casa jogável
                             const bit = 1 << rapidDraughtsIndex; // Cria o bitmask para a posição
+                            const coord = String.fromCharCode(97 + col) + (8 - row);
 
-                            if (piece === 1) { // Peça vermelha (jogador)
+                            if (piece === 1) { // Peça azul (jogador)
                                 rapidDraughtsFormat.light |= bit;
-                            } else if (piece === 2) { // Peça azul (IA)
+                                addDebugLog(`🔵 Peça jogador em ${coord} -> bit ${rapidDraughtsIndex}`, 'info');
+                            } else if (piece === 2) { // Peça vermelha (IA)
                                 rapidDraughtsFormat.dark |= bit;
-                            } else if (piece === 3) { // Rei vermelho
+                                addDebugLog(`🔴 Peça IA em ${coord} -> bit ${rapidDraughtsIndex}`, 'info');
+                            } else if (piece === 3) { // Rei azul (jogador)
                                 rapidDraughtsFormat.light |= bit;
                                 rapidDraughtsFormat.king |= bit;
-                            } else if (piece === 4) { // Rei azul
+                                addDebugLog(`👑🔵 Rei jogador em ${coord} -> bit ${rapidDraughtsIndex}`, 'info');
+                            } else if (piece === 4) { // Rei vermelho (IA)
                                 rapidDraughtsFormat.dark |= bit;
                                 rapidDraughtsFormat.king |= bit;
+                                addDebugLog(`👑🔴 Rei IA em ${coord} -> bit ${rapidDraughtsIndex}`, 'info');
                             }
                         }
                     }
                 }
-                console.log('📤 Tabuleiro convertido para rapid-draughts format:', rapidDraughtsFormat);
+                
+                addDebugLog('📤 Tabuleiro convertido para rapid-draughts:', 'success');
+                addDebugLog(`   Light (jogador): 0x${rapidDraughtsFormat.light.toString(16)} (${rapidDraughtsFormat.light})`, 'info');
+                addDebugLog(`   Dark (IA): 0x${rapidDraughtsFormat.dark.toString(16)} (${rapidDraughtsFormat.dark})`, 'info');
+                addDebugLog(`   King: 0x${rapidDraughtsFormat.king.toString(16)} (${rapidDraughtsFormat.king})`, 'info');
+                
                 return rapidDraughtsFormat;
             }
             
@@ -1122,32 +1140,100 @@
             
             // Converte movimento do rapid-draughts para formato local
             convertRapidDraughtsMoveToLocal(rapidMove) {
-                console.log('Movimento do rapid-draughts:', rapidMove);
+                addDebugLog('🔄 Convertendo movimento rapid-draughts: ' + JSON.stringify(rapidMove), 'info');
                 
-                // Converte coordenadas do rapid-draughts para formato local
-                // O rapid-draughts usa coordenadas lineares 0-63, precisamos converter para matriz 8x8
-                const fromRow = Math.floor(rapidMove.origin / 8);
-                const fromCol = rapidMove.origin % 8;
-                const toRow = Math.floor(rapidMove.destination / 8);
-                const toCol = rapidMove.destination % 8;
+                // Converte bitmasks do rapid-draughts para coordenadas do tabuleiro
+                // O rapid-draughts usa bitmasks (1, 2, 4, 8, 16, 32, 64, etc.)
+                // Precisamos encontrar qual bit está ativo para converter para posição
                 
-                console.log(`Conversão: origem(${rapidMove.origin}) -> (${fromRow},${fromCol}), destino(${rapidMove.destination}) -> (${toRow},${toCol})`);
+                const fromBit = rapidMove.origin;
+                const toBit = rapidMove.destination;
                 
-                // Verifica se as coordenadas são válidas
-                if (fromRow < 0 || fromRow >= 8 || fromCol < 0 || fromCol >= 8 ||
-                    toRow < 0 || toRow >= 8 || toCol < 0 || toCol >= 8) {
-                    console.error('Coordenadas inválidas do rapid-draughts:', {fromRow, fromCol, toRow, toCol});
-                    throw new Error('Coordenadas inválidas do rapid-draughts');
+                addDebugLog(`📊 Movimento rapid-draughts: origin=${fromBit}, destination=${toBit}`, 'info');
+                
+                // Mapeamento correto baseado no boardMap do rapid-draughts
+                // boardMap: [-1, 0, -1, 1, -1, 2, -1, 3, 4, -1, 5, -1, 6, -1, 7, -1, ...]
+                const bitToPosition = {
+                    1: {row: 0, col: 1},    // bit 0 -> (0,1) b8 - PRIMEIRA FILEIRA DO BOT
+                    2: {row: 0, col: 3},    // bit 1 -> (0,3) d8 - PRIMEIRA FILEIRA DO BOT
+                    4: {row: 0, col: 5},    // bit 2 -> (0,5) f8 - PRIMEIRA FILEIRA DO BOT
+                    8: {row: 0, col: 7},    // bit 3 -> (0,7) h8 - PRIMEIRA FILEIRA DO BOT
+                    16: {row: 1, col: 0},   // bit 4 -> (1,0) a7 - SEGUNDA FILEIRA
+                    32: {row: 1, col: 2},   // bit 5 -> (1,2) c7 - SEGUNDA FILEIRA
+                    64: {row: 1, col: 4},   // bit 6 -> (1,4) e7 - SEGUNDA FILEIRA
+                    128: {row: 1, col: 6},  // bit 7 -> (1,6) g7 - SEGUNDA FILEIRA
+                    256: {row: 2, col: 1},  // bit 8 -> (2,1) b6
+                    512: {row: 2, col: 3},  // bit 9 -> (2,3) d6
+                    1024: {row: 2, col: 5}, // bit 10 -> (2,5) f6
+                    2048: {row: 2, col: 7}, // bit 11 -> (2,7) h6
+                    4096: {row: 3, col: 0}, // bit 12 -> (3,0) a5
+                    8192: {row: 3, col: 2}, // bit 13 -> (3,2) c5
+                    16384: {row: 3, col: 4}, // bit 14 -> (3,4) e5
+                    32768: {row: 3, col: 6}, // bit 15 -> (3,6) g5
+                    65536: {row: 4, col: 1}, // bit 16 -> (4,1) b4
+                    131072: {row: 4, col: 3}, // bit 17 -> (4,3) d4
+                    262144: {row: 4, col: 5}, // bit 18 -> (4,5) f4
+                    524288: {row: 4, col: 7}, // bit 19 -> (4,7) h4
+                    1048576: {row: 5, col: 0}, // bit 20 -> (5,0) a3
+                    2097152: {row: 5, col: 2}, // bit 21 -> (5,2) c3
+                    4194304: {row: 5, col: 4}, // bit 22 -> (5,4) e3
+                    8388608: {row: 5, col: 6}, // bit 23 -> (5,6) g3
+                    16777216: {row: 6, col: 1}, // bit 24 -> (6,1) b2
+                    33554432: {row: 6, col: 3}, // bit 25 -> (6,3) d2
+                    67108864: {row: 6, col: 5}, // bit 26 -> (6,5) f2
+                    134217728: {row: 6, col: 7}, // bit 27 -> (6,7) h2
+                    268435456: {row: 7, col: 0}, // bit 28 -> (7,0) a1
+                    536870912: {row: 7, col: 2}, // bit 29 -> (7,2) c1
+                    1073741824: {row: 7, col: 4}, // bit 30 -> (7,4) e1
+                    2147483648: {row: 7, col: 6}  // bit 31 -> (7,6) g1
+                };
+                
+                const fromPos = bitToPosition[fromBit];
+                const toPos = bitToPosition[toBit];
+                
+                if (!fromPos || !toPos) {
+                    addDebugLog(`❌ Posição não encontrada: fromBit=${fromBit}, toBit=${toBit}`, 'error');
+                    throw new Error('Posição não encontrada no mapeamento');
                 }
                 
+                addDebugLog(`✅ Conversão: origem(${fromBit}) -> (${fromPos.row},${fromPos.col}), destino(${toBit}) -> (${toPos.row},${toPos.col})`, 'success');
+                
                 return {
-                    fromRow: fromRow,
-                    fromCol: fromCol,
-                    toRow: toRow,
-                    toCol: toCol,
+                    fromRow: fromPos.row,
+                    fromCol: fromPos.col,
+                    toRow: toPos.row,
+                    toCol: toPos.col,
                     type: rapidMove.captures && rapidMove.captures.length > 0 ? 'capture' : 'move',
                     capturedPieces: rapidMove.captures || []
                 };
+            }
+
+            // Motor de busca inteligente
+            getBestMove(moves) {
+                // Prioriza capturas múltiplas
+                const captures = moves.filter(move => move.type === 'capture');
+                if (captures.length > 0) {
+                    // Escolhe a captura com mais peças capturadas
+                    captures.sort((a, b) => {
+                        const aCaptures = a.capturedPieces ? a.capturedPieces.length : 1;
+                        const bCaptures = b.capturedPieces ? b.capturedPieces.length : 1;
+                        return bCaptures - aCaptures;
+                    });
+                    return captures[0];
+                }
+                
+                // Prioriza movimentos que levam ao centro
+                const centerMoves = moves.filter(move => {
+                    const centerDistance = Math.abs(move.toRow - 3.5) + Math.abs(move.toCol - 3.5);
+                    return centerDistance < 4;
+                });
+                
+                if (centerMoves.length > 0) {
+                    return centerMoves[Math.floor(Math.random() * centerMoves.length)];
+                }
+                
+                // Movimento aleatório
+                return moves[Math.floor(Math.random() * moves.length)];
             }
 
             getAllPossibleMoves(player) {
@@ -1176,43 +1262,22 @@
                         if (this.board[row][col] === player || this.board[row][col] === player + 2) {
                             const piece = this.board[row][col];
                             const isKing = piece === 3 || piece === 4;
+                            const directions = isKing ? 
+                                [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                                (player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
                             
-                            if (isKing) {
-                                // Dama pode se mover em qualquer direção e distância
-                                const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
-                                for (const [dx, dy] of directions) {
-                                    for (let distance = 1; distance < 8; distance++) {
-                                        const newRow = row + dx * distance;
-                                        const newCol = col + dy * distance;
-                                        
-                                        if (!this.isValidPosition(newRow, newCol)) break;
-                                        if (this.board[newRow][newCol] !== 0) break;
-                                        
-                                        moves.push({ 
-                                            fromRow: row, 
-                                            fromCol: col, 
-                                            toRow: newRow, 
-                                            toCol: newCol,
-                                            type: 'move'
-                                        });
-                                    }
-                                }
-                            } else {
-                                // Peão normal - movimento para frente (regras internacionais permitem captura para trás)
-                                const directions = player === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]];
-                                for (const [dx, dy] of directions) {
-                                    const newRow = row + dx;
-                                    const newCol = col + dy;
-                                    
-                                    if (this.isValidPosition(newRow, newCol) && this.board[newRow][newCol] === 0) {
-                                        moves.push({ 
-                                            fromRow: row, 
-                                            fromCol: col, 
-                                            toRow: newRow, 
-                                            toCol: newCol,
-                                            type: 'move'
-                                        });
-                                    }
+                            for (const [dx, dy] of directions) {
+                                const newRow = row + dx;
+                                const newCol = col + dy;
+                                
+                                if (this.isValidPosition(newRow, newCol) && this.board[newRow][newCol] === 0) {
+                                    moves.push({ 
+                                        fromRow: row, 
+                                        fromCol: col, 
+                                        toRow: newRow, 
+                                        toCol: newCol,
+                                        type: 'move'
+                                    });
                                 }
                             }
                         }
@@ -1223,16 +1288,14 @@
             }
 
             checkGameOver() {
-                const playerMoves = this.getAllPossibleMoves(1);
-                const aiMoves = this.getAllPossibleMoves(2);
+                const playerMoves = this.getAllPossibleMoves(1); // Jogador (peças vermelhas)
+                const aiMoves = this.getAllPossibleMoves(2); // IA (peças pretas)
                 
                 if (playerMoves.length === 0) {
-                    alert('IA venceu!');
                     return true;
                 }
                 
                 if (aiMoves.length === 0) {
-                    alert('Você venceu!');
                     return true;
                 }
                 
@@ -1244,38 +1307,34 @@
                 console.log(`Jogador: ${this.playerColor}, IA: ${this.aiColor}`);
             }
 
-            newGame() {
-                this.currentPlayer = 1;
-                this.selectedPiece = null;
-                this.moveHistory = [];
-                this.initializeBoard();
-                this.renderBoard();
-            }
-
         }
 
         // Funções globais
         let game;
 
         function newGame() {
-            game = new InternationalCheckersGame();
+            game = new CheckersGame();
         }
+
+        // Funções removidas para interface limpa
 
         // Inicializa o jogo
         document.addEventListener('DOMContentLoaded', () => {
-            game = new InternationalCheckersGame();
+            addDebugLog('🚀 Inicializando jogo de damas...', 'info');
+            game = new CheckersGame();
+            addDebugLog('✅ Jogo inicializado com sucesso!', 'success');
         });
     </script>
-    <script src="rapid-draughts-simple.js"></script>
+    <script src="rapid-draughts-integration.js"></script>
     <script>
         // Carrega a biblioteca rapid-draughts no window para uso global
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('📚 Carregando biblioteca rapid-draughts...');
+            console.log('📚 Carregando biblioteca rapid-draughts REAL...');
             
             // Verifica se a biblioteca foi carregada
             function checkLibrary() {
                 if (typeof window.EnglishDraughts !== 'undefined' && typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
-                    console.log('✅ Biblioteca rapid-draughts carregada com sucesso!');
+                    console.log('✅ Biblioteca rapid-draughts REAL carregada com sucesso!');
                     console.log('🔧 EnglishDraughts:', typeof window.EnglishDraughts);
                     console.log('🔧 EnglishDraughtsComputerFactory:', typeof window.EnglishDraughtsComputerFactory);
                     return true;

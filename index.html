@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Jogos JS Blaey - GitHub Pages</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #cccccc;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .game-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+        }
+        
+        .game-card p {
+            color: #cccccc;
+            margin-bottom: 15px;
+        }
+        
+        .game-link {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+        
+        .game-link:hover {
+            transform: scale(1.05);
+        }
+        
+        .featured {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid #4ecdc4;
+        }
+        
+        .featured h3 {
+            color: #ffffff;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .footer p {
+            color: #888888;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Jogos JS Blaey</h1>
+            <p>Coleção de jogos em JavaScript para GitHub Pages</p>
+        </div>
+        
+        <div class="games-grid">
+            <!-- Sinuca - Destaque -->
+            <div class="game-card featured">
+                <h3>🎱 Sinuca - 8 Ball Billiards</h3>
+                <p>Jogo clássico de sinuca com física realista e controles intuitivos</p>
+                <a href="jogos/sinuca/index_simple.html" class="game-link">Jogar Agora</a>
+            </div>
+            
+            <!-- Xadrez -->
+            <div class="game-card">
+                <h3>♟️ Xadrez</h3>
+                <p>Jogo de xadrez completo com IA avançada</p>
+                <a href="public/games/chess/index.html" class="game-link">Jogar Xadrez</a>
+            </div>
+            
+            <!-- Damas -->
+            <div class="game-card">
+                <h3>🔴 Damas</h3>
+                <p>Jogo de damas tradicionais com bot inteligente</p>
+                <a href="public/games/checkers/index.html" class="game-link">Jogar Damas</a>
+            </div>
+            
+            <!-- Damas Internacionais -->
+            <div class="game-card">
+                <h3>🌍 Damas Internacionais</h3>
+                <p>Versão internacional das damas com regras avançadas</p>
+                <a href="public/games/checkers-international/index.html" class="game-link">Jogar Damas Int.</a>
+            </div>
+            
+            <!-- Pacman -->
+            <div class="game-card">
+                <h3>👻 Pacman</h3>
+                <p>Jogo clássico do Pacman com fantasmas</p>
+                <a href="jogos/pacman_js/index.html" class="game-link">Jogar Pacman</a>
+            </div>
+            
+            <!-- Modos Especiais da Sinuca -->
+            <div class="game-card">
+                <h3>🎱 Modos Especiais</h3>
+                <p>Modo modular e eliminação da sinuca</p>
+                <a href="jogos/sinuca/game_modular_simple.html" class="game-link">Modo Modular</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🚀 Hospedado no GitHub Pages | Desenvolvido com ❤️</p>
+        </div>
+    </div>
+</body>
+</html>

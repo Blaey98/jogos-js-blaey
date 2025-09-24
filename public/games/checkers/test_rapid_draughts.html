@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Rapid-Draughts</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #2a2a2a;
+        }
+        .success { background: #166534; }
+        .error { background: #991b1b; }
+        .info { background: #1e3a8a; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Rapid-Draughts</h1>
+    <div id="testResults"></div>
+
+    <script>
+        function addTestResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            document.getElementById('testResults').appendChild(div);
+            console.log(message);
+        }
+
+        function testRapidDraughts() {
+            addTestResult('🔍 Testando carregamento do rapid-draughts...', 'info');
+            
+            // Testa se o script carrega
+            const script = document.createElement('script');
+            script.src = './rapid-draughts-real.js';
+            script.onload = () => {
+                addTestResult('✅ Script rapid-draughts-real.js carregado!', 'success');
+                
+                // Testa se as classes estão disponíveis
+                setTimeout(() => {
+                    if (typeof window.EnglishDraughts !== 'undefined') {
+                        addTestResult('✅ EnglishDraughts disponível!', 'success');
+                        
+                        try {
+                            const game = window.EnglishDraughts.setup();
+                            addTestResult('✅ Jogo inicializado com sucesso!', 'success');
+                            
+                            const board = game.board;
+                            addTestResult(`✅ Tabuleiro: ${board.length} posições`, 'success');
+                            
+                            const status = game.status;
+                            addTestResult(`✅ Status: ${status}`, 'success');
+                            
+                            const moves = game.moves;
+                            addTestResult(`✅ Movimentos disponíveis: ${moves.length}`, 'success');
+                            
+                        } catch (error) {
+                            addTestResult(`❌ Erro ao inicializar jogo: ${error.message}`, 'error');
+                        }
+                        
+                    } else {
+                        addTestResult('❌ EnglishDraughts não encontrado!', 'error');
+                    }
+                    
+                    if (typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
+                        addTestResult('✅ EnglishDraughtsComputerFactory disponível!', 'success');
+                        
+                        try {
+                            const bot = window.EnglishDraughtsComputerFactory.alphaBeta({
+                                maxDepth: 3,
+                                quiescence: true
+                            });
+                            addTestResult('✅ Bot inicializado com sucesso!', 'success');
+                        } catch (error) {
+                            addTestResult(`❌ Erro ao inicializar bot: ${error.message}`, 'error');
+                        }
+                    } else {
+                        addTestResult('❌ EnglishDraughtsComputerFactory não encontrado!', 'error');
+                    }
+                    
+                }, 1000);
+            };
+            script.onerror = (error) => {
+                addTestResult(`❌ Erro ao carregar script: ${error}`, 'error');
+            };
+            document.head.appendChild(script);
+        }
+
+        // Executa o teste quando a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            addTestResult('🚀 Iniciando testes...', 'info');
+            testRapidDraughts();
+        });
+    </script>
+</body>
+</html>

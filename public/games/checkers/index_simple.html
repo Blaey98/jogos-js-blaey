@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔴 Damas - Versão Simples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 2px solid #333;
+            border-radius: 5px;
+            overflow: hidden;
+            width: min(80vw, 80vh, 640px);
+            height: min(80vw, 80vh, 640px);
+            max-width: 640px;
+            max-height: 640px;
+        }
+
+        .cell {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .cell.light {
+            background-color: #f4d03f;
+        }
+
+        .cell.dark {
+            background-color: #1e8449;
+        }
+
+        .piece {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .piece.red {
+            background-color: #dc3545;
+        }
+
+        .piece.blue {
+            background-color: #007bff;
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .btn {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #444;
+            border-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🔴 Damas - Versão Simples</h1>
+        <div class="status" id="status">Jogo iniciado - Turno do Jogador</div>
+        <div class="board" id="board"></div>
+        <button class="btn" onclick="newGame()">Novo Jogo</button>
+    </div>
+
+    <script>
+        let game = {
+            board: Array(8).fill().map(() => Array(8).fill(0)),
+            currentPlayer: 1
+        };
+
+        function createBoard() {
+            console.log('🎨 Criando tabuleiro...');
+            const boardElement = document.getElementById('board');
+            if (!boardElement) {
+                console.error('❌ Elemento board não encontrado!');
+                return;
+            }
+            
+            boardElement.innerHTML = '';
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // Alterna cores das casas
+                    if ((row + col) % 2 === 0) {
+                        cell.classList.add('light');
+                    } else {
+                        cell.classList.add('dark');
+                    }
+                    
+                    // Adiciona peças
+                    if (game.board[row][col] === 1) {
+                        const piece = document.createElement('div');
+                        piece.className = 'piece blue';
+                        cell.appendChild(piece);
+                    } else if (game.board[row][col] === 2) {
+                        const piece = document.createElement('div');
+                        piece.className = 'piece red';
+                        cell.appendChild(piece);
+                    }
+                    
+                    boardElement.appendChild(cell);
+                }
+            }
+            
+            console.log('✅ Tabuleiro criado com sucesso!');
+        }
+
+        function initializeBoard() {
+            console.log('🎯 Inicializando tabuleiro...');
+            
+            // Limpa o tabuleiro
+            game.board = Array(8).fill().map(() => Array(8).fill(0));
+            
+            // Coloca as peças da IA (vermelhas) - linhas 0, 1, 2
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if ((row + col) % 2 === 1) {
+                        game.board[row][col] = 2; // Peça da IA (vermelha)
+                    }
+                }
+            }
+            
+            // Coloca as peças do jogador (azuis) - linhas 5, 6, 7
+            for (let row = 5; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if ((row + col) % 2 === 1) {
+                        game.board[row][col] = 1; // Peça do jogador (azul)
+                    }
+                }
+            }
+            
+            console.log('✅ Tabuleiro inicializado!');
+            createBoard();
+        }
+
+        function newGame() {
+            console.log('🔄 Novo jogo...');
+            initializeBoard();
+        }
+
+        // Inicializa o jogo quando a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Inicializando jogo...');
+            initializeBoard();
+        });
+    </script>
+</body>
+</html>

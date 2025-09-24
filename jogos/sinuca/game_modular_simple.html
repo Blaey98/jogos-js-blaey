@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="encoding" content="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+    <title>🎱 Sinuca Modular - Escolha o Modo</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            overflow: hidden;
+            touch-action: manipulation;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            border: none !important;
+            outline: none !important;
+            border-radius: 0 !important;
+        }
+        
+        .game-mode-selector {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+        }
+        
+        .mode-title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            padding: 0 2rem;
+        }
+        
+        .mode-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+        }
+        
+        .mode-card:hover {
+            transform: translateY(-10px);
+            border-color: #4ecdc4;
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.3);
+        }
+        
+        .mode-card.selected {
+            border-color: #ff6b6b;
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.3);
+        }
+        
+        .mode-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .mode-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .mode-description {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        
+        .mode-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+        
+        .mode-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .mode-features li:before {
+            content: "🎯 ";
+            margin-right: 0.5rem;
+        }
+        
+        .start-button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .start-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .start-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #mygame {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000000 !important;
+            border: none !important;
+            outline: none !important;
+            border-radius: 0 !important;
+        }
+        
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            border: none;
+            outline: none;
+            background: transparent !important;
+            border-radius: 0 !important;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .mode-title {
+                font-size: 2rem;
+            }
+            
+            .modes-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .mode-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+    
+    <script>
+        // Configuração global do jogo
+        window.gameID = "8-ball-billiards-classic";
+        window.selectedGameMode = null;
+        
+        // Lista de arquivos JavaScript do jogo (sem o arquivo de modos)
+        window.gameJS = [
+            "assets/src/01phaser.js",
+            "assets/src/02Ball.js",
+            "assets/src/03contactListener.js",
+            "assets/src/04billiardPhysics.js",
+            "assets/src/05levelData.js",
+            "assets/src/06maths.js",
+            "assets/src/07vector2d.js",
+            "assets/src/08render.js",
+            "assets/src/09sound.js",
+            "assets/src/10effects.js",
+            "assets/src/11timer.js",
+            "assets/src/12load.js",
+            "assets/src/13mainMenu.js",
+            "assets/src/14setup.js",
+            "assets/src/15gameController.js",
+            "assets/src/16boot.js",
+            function() {
+                console.log('🎱 Todos os scripts carregados');
+                hideLoading();
+                showModeSelector();
+            }
+        ];
+        
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            console.log('🎱 Jogo carregado com sucesso!');
+        }
+        
+        function showModeSelector() {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            
+            // Criar seletor de modos
+            const selector = document.createElement('div');
+            selector.className = 'game-mode-selector';
+            selector.innerHTML = `
+                <h1 class="mode-title">🎱 Escolha o Modo de Jogo</h1>
+                <div class="modes-grid">
+                    <div class="mode-card" data-mode="classic_8ball">
+                        <div class="mode-icon">🎱</div>
+                        <div class="mode-name">8-Ball Clássico</div>
+                        <div class="mode-description">Jogo tradicional de sinuca com bola branca e regras clássicas</div>
+                        <ul class="mode-features">
+                            <li>15 bolas coloridas + 1 branca</li>
+                            <li>Bolas sólidas vs listradas</li>
+                            <li>Bola 8 no final</li>
+                        </ul>
+                        <button class="start-button" onclick="startGame('classic_8ball')">Jogar</button>
+                    </div>
+                    
+                    <div class="mode-card" data-mode="elimination">
+                        <div class="mode-icon">⚔️</div>
+                        <div class="mode-name">Mata-Mata</div>
+                        <div class="mode-description">6 bolinhas vermelhas vs 6 bolinhas azuis - elimine todas do adversário</div>
+                        <ul class="mode-features">
+                            <li>6 bolas vermelhas vs 6 azuis</li>
+                            <li>Sem bola branca</li>
+                            <li>Elimine todas do adversário</li>
+                        </ul>
+                        <button class="start-button" onclick="startGame('elimination')">Jogar</button>
+                    </div>
+                    
+                    <div class="mode-card" data-mode="nine_ball">
+                        <div class="mode-icon">9️⃣</div>
+                        <div class="mode-name">9-Ball</div>
+                        <div class="mode-description">Jogo com bolas numeradas de 1 a 9 em ordem</div>
+                        <ul class="mode-features">
+                            <li>9 bolas numeradas + 1 branca</li>
+                            <li>Ordem numérica obrigatória</li>
+                            <li>Bola 9 para vencer</li>
+                        </ul>
+                        <button class="start-button" onclick="startGame('nine_ball')">Jogar</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(selector);
+        }
+        
+        function startGame(mode) {
+            console.log('🎱 Iniciando jogo no modo:', mode);
+            window.selectedGameMode = mode;
+            
+            // Configurar o modo selecionado
+            if (mode === 'classic_8ball') {
+                // Redirecionar para o jogo clássico
+                window.location.href = 'index.html';
+            } else if (mode === 'elimination') {
+                // Redirecionar para o mata-mata
+                window.location.href = 'game_elimination.html';
+            } else if (mode === 'nine_ball') {
+                // Por enquanto, redirecionar para o clássico
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                        <div style="font-size: 16px; margin-bottom: 20px;">${message}</div>
+                        <button onclick="location.reload()" style="
+                            background: #4CAF50;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 16px;
+                        ">Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function loadGameAPI() {
+            console.log('🎱 Carregando API do jogo modular...');
+            
+            // Carregar scripts sequencialmente
+            let currentScript = 0;
+            
+            function loadNextScript() {
+                if (currentScript >= window.gameJS.length) {
+                    console.log('🎱 Todos os scripts carregados com sucesso!');
+                    return;
+                }
+                
+                const scriptItem = window.gameJS[currentScript];
+                
+                if (typeof scriptItem === 'string') {
+                    // É um arquivo JavaScript
+                    const script = document.createElement("script");
+                    script.src = scriptItem;
+                    script.onload = function() {
+                        console.log(`✅ Carregado: ${scriptItem}`);
+                        currentScript++;
+                        loadNextScript();
+                    };
+                    script.onerror = function() {
+                        console.error(`❌ Erro ao carregar: ${scriptItem}`);
+                        showError(`Erro ao carregar: ${scriptItem}`);
+                    };
+                    
+                    const firstScript = document.getElementsByTagName('script')[0];
+                    firstScript.parentNode.insertBefore(script, firstScript);
+                } else if (typeof scriptItem === 'function') {
+                    // É uma função
+                    try {
+                        scriptItem();
+                        currentScript++;
+                        loadNextScript();
+                    } catch (error) {
+                        console.error('❌ Erro ao executar função:', error);
+                        showError('Erro ao executar função do jogo');
+                    }
+                } else {
+                    currentScript++;
+                    loadNextScript();
+                }
+            }
+            
+            loadNextScript();
+        }
+        
+        // Inicializar quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎱 Inicializando jogo de sinuca modular...');
+            loadGameAPI();
+        });
+    </script>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>🎱 Carregando Jogo Modular...</div>
+    </div>
+    
+    <center>
+        <div id="mygame"></div>
+    </center>
+</body>
+</html>

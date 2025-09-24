@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Teste de Integração Rapid-Draughts</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-item {
+            background: #2a2a2a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #666;
+        }
+        .test-item.success {
+            border-left-color: #4CAF50;
+        }
+        .test-item.error {
+            border-left-color: #f44336;
+        }
+        .test-item.warning {
+            border-left-color: #ff9800;
+        }
+        .status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .log {
+            background: #333;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste de Integração Rapid-Draughts</h1>
+        
+        <div id="test-results"></div>
+        
+        <div class="test-item">
+            <div class="status">📊 Status do Teste</div>
+            <div id="overall-status">Executando testes...</div>
+        </div>
+    </div>
+
+    <script>
+        // Teste de integração do rapid-draughts
+        class RapidDraughtsTester {
+            constructor() {
+                this.results = [];
+                this.tests = [
+                    { name: 'Carregamento da Biblioteca', test: () => this.testLibraryLoading() },
+                    { name: 'Criação do Jogo', test: () => this.testGameCreation() },
+                    { name: 'Motor de IA', test: () => this.testAIEngine() },
+                    { name: 'Movimentos Válidos', test: () => this.testValidMoves() },
+                    { name: 'Execução de Movimento', test: () => this.testMoveExecution() }
+                ];
+            }
+            
+            async runTests() {
+                console.log('🧪 Iniciando testes de integração...');
+                
+                for (const test of this.tests) {
+                    try {
+                        console.log(`🔍 Executando: ${test.name}`);
+                        const result = await test.test();
+                        this.addResult(test.name, result.success, result.message);
+                    } catch (error) {
+                        this.addResult(test.name, false, `Erro: ${error.message}`);
+                    }
+                }
+                
+                this.updateOverallStatus();
+            }
+            
+            addResult(name, success, message) {
+                this.results.push({ name, success, message });
+                this.displayResult(name, success, message);
+            }
+            
+            displayResult(name, success, message) {
+                const container = document.getElementById('test-results');
+                const testItem = document.createElement('div');
+                testItem.className = `test-item ${success ? 'success' : 'error'}`;
+                
+                testItem.innerHTML = `
+                    <div class="status">${success ? '✅' : '❌'} ${name}</div>
+                    <div class="log">${message}</div>
+                `;
+                
+                container.appendChild(testItem);
+            }
+            
+            updateOverallStatus() {
+                const successCount = this.results.filter(r => r.success).length;
+                const totalCount = this.results.length;
+                const status = document.getElementById('overall-status');
+                
+                if (successCount === totalCount) {
+                    status.textContent = `✅ Todos os testes passaram (${successCount}/${totalCount})`;
+                    status.parentElement.className = 'test-item success';
+                } else {
+                    status.textContent = `❌ ${successCount}/${totalCount} testes passaram`;
+                    status.parentElement.className = 'test-item error';
+                }
+            }
+            
+            async testLibraryLoading() {
+                // Aguarda o carregamento da biblioteca
+                let attempts = 0;
+                const maxAttempts = 20;
+                
+                while (attempts < maxAttempts) {
+                    if (typeof window.EnglishDraughts !== 'undefined' && 
+                        typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
+                        return {
+                            success: true,
+                            message: 'Biblioteca rapid-draughts carregada com sucesso!'
+                        };
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
+                }
+                
+                return {
+                    success: false,
+                    message: 'Timeout ao carregar biblioteca rapid-draughts'
+                };
+            }
+            
+            async testGameCreation() {
+                if (typeof window.EnglishDraughts === 'undefined') {
+                    return {
+                        success: false,
+                        message: 'EnglishDraughts não está disponível'
+                    };
+                }
+                
+                try {
+                    const game = window.EnglishDraughts.setup();
+                    
+                    if (game && typeof game.move === 'function') {
+                        return {
+                            success: true,
+                            message: 'Jogo criado com sucesso!'
+                        };
+                    } else {
+                        return {
+                            success: false,
+                            message: 'Jogo criado mas sem métodos necessários'
+                        };
+                    }
+                } catch (error) {
+                    return {
+                        success: false,
+                        message: `Erro ao criar jogo: ${error.message}`
+                    };
+                }
+            }
+            
+            async testAIEngine() {
+                if (typeof window.EnglishDraughtsComputerFactory === 'undefined') {
+                    return {
+                        success: false,
+                        message: 'EnglishDraughtsComputerFactory não está disponível'
+                    };
+                }
+                
+                try {
+                    const computer = window.EnglishDraughtsComputerFactory.alphaBeta({
+                        maxDepth: 3
+                    });
+                    
+                    if (computer && typeof computer === 'function') {
+                        return {
+                            success: true,
+                            message: 'Motor de IA criado com sucesso!'
+                        };
+                    } else {
+                        return {
+                            success: false,
+                            message: 'Motor de IA criado mas não é uma função'
+                        };
+                    }
+                } catch (error) {
+                    return {
+                        success: false,
+                        message: `Erro ao criar motor de IA: ${error.message}`
+                    };
+                }
+            }
+            
+            async testValidMoves() {
+                if (typeof window.EnglishDraughts === 'undefined') {
+                    return {
+                        success: false,
+                        message: 'EnglishDraughts não está disponível'
+                    };
+                }
+                
+                try {
+                    const game = window.EnglishDraughts.setup();
+                    const moves = game.moves;
+                    
+                    if (Array.isArray(moves) && moves.length > 0) {
+                        return {
+                            success: true,
+                            message: `${moves.length} movimentos válidos encontrados`
+                        };
+                    } else {
+                        return {
+                            success: false,
+                            message: 'Nenhum movimento válido encontrado'
+                        };
+                    }
+                } catch (error) {
+                    return {
+                        success: false,
+                        message: `Erro ao obter movimentos: ${error.message}`
+                    };
+                }
+            }
+            
+            async testMoveExecution() {
+                if (typeof window.EnglishDraughts === 'undefined') {
+                    return {
+                        success: false,
+                        message: 'EnglishDraughts não está disponível'
+                    };
+                }
+                
+                try {
+                    const game = window.EnglishDraughts.setup();
+                    const moves = game.moves;
+                    
+                    if (moves.length === 0) {
+                        return {
+                            success: false,
+                            message: 'Nenhum movimento disponível para testar'
+                        };
+                    }
+                    
+                    const firstMove = moves[0];
+                    game.move(firstMove);
+                    
+                    return {
+                        success: true,
+                        message: 'Movimento executado com sucesso!'
+                    };
+                } catch (error) {
+                    return {
+                        success: false,
+                        message: `Erro ao executar movimento: ${error.message}`
+                    };
+                }
+            }
+        }
+        
+        // Inicia os testes quando a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            const tester = new RapidDraughtsTester();
+            tester.runTests();
+        });
+    </script>
+    
+    <!-- Carrega a integração do rapid-draughts -->
+    <script src="public/games/checkers/rapid-draughts-integration.js"></script>
+</body>
+</html>

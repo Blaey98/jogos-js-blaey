@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔴 Damas - Debug</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .debug-panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .debug-logs {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔴 Damas - Debug</h1>
+    
+    <div class="debug-panel">
+        <h3>🔧 Debug Panel</h3>
+        <div class="controls">
+            <button onclick="testBasicFunction()">Testar Função Básica</button>
+            <button onclick="testRapidDraughts()">Testar Rapid-Draughts</button>
+            <button onclick="clearLogs()">Limpar Logs</button>
+        </div>
+        <div id="debugLogs" class="debug-logs"></div>
+    </div>
+
+    <script>
+        // Sistema de logs para debug
+        function addDebugLog(message, type = 'info') {
+            const debugLogs = document.getElementById('debugLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? '#ff6b6b' : 
+                                 type === 'success' ? '#51cf66' : 
+                                 type === 'warning' ? '#ffd43b' : '#74c0fc';
+            debugLogs.appendChild(logEntry);
+            debugLogs.scrollTop = debugLogs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLogs').innerHTML = '';
+        }
+
+        function testBasicFunction() {
+            addDebugLog('🧪 Testando função básica...', 'info');
+            addDebugLog('✅ Função básica funcionando!', 'success');
+        }
+
+        function testRapidDraughts() {
+            addDebugLog('🧪 Testando rapid-draughts...', 'info');
+            
+            // Verifica se a biblioteca está carregada
+            if (typeof window.EnglishDraughts !== 'undefined' && typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
+                addDebugLog('✅ Rapid-draughts carregado!', 'success');
+                addDebugLog(`🔧 EnglishDraughts: ${typeof window.EnglishDraughts}`, 'info');
+                addDebugLog(`🔧 EnglishDraughtsComputerFactory: ${typeof window.EnglishDraughtsComputerFactory}`, 'info');
+                
+                // Testa criação de jogo
+                try {
+                    const gameData = {
+                        player: 2,
+                        board: {
+                            light: 0x0F0F0F0F,
+                            dark: 0xF0F0F0F0,
+                            king: 0
+                        }
+                    };
+                    
+                    addDebugLog('📋 Criando jogo com dados: ' + JSON.stringify(gameData), 'info');
+                    const game = window.EnglishDraughts.setup(gameData);
+                    addDebugLog('✅ Jogo criado com sucesso!', 'success');
+                    addDebugLog('🔧 Board: ' + JSON.stringify(game.board), 'info');
+                    
+                    // Testa movimentos
+                    const moves = game.moves;
+                    addDebugLog('🔍 Movimentos disponíveis: ' + moves.length, 'info');
+                    
+                    if (moves.length > 0) {
+                        addDebugLog('✅ Movimentos gerados com sucesso!', 'success');
+                        addDebugLog('📋 Primeiro movimento: ' + JSON.stringify(moves[0]), 'info');
+                    } else {
+                        addDebugLog('⚠️ Nenhum movimento disponível', 'warning');
+                    }
+                    
+                } catch (error) {
+                    addDebugLog('❌ Erro ao testar rapid-draughts: ' + error.message, 'error');
+                }
+                
+            } else {
+                addDebugLog('❌ Rapid-draughts não carregado!', 'error');
+                addDebugLog(`🔧 EnglishDraughts: ${typeof window.EnglishDraughts}`, 'info');
+                addDebugLog(`🔧 EnglishDraughtsComputerFactory: ${typeof window.EnglishDraughtsComputerFactory}`, 'info');
+            }
+        }
+
+        // Carrega rapid-draughts
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('🚀 Página carregada, iniciando debug...', 'info');
+            
+            // Verifica se rapid-draughts está carregado
+            function checkRapidDraughts() {
+                if (typeof window.EnglishDraughts !== 'undefined' && typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
+                    addDebugLog('✅ Rapid-draughts carregado com sucesso!', 'success');
+                    return true;
+                } else {
+                    addDebugLog('⏳ Aguardando rapid-draughts...', 'warning');
+                    return false;
+                }
+            }
+            
+            // Tenta verificar imediatamente
+            if (!checkRapidDraughts()) {
+                // Tenta novamente após 1 segundo
+                setTimeout(() => {
+                    if (!checkRapidDraughts()) {
+                        addDebugLog('❌ Timeout ao carregar rapid-draughts', 'error');
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+
+    <!-- Carrega rapid-draughts -->
+    <script src="rapid-draughts-integration.js"></script>
+</body>
+</html>
