@@ -1,0 +1,70 @@
+.lobby {
+  position: relative;
+  flex-direction: column;
+}
+
+.lobby-l {
+  position: absolute;
+  color: white;
+  bottom: 30px;
+}
+
+.lobby-b {
+  flex-direction: column;
+  height: 560px;
+  width: 90%;
+  overflow-y: auto;
+  margin-top: 30px;
+  padding-top: 30px;
+  justify-content: flex-start;
+  scrollbar-width: none;
+}
+
+.lobby-b::-webkit-scrollbar {
+  display: none;
+}
+
+.lobby-o {
+  flex-direction: column;
+  margin-bottom: 20px;
+  padding: 10px;
+  width: 80%;
+}
+
+.lobby-o span {
+  font-size: 30px;
+  text-shadow: 1px 1px 0px black;
+}
+
+.lobby-o span,
+.lobby-m,
+.lobby-t {
+  pointer-events: none;
+}
+
+.lobby-m {
+  font-size: 20px;
+  color: #fcdba8;
+  font-weight: bold;
+  position: relative;
+}
+
+.lobby-m span {
+  position: absolute;
+  top: -25px;
+  right: -50px;
+  transform: rotate(20deg);
+}
+
+.lobby-t {
+  background: #0d0401;
+  padding: 3px 10px;
+  border-radius: 10px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset,
+    rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+}
+
+.lobby-t span {
+  margin-left: 5px;
+  font-size: 14px;
+}

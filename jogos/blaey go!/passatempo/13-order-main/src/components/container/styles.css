@@ -1,0 +1,41 @@
+body {
+  --c1: #40220e;
+  --c2: #754c23;
+  --si: 64px 64px, 64px 64px, 32px 32px, 32px 32px;
+  --bg: radial-gradient(
+        circle,
+        transparent 20%,
+        var(--c2) 20%,
+        var(--c2) 80%,
+        transparent 80%,
+        transparent
+      )
+      0% 0% / 64px 64px,
+    radial-gradient(
+        circle,
+        transparent 20%,
+        var(--c2) 20%,
+        var(--c2) 80%,
+        transparent 80%,
+        transparent
+      )
+      32px 32px / 64px 64px,
+    linear-gradient(var(--c1) 2px, transparent 2px) 0px -1px / 32px 32px,
+    linear-gradient(90deg, var(--c1) 2px, var(--c2) 2px) -1px 0px / 32px 32px var(--c2);
+}
+
+#container {
+  background: var(--bg);
+  background-size: var(--si);
+}
+
+@media only screen and (max-width: 420px) {
+  #container {
+    background: unset;
+  }
+
+  body {
+    background: var(--bg);
+    background-size: var(--si);
+  }
+}

@@ -1,0 +1,29 @@
+# TODO
+- build tools
+- collision detection
+- basic movement
+- portals between levels
+- courage meter
+- spikes
+- panic
+x level brightness
+- words of comfort
+- level editor
+- animations (IK or hardcoded)
+x at least 13 levels
+- final boss
+- end screen
+- talkers
+x pursuing ghosts
+x diving ghosts
+- crown
+* adventurer
+- sounds
+
+# Optional
+- IK for walking, jumping
+* nicer respawn
+* adventurers
+* dust
+x music
+* start screen

@@ -54,18 +54,18 @@
             max-height: 640px;
         }
         
-        /* Cores do tabuleiro - dois tons de cinza - FORÇA MÁXIMA */
+        /* Cores do tabuleiro - dois tons de VERDE - FORÇA MÁXIMA */
         #board .square {
-            background-color: #D3D3D3 !important; /* Cinza claro padrão */
+            background-color: #228B22 !important; /* Verde escuro padrão */
         }
         
         /* Forçar cores alternadas - método mais direto */
         #board .square:nth-child(odd) {
-            background-color: #D3D3D3 !important; /* Cinza claro */
+            background-color: #228B22 !important; /* Verde escuro */
         }
         
         #board .square:nth-child(even) {
-            background-color: #696969 !important; /* Cinza escuro */
+            background-color: #006400 !important; /* Verde muito escuro */
         }
         
         /* Padrão xadrez real - linha por linha */
@@ -73,28 +73,28 @@
         #board .square:nth-child(8n+3),
         #board .square:nth-child(8n+5),
         #board .square:nth-child(8n+7) {
-            background-color: #D3D3D3 !important; /* Cinza claro - linhas ímpares */
+            background-color: #228B22 !important; /* Verde escuro - linhas ímpares */
         }
         
         #board .square:nth-child(8n+2),
         #board .square:nth-child(8n+4),
         #board .square:nth-child(8n+6),
         #board .square:nth-child(8n+8) {
-            background-color: #696969 !important; /* Cinza escuro - linhas ímpares */
+            background-color: #006400 !important; /* Verde muito escuro - linhas ímpares */
         }
         
         #board .square:nth-child(16n+9),
         #board .square:nth-child(16n+11),
         #board .square:nth-child(16n+13),
         #board .square:nth-child(16n+15) {
-            background-color: #696969 !important; /* Cinza escuro - linhas pares */
+            background-color: #006400 !important; /* Verde muito escuro - linhas pares */
         }
         
         #board .square:nth-child(16n+10),
         #board .square:nth-child(16n+12),
         #board .square:nth-child(16n+14),
         #board .square:nth-child(16n+16) {
-            background-color: #D3D3D3 !important; /* Cinza claro - linhas pares */
+            background-color: #228B22 !important; /* Verde escuro - linhas pares */
         }
         
         /* Animações para Check e Check Mate */
@@ -720,7 +720,7 @@
                     <button id="btn-force-move" class="btn">🔄 Forçar IA</button>
                     <button id="btn-diagnose" class="btn">🔍 Diagnosticar</button>
                     <button id="btn-reload-pieces" class="btn">♟️ Recarregar Peças</button>
-                    <button id="btn-apply-gray" class="btn">⚫ Aplicar Cores Cinza</button>
+                    <button id="btn-apply-gray" class="btn">🟢 Aplicar Cores Verdes</button>
                     <button id="btn-force-colors" class="btn">🎨 Forçar Cores</button>
                     <button id="btn-diagnose-colors" class="btn">🔍 Diagnosticar Cores</button>
                     <button id="btn-test-check" class="btn">⚠️ Testar Check</button>
@@ -1481,9 +1481,9 @@
             }
         }
         
-        // Função para aplicar cores cinza ao tabuleiro - MÉTODO AGRESSIVO
+        // Função para aplicar cores verdes ao tabuleiro - MÉTODO AGRESSIVO
         function applyGrayColors() {
-            addLog('⚫ Aplicando cores cinza ao tabuleiro...', 'info');
+            addLog('🟢 Aplicando cores verdes ao tabuleiro...', 'info');
             
             // Aguardar um pouco para garantir que o tabuleiro esteja carregado
             setTimeout(() => {
@@ -1514,25 +1514,25 @@
                     const row = Math.floor(index / 8);
                     const col = index % 8;
                     
-                    // Padrão xadrez: casas claras e escuras alternadas
+                    // Padrão xadrez: casas verdes escuras e muito escuras alternadas
                     if ((row + col) % 2 === 0) {
-                        // Cinza claro
-                        square.style.setProperty('background-color', '#D3D3D3', 'important');
-                        square.style.backgroundColor = '#D3D3D3';
-                        square.setAttribute('style', square.getAttribute('style') + '; background-color: #D3D3D3 !important;');
+                        // Verde escuro
+                        square.style.setProperty('background-color', '#228B22', 'important');
+                        square.style.backgroundColor = '#228B22';
+                        square.setAttribute('style', square.getAttribute('style') + '; background-color: #228B22 !important;');
                         lightCount++;
                     } else {
-                        // Cinza escuro
-                        square.style.setProperty('background-color', '#696969', 'important');
-                        square.style.backgroundColor = '#696969';
-                        square.setAttribute('style', square.getAttribute('style') + '; background-color: #696969 !important;');
+                        // Verde muito escuro
+                        square.style.setProperty('background-color', '#006400', 'important');
+                        square.style.backgroundColor = '#006400';
+                        square.setAttribute('style', square.getAttribute('style') + '; background-color: #006400 !important;');
                         darkCount++;
                     }
                 });
                 
-                addLog('✅ Cores cinza aplicadas!', 'info');
-                addLog(`⚪ Cinza claro: #D3D3D3 (${lightCount} casas)`, 'info');
-                addLog(`⚫ Cinza escuro: #696969 (${darkCount} casas)`, 'info');
+                addLog('✅ Cores verdes aplicadas!', 'info');
+                addLog(`🟢 Verde escuro: #228B22 (${lightCount} casas)`, 'info');
+                addLog(`🟢 Verde muito escuro: #006400 (${darkCount} casas)`, 'info');
                 addLog(`📊 Total de casas: ${allSquares.length}`, 'info');
                 
                 // Verificar se as cores foram aplicadas
@@ -1560,9 +1560,9 @@
                         const col = index % 8;
                         
                         if ((row + col) % 2 === 0) {
-                            div.style.setProperty('background-color', '#D3D3D3', 'important');
+                            div.style.setProperty('background-color', '#228B22', 'important');
                         } else {
-                            div.style.setProperty('background-color', '#696969', 'important');
+                            div.style.setProperty('background-color', '#006400', 'important');
                         }
                     }
                 });
@@ -1606,9 +1606,9 @@
                 const col = index % 8;
                 
                 if ((row + col) % 2 === 0) {
-                    square.style.cssText += '; background-color: #D3D3D3 !important;';
+                    square.style.cssText += '; background-color: #228B22 !important;';
                 } else {
-                    square.style.cssText += '; background-color: #696969 !important;';
+                    square.style.cssText += '; background-color: #006400 !important;';
                 }
             });
             

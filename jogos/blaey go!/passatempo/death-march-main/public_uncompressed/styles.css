@@ -1,0 +1,539 @@
+:root {
+  --a: linear-gradient(to top, #000428, #004e92);
+  --b: #000;
+  --c: #000000d6;
+  --e:#4074b5;
+  --i: #fff;
+  --p-a: linear-gradient(to bottom,  #f6e6b4 0%,#ed9017 100%);
+  --p-b: #08143a;
+  --s-c: #08457b;
+  --tu: #062d53;
+}
+
+/* Estilos globales */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  overscroll-behavior-x: none;
+  background: var(--b);
+  font-family: Arial;
+  overflow: hidden;
+  position: fixed;
+  -webkit-user-select: none;
+  user-select: none;
+  color: var(--i);
+}
+
+div {
+  box-sizing: border-box;
+}
+
+/* Clase para centrar elementos en la pantalla*/
+.df {
+  display: flex;
+}
+
+.df.a {
+  align-items: center;
+}
+
+.df.c {
+  justify-content: center;
+}
+
+.df.s {
+  justify-content: space-around;
+}
+
+.df.f {
+  flex-direction: column;
+}
+
+.wi {
+  width: 100%;
+}
+
+.he {
+  height: 100%;
+}
+
+.pr {
+  position: relative;
+}
+
+.pa {
+  position: absolute;
+}
+
+#root {
+  height: var(--h);
+  overflow: hidden;
+  width: var(--w);
+}
+
+#render {
+  background: var(--i);
+  width: var(--w);
+}
+
+/* La capa que se muestra al inicio dle juego */
+#ov {
+  background: var(--c);
+  font-size: 8em;
+  z-index: 2;
+}
+
+bo {
+  overflow: hidden;
+  cursor: pointer;
+  width: var(--w);
+  height: var(--w);
+  background: #005695;
+  -webkit-tap-highlight-color: transparent;
+  background-image: linear-gradient(
+      45deg,
+      var(--s-c) 25%,
+      transparent 26%,
+      transparent 75%,
+      var(--s-c) 75%,
+      var(--s-c)
+    ),
+    linear-gradient(
+      45deg,
+      var(--s-c) 25%,
+      transparent 26%,
+      transparent 75%,
+      var(--s-c) 75%,
+      var(--s-c)
+    );
+  background-size: calc(var(--db) * 2) calc(var(--db) * 2);
+  background-position: 0 0, var(--db) var(--db);
+}
+
+
+bo.d {
+  pointer-events: none;
+}
+
+bo.w,
+bo.o {
+  filter: brightness(0.6);
+}
+
+bo.w:before {
+  content: "⏳";
+  background: var(--b);
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+}
+
+bo:active {
+  cursor:grabbing;
+}
+
+.it {
+  font-size: 2.7em;
+  height: var(--db);
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.86, -0.02, 0.45, 1.35);
+  width: var(--db);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.it.h {
+  transform: scale(2.5);
+}
+
+.it.h::after {
+  content: "💥";
+  height: 100%;
+  left: 0;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+
+.it.v {
+  transform: none;
+  transition: none;
+}
+
+/* Para el label de vida extra */
+.extra {
+  pointer-events: none;
+  width: var(--db);
+  height: var(--db);
+  text-align: center;
+  font-weight: bold;
+  font-size: 17px;
+  transform: scale(0);
+  opacity: 0;
+  transition: all 0.3s ease-out;
+  text-shadow: 2px 2px 0 var(--e), 2px -2px 0 var(--e), -2px 2px 0 var(--e), -2px -2px 0 var(--e), 2px 0px 0 var(--e), 0px 2px 0 var(--e), -2px 0px 0 var(--e), 0px -2px 0 var(--e);
+}
+
+.extra.s {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.extra.h {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.ba {
+  background: var(--a);
+}
+
+top {
+  height: calc(var(--h) - var(--w) - 20px);
+}
+/* Para el score */
+.sc {
+  top: 20px;
+}
+
+.scn {
+  width: 190px;
+  height: 65px;
+  background: var(--tu);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.scv {
+  width: 50%;
+  border-radius: 15px;
+  font-size: 23px;
+  font-weight: bold;
+}
+
+.scv:not(:last-child) {
+  margin-right: 10px;
+}
+
+.sci {
+  background: var(--tu);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.scin {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: 3px solid var(--i);
+  font-size: 13px;
+  font-weight: bold;
+  opacity: 0.2;
+}
+
+.scin.ac {
+  background: #feae13;
+  opacity: 1;
+}
+
+.tu {
+  bottom: 0;
+  height: 110px;
+  background: linear-gradient(to top, #004e92, #000428);
+}
+
+.tu:before,
+.tu::after {
+  content: "🧟‍♂️";
+  position: absolute;
+  font-size: 105px;
+  top: -120px;
+  left: 3%;
+}
+
+.tu::after {
+  content: "🧟‍♀️";
+  right: 3%;
+  left: unset;
+}
+
+/* Para los nombres y número de lanzamientos... */
+.tun {
+  margin: 15px 0 5px 0;
+}
+
+.tuna {
+  text-align: center;
+  width: 100px;
+  height: 43px;
+  border-radius: 10px;
+  border: 3px solid var(--i);
+}
+
+
+/* La barra de progreso */
+.tup {
+  padding: 10px;
+}
+
+.bp {
+  height: 25px;
+  background: var(--p-b);
+}
+
+.bp::-moz-progress-bar {
+  background: var(--p-a);
+}
+
+.bp::-webkit-progress-value {
+  background: var(--p-a);
+}
+
+.bp::-webkit-progress-bar {
+  background: var(--p-b);
+}
+
+#tupl {
+  left: 0;
+  top: 13px;
+  text-align: center;
+  text-shadow: 1px 1px 1px var(--b);
+}
+
+/* Donde muestra los turnos */
+.tuni {
+  width: 25px;
+  height: 25px;
+  border: 2px solid var(--i);
+  border-radius: 50%;
+  margin: 5px;
+}
+
+/* Estilo para los botones... */
+.mB {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 14px 24px;
+  border: none;
+  background: linear-gradient(to right, #e61e4d 0%, #e31c5f 50%, #d70466);
+  color: var(--i);
+}
+
+/* Para el logo */
+.lg {
+  padding: 20px;
+}
+
+.lg h1 {
+  font-size: 50px;
+  font-weight: bold;
+  margin: 20px;
+  text-shadow: 0 -1px 4px var(--i), 0 -2px 10px #ff0, 0 -10px 20px #ff8000, 0 -18px 40px #F00;
+  width: 50%;
+  text-align: center;
+}
+
+/* Listado de botones del lobby */
+.mBs {
+  width: 60%;
+}
+
+.mBs .mB {
+  margin-bottom: 15px;
+  height: 55px;
+}
+
+/* Para el botón back */
+#back, #bso {
+  cursor: pointer;
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  font-size: 2em;
+  z-index: 1;
+  background: transparent;
+  border: none;
+}
+
+#bso {
+  left: unset;
+  right: 15px;
+}
+
+/* Para los mensajes del board... */
+#msb {
+  padding: 10px;
+  background: var(--c);
+  font-size: 2em;
+  z-index: 2;
+  bottom: 200px;
+  pointer-events: none;
+  display: none;
+  text-align: center;
+}
+
+#msb.sh {
+  display: block;
+}
+
+/* Estilos para el modal */
+modal {
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
+modal.hide {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+modal.show {
+  visibility: visible;
+}
+
+.ms,
+.mw {
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.ms {
+  background: var(--c);
+}
+
+.mw {
+  z-index: 1;
+}
+
+.mc {
+  border-radius: 5px;
+  overflow: hidden;
+  width: 71%;
+  background: var(--i);
+  overflow: hidden;
+}
+
+.txt {
+  color: #8f9cb5;
+  padding: 20px;
+  flex-direction: column;
+}
+
+.mb button {
+  width: 100%;
+  border: none;
+  height: 50px;
+  background: #fc7169;
+  cursor: pointer;
+  color: var(--i);
+  font-weight: bold;
+}
+
+.mb button:nth-child(2) {
+  background: #b6bece;
+}
+
+/* fin estilos del modal */
+.wnuse {
+  position: absolute;
+  top: 0;
+}
+
+#nuse {
+  margin: 30px;
+  width: 40%;
+}
+
+fieldset {
+  border-radius: 10px;
+  border: 3px solid var(--i);
+  padding: 20px;
+  margin: 30px 0;
+}
+
+fieldset form {
+  display: flex;
+}
+
+#code {
+  border-radius: 10px;
+  border: none;
+  font-size: 30px;
+  margin-right: 10px;
+  text-align: center;
+  width: 65%;
+}
+
+.sop {
+  width: 80%;
+}
+
+.sop span {
+  font-size: 8.5em;
+}
+
+.sop h2 {
+  font-size: 25px;
+  margin: 25px;
+  font-weight: bold;
+}
+
+.ab {
+  width: 85%;
+  margin: 10px;
+  text-align: center;
+  font-size: 20px;
+}
+
+a {
+  color: var(--i);
+  font-weight: bold;
+}
+
+a:visited {
+  color: var(--i);
+}
+
+.eg h2 {
+  font-size: 50px;
+}
+
+.eg span {
+  font-size: 5em;
+  margin: 25px;
+}
+
+.egp {
+  border-radius: 10px;
+  border: 3px solid var(--i);
+  margin-bottom: 70px;
+  padding: 10px;
+  width: 80%;
+}
+
+.egu {
+  text-align: center;
+}
+
+.egn {
+  font-size: 20px;
+}
+
+.egu {
+  font-size: 50px;
+  font-weight: bold;
+}
+
+#sh {
+  margin-bottom: 20px;
+}

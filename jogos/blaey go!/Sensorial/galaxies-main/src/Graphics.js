@@ -1,0 +1,5 @@
+export const TheCanvas = document.querySelector('canvas')
+export const gl = TheCanvas.getContext('webgl')
+gl.enable(gl.CULL_FACE)
+gl.enable(gl.BLEND)
+gl.enableVertexAttribArray(0)

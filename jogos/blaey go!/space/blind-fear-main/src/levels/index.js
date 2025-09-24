@@ -1,0 +1,97 @@
+import { emit } from "../engine/events";
+import { createPath } from "../engine/utils";
+import l01 from "./01";
+import l02 from "./02";
+import l03 from "./03";
+import l04 from "./04";
+import l05 from "./05";
+import l06 from "./06";
+import l07 from "./07";
+import l08 from "./08";
+import l09 from "./09";
+import l10 from "./10";
+import l11 from "./11";
+import l12 from "./12";
+
+const levels = [
+  l01,
+  l02,
+  l03,
+  l04,
+  l05,
+  l06,
+  l07,
+  l08,
+  l09,
+  l10,
+  l11,
+  l12,
+];
+
+function parseEnemy(data) {
+  return {
+    sprite: data[2],
+    rotate: data[3],
+    loop: data[4],
+    shield: data[5],
+    fireMode: data[6],
+    fireRate: data[7],
+    path: createPath(data[8]),
+  };
+}
+
+export function getLevelLastFrame(index) {
+  const level = levels[index];
+  // Get the max frame from all level.
+  let lastFrame = Math.max(
+    ...Object.keys(level[0]),
+    ...Object.keys(level[1]),
+  );
+
+  // Get info from last enemy/asteroid and calculate the last frame
+  // taking into total and interval.
+  let o = level[0][lastFrame];
+  o ?? (o = level[1][lastFrame]);
+  lastFrame += o[1] / 1000 * 60 * o[0];
+
+  return lastFrame;
+}
+
+export const totalLevels = levels.length;
+
+export function processLevel(frame = 0, currentLevel = 0, totalActiveEnemies = 0, canSpawnBoss = false) {
+  const level = levels[currentLevel];
+  const lastFrame = getLevelLastFrame(currentLevel);
+
+  // Enemies
+  if (level[0][frame]) {
+    const o = level[0][frame];
+    emit('spawn-enemy', o[0], o[1], parseEnemy(o));
+  }
+
+  // Asteroids
+  if (level[1][frame]) {
+    emit('spawn-asteroid', ...level[1][frame]);
+  }
+
+  // Powerups
+  if (level[2][frame]) {
+    emit('spawn-powerup', ...level[2][frame]);
+  }
+
+  // Dialogs
+  if (level[3][frame]) {
+    emit('set-dialog', ...level[3][frame]);
+  }
+
+  // No boss? Go to next level.
+  if (level[4].length === 0 && frame >= lastFrame && totalActiveEnemies === 0) {
+    const newLevel = currentLevel + 1 >= totalLevels ? 0 : currentLevel + 1;
+    emit('next-level', newLevel);
+  }
+
+  // Boss
+  if (level[4].length > 0 && canSpawnBoss && totalActiveEnemies === 0) {
+    emit('spawn-boss', ...level[4]);
+  }
+}

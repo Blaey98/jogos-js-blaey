@@ -1,0 +1,52 @@
+body {
+  background-color: lightgray;
+  position: relative;
+}
+
+canvas {
+  position: relative;
+  left: calc(50% - 500px);
+  top: 10px;
+  background-color: gray;
+  border: 1px solid white;
+}
+
+#startButton {
+  position: absolute;
+  border: none;
+  background: none;
+  color: white;
+  font: bold 48px arial;
+  text-transform: uppercase;
+  left: calc(50% - 50px);
+  top: 245px;
+  user-select: none;
+  cursor: pointer;
+}
+
+#restartButton:hover,
+#exitButton:hover {
+  background-color: white;
+  color: black;
+}
+
+#restartButton,
+#exitButton {
+  position: absolute;
+  color: white;
+  font: bold 20px arial;
+  text-transform: uppercase;
+  left: calc(50% - 50px);
+  top: 220px;
+  border: 1px solid white;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: "none";
+  display: none;
+}
+
+#exitButton {
+  top: 280px;
+  left: calc(50% - 25px);
+}

@@ -35,6 +35,43 @@
             align-items: center;
         }
 
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border-radius: 20px;
+            border: 1px solid #444;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            font-size: 16px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            color: #4CAF50;
+            animation: none;
+        }
+
+        .status-indicator.offline {
+            color: #f44336;
+            animation: none;
+        }
+
+        .status-text {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
         .board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -318,14 +355,30 @@
         </div>
         
         <div class="controls">
-            <div class="difficulty-selector">
-                <select id="difficulty">
-                    <option value="1">Fácil</option>
-                    <option value="3" selected>Médio</option>
-                    <option value="5">Difícil</option>
-                    <option value="7">Expert</option>
-                </select>
+            <div class="bot-status" id="botStatus">
+                <span class="status-indicator" id="statusIndicator">🔄</span>
+                <span class="status-text" id="statusText">Verificando bot...</span>
             </div>
+            <div class="debug-panel" id="debugPanel" style="display: none;">
+                <h4>🔧 Debug Logs</h4>
+                <div id="debugLogs" style="background: #f5f5f5; padding: 10px; border-radius: 5px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+                <button onclick="toggleDebugPanel()" style="margin-top: 5px; padding: 5px 10px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">Fechar Logs</button>
+            </div>
+            <button onclick="toggleDebugPanel()" style="margin: 5px; padding: 5px 10px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;">🔧 Ver Logs</button>
+        <div class="difficulty-selector">
+            <select id="difficulty">
+                <option value="1">Iniciante (Profundidade 1)</option>
+                <option value="2">Fácil (Profundidade 2)</option>
+                <option value="3" selected>Médio (Profundidade 3)</option>
+                <option value="4">Intermediário (Profundidade 4)</option>
+                <option value="5">Difícil (Profundidade 5)</option>
+                <option value="6">Avançado (Profundidade 6)</option>
+                <option value="7">Expert (Profundidade 7)</option>
+                <option value="8">Mestre (Profundidade 8)</option>
+                <option value="9">Grande Mestre (Profundidade 9)</option>
+                <option value="10">Lenda (Profundidade 10)</option>
+            </select>
+        </div>
             <button class="btn" onclick="newGame()">Novo Jogo</button>
         </div>
 
@@ -338,6 +391,63 @@
     </div>
 
     <script>
+        // Sistema de logs para debug
+        function addDebugLog(message, type = 'info') {
+            const debugLogs = document.getElementById('debugLogs');
+            if (debugLogs) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.style.marginBottom = '2px';
+                logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#333';
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                debugLogs.appendChild(logEntry);
+                debugLogs.scrollTop = debugLogs.scrollHeight;
+            }
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        // Função para alternar painel de debug
+        function toggleDebugPanel() {
+            const debugPanel = document.getElementById('debugPanel');
+            if (debugPanel.style.display === 'none') {
+                debugPanel.style.display = 'block';
+                addDebugLog('🔧 Painel de debug aberto', 'info');
+            } else {
+                debugPanel.style.display = 'none';
+            }
+        }
+
+        // Função para verificar status do bot
+        async function checkBotStatus() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            addDebugLog('🔍 Verificando status do bot...', 'info');
+            
+            // Verifica se a biblioteca rapid-draughts está carregada
+            if (typeof window.EnglishDraughts !== 'undefined' && typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
+                statusIndicator.textContent = '✅';
+                statusIndicator.className = 'status-indicator online';
+                statusText.textContent = 'Bot Local Ativo';
+                addDebugLog('✅ Biblioteca rapid-draughts carregada com sucesso!', 'success');
+                addDebugLog(`🔧 EnglishDraughts: ${typeof window.EnglishDraughts}`, 'info');
+                addDebugLog(`🔧 EnglishDraughtsComputerFactory: ${typeof window.EnglishDraughtsComputerFactory}`, 'info');
+            } else {
+                statusIndicator.textContent = '🔄';
+                statusIndicator.className = 'status-indicator loading';
+                statusText.textContent = 'Carregando Bot...';
+                addDebugLog('⏳ Aguardando carregamento da biblioteca...', 'warning');
+                addDebugLog(`🔧 EnglishDraughts: ${typeof window.EnglishDraughts}`, 'info');
+                addDebugLog(`🔧 EnglishDraughtsComputerFactory: ${typeof window.EnglishDraughtsComputerFactory}`, 'info');
+                
+                // Tenta novamente após 1 segundo
+                setTimeout(checkBotStatus, 1000);
+            }
+        }
+
+        // Verificar status do bot ao carregar a página
+        document.addEventListener('DOMContentLoaded', checkBotStatus);
+
         class InternationalCheckersGame {
             constructor() {
                 this.board = [];
@@ -765,13 +875,30 @@
             }
 
             makeMove(fromRow, fromCol, toRow, toCol, capturedPieces = null) {
+                console.log(`makeMove: (${fromRow},${fromCol}) -> (${toRow},${toCol})`);
+                
+                // Validação de coordenadas
+                if (fromRow < 0 || fromRow >= 8 || fromCol < 0 || fromCol >= 8 ||
+                    toRow < 0 || toRow >= 8 || toCol < 0 || toCol >= 8) {
+                    console.error('Coordenadas inválidas:', {fromRow, fromCol, toRow, toCol});
+                    return;
+                }
+                
+                // Verifica se há uma peça na posição de origem
+                const piece = this.board[fromRow][fromCol];
+                if (piece === 0) {
+                    console.error('Não há peça na posição de origem:', {fromRow, fromCol, piece});
+                    return;
+                }
+                
+                console.log(`Movendo peça ${piece} de (${fromRow},${fromCol}) para (${toRow},${toCol})`);
+                
                 // Salva o estado para desfazer
                 this.gameHistory.push({
                     board: this.board.map(row => [...row]),
                     currentPlayer: this.currentPlayer
                 });
                 
-                const piece = this.board[fromRow][fromCol];
                 this.board[fromRow][fromCol] = 0;
                 this.board[toRow][toCol] = piece;
                 
@@ -846,27 +973,181 @@
                 }
             }
 
-            makeAIMoveJS() {
-                // Motor JavaScript simples como fallback
-                const moves = this.getAllPossibleMoves(2);
-                if (moves.length === 0) {
-                    return;
+            async makeAIMoveJS() {
+                console.log(`🤖 Executando movimento da IA (dificuldade: ${this.difficulty})`);
+                
+                // Usa APENAS rapid-draughts para todas as dificuldades
+                console.log('🚀 Usando rapid-draughts para movimento inteligente...');
+                try {
+                    const bestMove = await this.getServerMove();
+                    console.log('✅ Movimento do rapid-draughts obtido:', bestMove);
+                    
+                    console.log('🎯 Melhor movimento escolhido:', bestMove);
+                    
+                    if (bestMove.capturedPieces && bestMove.capturedPieces.length > 0) {
+                        console.log('⚔️ Executando movimento com captura');
+                        this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol, bestMove.capturedPieces);
+                    } else {
+                        console.log('➡️ Executando movimento simples');
+                        this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol);
+                    }
+                    
+                    // Alterna o turno de volta para o jogador
+                    this.currentPlayer = 1;
+                    this.updateGameInfo();
+                    
+                    this.checkGameOver();
+                } catch (error) {
+                    console.error('❌ Erro ao usar rapid-draughts:', error);
+                    console.log('❌ Motor não disponível - jogo pausado');
+                    // Não há fallback - apenas rapid-draughts
+                }
+            }
+
+            // Função para obter movimento usando rapid-draughts local
+            async getServerMove() {
+                console.log('🔍 Buscando movimento com rapid-draughts local...');
+                
+                try {
+                    // Verifica se a biblioteca está carregada
+                    if (typeof window.EnglishDraughts === 'undefined' || typeof window.EnglishDraughtsComputerFactory === 'undefined') {
+                        throw new Error('Biblioteca rapid-draughts não carregada');
+                    }
+                    
+                    console.log('📋 Estado atual do tabuleiro:', this.board);
+                    
+                    // Converte o tabuleiro local para o formato esperado pelo rapid-draughts
+                    const rapidDraughtsBoard = this.convertLocalBoardToRapidDraughtsFormat(this.board);
+                    
+                    const game = window.EnglishDraughts.setup(rapidDraughtsBoard);
+                    
+                    // Configura o computador com a profundidade desejada
+                    const computer = window.EnglishDraughtsComputerFactory.alphaBeta({
+                        maxDepth: this.difficulty,
+                        quiescence: true
+                    });
+                    
+                    console.log(`🤖 Usando rapid-draughts com profundidade ${this.difficulty}`);
+                    
+                    // Obtém o melhor movimento
+                    const move = await computer(game);
+                    
+                    if (move) {
+                        console.log('✅ Movimento encontrado:', move);
+                        // Converte o movimento para formato local
+                        const localMove = this.convertRapidDraughtsMoveToLocal(move);
+                        console.log('✅ Movimento convertido:', localMove);
+                        return localMove;
+                    } else {
+                        throw new Error('Nenhum movimento encontrado');
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao usar rapid-draughts:', error);
+                    throw error;
+                }
+            }
+            
+            // Converte tabuleiro local para formato rapid-draughts
+            convertLocalBoardToRapidDraughtsFormat(localBoard) {
+                const rapidDraughtsFormat = {
+                    light: 0, // Bitmask para peças claras
+                    dark: 0,  // Bitmask para peças escuras
+                    king: 0   // Bitmask para reis
+                };
+
+                // Mapeamento de posições do tabuleiro 8x8 para bitmask (0-31)
+                // O rapid-draughts usa um tabuleiro de 32 casas jogáveis
+                const boardMap = [
+                    -1, 0, -1, 1, -1, 2, -1, 3,
+                    4, -1, 5, -1, 6, -1, 7, -1,
+                    -1, 8, -1, 9, -1, 10, -1, 11,
+                    12, -1, 13, -1, 14, -1, 15, -1,
+                    -1, 16, -1, 17, -1, 18, -1, 19,
+                    20, -1, 21, -1, 22, -1, 23, -1,
+                    -1, 24, -1, 25, -1, 26, -1, 27,
+                    28, -1, 29, -1, 30, -1, 31, -1
+                ];
+
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = localBoard[row][col];
+                        const linearIndex = row * 8 + col;
+                        const rapidDraughtsIndex = boardMap[linearIndex];
+
+                        if (rapidDraughtsIndex !== -1) { // Se for uma casa jogável
+                            const bit = 1 << rapidDraughtsIndex; // Cria o bitmask para a posição
+
+                            if (piece === 1) { // Peça vermelha (jogador)
+                                rapidDraughtsFormat.light |= bit;
+                            } else if (piece === 2) { // Peça azul (IA)
+                                rapidDraughtsFormat.dark |= bit;
+                            } else if (piece === 3) { // Rei vermelho
+                                rapidDraughtsFormat.light |= bit;
+                                rapidDraughtsFormat.king |= bit;
+                            } else if (piece === 4) { // Rei azul
+                                rapidDraughtsFormat.dark |= bit;
+                                rapidDraughtsFormat.king |= bit;
+                            }
+                        }
+                    }
+                }
+                console.log('📤 Tabuleiro convertido para rapid-draughts format:', rapidDraughtsFormat);
+                return rapidDraughtsFormat;
+            }
+            
+            // Converte tabuleiro local para formato do servidor
+            convertBoardToServerFormat() {
+                console.log('🔄 Convertendo tabuleiro para formato do servidor...');
+                console.log('📋 Estado atual do tabuleiro:', this.board);
+                
+                // Converte o tabuleiro 8x8 para array linear (0-63)
+                const serverBoard = [];
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = this.board[row][col];
+                        // Converte peças locais para formato do servidor
+                        let serverPiece = 0;
+                        if (piece === 1) serverPiece = 1; // Peça vermelha
+                        else if (piece === 2) serverPiece = 2; // Peça azul
+                        else if (piece === 3) serverPiece = 3; // Rei vermelho
+                        else if (piece === 4) serverPiece = 4; // Rei azul
+                        
+                        serverBoard.push(serverPiece);
+                    }
                 }
                 
-                // Escolher movimento aleatório
-                const bestMove = moves[Math.floor(Math.random() * moves.length)];
+                console.log('📤 Tabuleiro convertido para servidor:', serverBoard);
+                return serverBoard;
+            }
+            
+            // Converte movimento do rapid-draughts para formato local
+            convertRapidDraughtsMoveToLocal(rapidMove) {
+                console.log('Movimento do rapid-draughts:', rapidMove);
                 
-                if (bestMove.capturedPieces && bestMove.capturedPieces.length > 0) {
-                    this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol, bestMove.capturedPieces);
-                } else {
-                    this.makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol);
+                // Converte coordenadas do rapid-draughts para formato local
+                // O rapid-draughts usa coordenadas lineares 0-63, precisamos converter para matriz 8x8
+                const fromRow = Math.floor(rapidMove.origin / 8);
+                const fromCol = rapidMove.origin % 8;
+                const toRow = Math.floor(rapidMove.destination / 8);
+                const toCol = rapidMove.destination % 8;
+                
+                console.log(`Conversão: origem(${rapidMove.origin}) -> (${fromRow},${fromCol}), destino(${rapidMove.destination}) -> (${toRow},${toCol})`);
+                
+                // Verifica se as coordenadas são válidas
+                if (fromRow < 0 || fromRow >= 8 || fromCol < 0 || fromCol >= 8 ||
+                    toRow < 0 || toRow >= 8 || toCol < 0 || toCol >= 8) {
+                    console.error('Coordenadas inválidas do rapid-draughts:', {fromRow, fromCol, toRow, toCol});
+                    throw new Error('Coordenadas inválidas do rapid-draughts');
                 }
                 
-                // Alterna o turno de volta para o jogador
-                this.currentPlayer = 1;
-                this.updateGameInfo();
-                
-                this.checkGameOver();
+                return {
+                    fromRow: fromRow,
+                    fromCol: fromCol,
+                    toRow: toRow,
+                    toCol: toCol,
+                    type: rapidMove.captures && rapidMove.captures.length > 0 ? 'capture' : 'move',
+                    capturedPieces: rapidMove.captures || []
+                };
             }
 
             getAllPossibleMoves(player) {
@@ -983,6 +1264,44 @@
         // Inicializa o jogo
         document.addEventListener('DOMContentLoaded', () => {
             game = new InternationalCheckersGame();
+        });
+    </script>
+    <script src="rapid-draughts-simple.js"></script>
+    <script>
+        // Carrega a biblioteca rapid-draughts no window para uso global
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('📚 Carregando biblioteca rapid-draughts...');
+            
+            // Verifica se a biblioteca foi carregada
+            function checkLibrary() {
+                if (typeof window.EnglishDraughts !== 'undefined' && typeof window.EnglishDraughtsComputerFactory !== 'undefined') {
+                    console.log('✅ Biblioteca rapid-draughts carregada com sucesso!');
+                    console.log('🔧 EnglishDraughts:', typeof window.EnglishDraughts);
+                    console.log('🔧 EnglishDraughtsComputerFactory:', typeof window.EnglishDraughtsComputerFactory);
+                    return true;
+                } else {
+                    console.log('⏳ Aguardando carregamento da biblioteca...');
+                    console.log('🔧 EnglishDraughts:', typeof window.EnglishDraughts);
+                    console.log('🔧 EnglishDraughtsComputerFactory:', typeof window.EnglishDraughtsComputerFactory);
+                    return false;
+                }
+            }
+            
+            // Tenta verificar imediatamente
+            if (!checkLibrary()) {
+                // Se não carregou, tenta novamente a cada 500ms por até 10 segundos
+                let attempts = 0;
+                const maxAttempts = 20;
+                const interval = setInterval(() => {
+                    attempts++;
+                    if (checkLibrary() || attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        if (attempts >= maxAttempts) {
+                            console.error('❌ Timeout ao carregar biblioteca rapid-draughts');
+                        }
+                    }
+                }, 500);
+            }
         });
     </script>
 </body>

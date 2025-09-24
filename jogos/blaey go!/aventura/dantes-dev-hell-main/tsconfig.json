@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["DOM", "ES6", "DOM.Iterable", "ScriptHost", "ES2017"],
+    "baseUrl": "./",
+    "noEmit": false,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true
+  },
+  "include": ["src/**/*", "assets/**/*", "typedefs/*", "__mocks__/*"]
+}

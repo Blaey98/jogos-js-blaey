@@ -1,0 +1,65 @@
+<h2>CASTLE ESCAPE BONUSES</h2>
+<h3>MAKING-OF</h3>
+
+<a href="//xem.github.io/articles/js13k23.html">read it here</a>
+<br>
+<br>
+<h3>IPFS HOSTING</h3>
+
+(coming soon)
+<br>
+<br>
+<h3>BEST SCORES</h3>
+
+(also hosted on IPFS soon)
+
+<table>
+<tr>
+<td>
+
+<table border>
+<th>Best times</th>
+<tr><td>1. xem (271s)
+<tr><td>2. korhosik (977s)
+<tr><td>3. alternative451 (1044s)
+<tr><td>4. sam (1277s)
+<tr><td>5. mvasilkov (1365s)
+<tr><td>6. ???
+</table>
+
+<td>
+
+<table border>
+<th>Lowest clicks</th>
+<tr><td>1. xem (169)
+<tr><td>2. alternative451 (466)
+<tr><td>3. korhosik (569)
+<tr><td>4. mvasilkov (1059)
+<tr><td>5. sam (1097)
+<tr><td>6. ???
+</table>
+
+</table>
+<br>
+<br>
+<h3>YOUR SCORE</h3>
+<div id=your></div>
+
+
+<style>
+body { background: #def; font-family: Papyrus }
+a { color: #00F }
+
+table table {  background: #eee; }
+</style>
+
+<script>
+if(location.search.length > 1){
+  your.innerHTML = `${location.search.slice(1).split(",").map(atob)[0]} clicks, ${location.search.slice(1).split(",").map(atob)[1]} seconds - <a href='http://twitter.com/intent/tweet?text=I%20played%20CASTLE%20ESCAPE%20by%20@maximeeuziere!%20My%20score%3A%20${location.search.slice(1).split(",").map(atob)[0]}%20clicks%2C%20${location.search.slice(1).split(",").map(atob)[1]}%20seconds.%20Play%20here%3A%20https%3A//xem.github.io/js13k23'>share on X</a>` 
+  
+}
+else {
+  your.innerHTML = "Finish the game to share your best score"
+}
+
+</script>

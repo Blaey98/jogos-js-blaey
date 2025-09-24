@@ -1,0 +1,91 @@
+{
+  "name": "rapid-draughts",
+  "private": false,
+  "version": "1.0.6",
+  "license": "MIT",
+  "author": {
+    "name": "loks0n",
+    "email": "22452787+loks0n@users.noreply.github.com",
+    "url": "https://loks0n.dev"
+  },
+  "homepage": "https://loks0n.dev/projects/rapid-draughts",
+  "description": "A super speedy, blazing fast, rocket-powered TypeScript draughts/checkers engine with move validation, AI and game history.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loks0n/rapid-draughts.git"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "draughts",
+    "draughts engine",
+    "draughts validation",
+    "checkers",
+    "checkers engine",
+    "draughts validation",
+    "boardgame",
+    "bitboard",
+    "english draughts"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./english": {
+      "types": "./dist/english.d.ts",
+      "import": "./dist/english.js",
+      "require": "./dist/english.cjs"
+    }
+  },
+  "typesVersions": {
+    ">4.0": {
+      "index": [
+        "./dist/index.d.ts"
+      ],
+      "english": [
+        "./dist/english.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "prepare": "npm run build",
+    "prepublishOnly": "publint",
+    "build": "tsc && vite build",
+    "examples:basic": "vite-node examples/basic.ts",
+    "benchmark": "vite-node examples/benchmark.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write src",
+    "lint": "eslint src && prettier --check src",
+    "coverage": "vitest run --coverage",
+    "release": "dotenv release-it"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.22.0",
+    "dotenv-cli": "^8.0.0",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "publint": "^0.3.9",
+    "release-it": "^18.1.2",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1",
+    "vite": "^6.2.2",
+    "vite-node": "^3.0.9",
+    "vite-plugin-dts": "^4.5.3",
+    "vitest": "^3.0.9"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}

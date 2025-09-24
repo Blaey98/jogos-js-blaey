@@ -1,0 +1,15 @@
+{
+  "name": "kinglonglegs",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "npx rollup -c",
+    "serve": "ruby -run -ehttpd -- --port 3000 dist",
+    "dev": "npx rollup -cw"
+  },
+  "author": "Tom Copeland",
+  "license": "MIT",
+  "dependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.20.0"
+  }
+}

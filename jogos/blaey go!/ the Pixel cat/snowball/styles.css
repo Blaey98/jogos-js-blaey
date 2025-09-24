@@ -1,0 +1,43 @@
+:root {
+  /** Color Palette */
+  --white: #e0e0e0;
+  --black: #121212;
+
+  /* Light theme variables (default) */
+  --bg-color: var(--white);
+  --text-color: var(--black);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark theme variables */
+    --bg-color: var(--black);
+    --text-color: var(--white);
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+#gameCanvas {
+  height: 1024px;
+  width: 512px;
+  max-height: 99svh;
+  max-width: 99svw;
+  border: 2px solid #333;
+  display: block;
+  color: var(--text-color);
+  /* Prevent canvas from being draggable/selectable */
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  outline: none; /* Remove focus outline */
+}

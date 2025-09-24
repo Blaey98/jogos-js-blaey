@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Servidor Web para Damas com Motor C
-Integra o motor de busca C com interface web
+Servidor Web para Damas com Motor JavaScript
+Integra o motor de busca JavaScript rapid-draughts com interface web
 """
 
 import sys
@@ -11,59 +11,48 @@ import time
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
-# Adicionar o diretório src/python ao path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src', 'python'))
+# Importar wrapper do motor JavaScript
+from js_engine_wrapper import load_js_engine, search_move_js, test_js_engine
 
 app = Flask(__name__)
 CORS(app)
 
-# Variáveis globais para o motor C
-search_engine = None
-motor_c_loaded = False
+# Variáveis globais para o motor JavaScript
+motor_js_loaded = False
 
-def load_motor_c():
-    """Carrega o motor C de damas"""
-    global search_engine, motor_c_loaded
+def load_motor_js():
+    """Carrega o motor JavaScript de damas"""
+    global motor_js_loaded
     try:
-        import search_engine
-        motor_c_loaded = True
-        print("✅ Motor C carregado com sucesso!")
-        return True
-    except ImportError as e:
-        print(f"❌ Erro ao carregar motor C: {e}")
-        motor_c_loaded = False
+        motor_js_loaded = load_js_engine()
+        if motor_js_loaded:
+            print("✅ Motor JavaScript carregado com sucesso!")
+        else:
+            print("❌ Erro ao carregar motor JavaScript")
+        return motor_js_loaded
+    except Exception as e:
+        print(f"❌ Erro ao carregar motor JavaScript: {e}")
+        motor_js_loaded = False
         return False
 
-def search_move(board_state, player, time_limit=1.0):
-    """Busca o melhor movimento usando o motor C"""
-    global search_engine, motor_c_loaded
+def search_move(board_state, player, time_limit=1.0, depth=6):
+    """Busca o melhor movimento usando o motor JavaScript"""
+    global motor_js_loaded
     
-    if not motor_c_loaded:
-        return {"error": "Motor C não carregado"}
+    if not motor_js_loaded:
+        return {"error": "Motor JavaScript não carregado"}
     
     try:
-        # Converter o estado do tabuleiro para o formato do motor C
-        # board_state deve ser uma lista com 6 inteiros de 64 bits
-        # [p1, p2, p1k, p2k, player, time]
+        # Usar o motor JavaScript
+        result = search_move_js(board_state, player, time_limit, depth)
         
-        if len(board_state) < 6:
-            return {"error": "Estado do tabuleiro inválido"}
-        
-        # Chamar o motor C (precisa de 7 argumentos)
-        result = search_engine.search_position(
-            board_state[0],  # p1
-            board_state[1],  # p2
-            board_state[2],  # p1k
-            board_state[3],  # p2k
-            player,          # player
-            time_limit,      # time
-            10               # depth (7º argumento)
-        )
+        if "error" in result:
+            return result
         
         return {
             "success": True,
             "result": result,
-            "motor": "C"
+            "motor": "JavaScript"
         }
         
     except Exception as e:
@@ -89,7 +78,7 @@ def index():
     </head>
     <body>
         <div class="container">
-            <h1>🎮 Damas com Motor C</h1>
+            <h1>🎮 Damas com Motor JavaScript</h1>
             <div id="status" class="status">Carregando...</div>
             <a href="/games/checkers/" class="game-link">🔴 Damas Clássicas</a>
             <a href="/games/checkers-international/" class="game-link">🌍 Damas Internacionais</a>
@@ -100,12 +89,12 @@ def index():
                 .then(response => response.json())
                 .then(data => {
                     const status = document.getElementById('status');
-                    if (data.motor_c) {
+                    if (data.motor_js) {
                         status.className = 'status ok';
-                        status.textContent = '✅ Motor C carregado e funcionando!';
+                        status.textContent = '✅ Motor JavaScript carregado e funcionando!';
                     } else {
                         status.className = 'status error';
-                        status.textContent = '❌ Motor C não carregado';
+                        status.textContent = '❌ Motor JavaScript não carregado';
                     }
                 })
                 .catch(error => {
@@ -143,7 +132,7 @@ def health():
     """Endpoint de saúde da API"""
     return jsonify({
         "status": "ok",
-        "motor_c": motor_c_loaded,
+        "motor_js": motor_js_loaded,
         "timestamp": time.time()
     })
 
@@ -159,8 +148,9 @@ def api_search():
         board_state = data.get('board_state', [])
         player = data.get('player', 1)
         time_limit = data.get('time_limit', 1.0)
+        depth = data.get('depth', 6)
         
-        result = search_move(board_state, player, time_limit)
+        result = search_move(board_state, player, time_limit, depth)
         
         return jsonify(result)
         
@@ -169,30 +159,27 @@ def api_search():
 
 @app.route('/api/test')
 def test_motor():
-    """Endpoint para testar o motor C"""
-    if not motor_c_loaded:
-        return jsonify({"error": "Motor C não carregado"}), 500
+    """Endpoint para testar o motor JavaScript"""
+    if not motor_js_loaded:
+        return jsonify({"error": "Motor JavaScript não carregado"}), 500
     
     try:
-        # Teste simples com tabuleiro vazio
-        result = search_engine.search_position(0, 0, 0, 0, 1, 0.1, 5)
-        return jsonify({
-            "success": True,
-            "result": result,
-            "message": "Motor C funcionando!"
-        })
+        # Teste simples
+        result = test_js_engine()
+        return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    print("🚀 Iniciando Servidor Web de Damas com Motor C")
+    print("🚀 Iniciando Servidor Web de Damas com Motor JavaScript")
     print("=" * 50)
     
-    # Carregar motor C
-    if load_motor_c():
-        print("✅ Motor C carregado com sucesso!")
+    # Carregar motor JavaScript
+    if load_motor_js():
+        print("✅ Motor JavaScript carregado com sucesso!")
     else:
-        print("⚠️ Motor C não carregado - usando fallback")
+        print("❌ Motor JavaScript não carregado - servidor não funcionará corretamente")
+        print("⚠️ Verifique se Node.js está instalado e o motor está compilado")
     
     print("🌐 Servidor rodando em:")
     print("   http://localhost:8081")

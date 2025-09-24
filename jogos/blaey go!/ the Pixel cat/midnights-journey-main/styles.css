@@ -1,0 +1,190 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #07121A;
+    color: #e0e6ed;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Main game title */
+h1 {
+    text-align: center;
+    color: #FFF;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    margin: 10px 0;
+    font-size: 2em;
+    position: relative;
+    z-index: 10;
+}
+
+/* Level display - shows current world and level */
+.level-display {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #e0e6ed;
+    text-align: center;
+    z-index: 10;
+    margin-top: 0px;
+}
+
+/* Sub-text under level display */
+.sub-text {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Stats display - shows moves and targets */
+.stats {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    line-height: 1.4em;
+    color: #e0e6ed;
+    max-width: 220px;
+}
+
+/* Level complete modal */
+.level-complete {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: #fff;
+    padding: 40px 30px;
+    border-radius: 20px;
+    text-align: center;
+    display: none;
+    z-index: 9999;
+    max-width: 420px;
+    line-height: 1.4;
+}
+
+/* Hint display */
+#hint-display {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 140px;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #e0e6ed;
+    z-index: 999;
+}
+
+/* Controls panel - shows game controls and buttons */
+.controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: 10px;
+    color: #fff;
+    z-index: 10001;
+    pointer-events: auto;
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+/* Controls title text */
+.controls-title {
+    grid-column: 1 / span 2;
+    justify-self: center;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    opacity: 0.85;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Control buttons */
+.controls button {
+    border-radius: 999px;
+    padding: 8px 24px;
+    font-weight: 600;
+    background: #2f2f2f;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    border: none;
+}
+
+/* Button positioning in grid */
+.controls button:nth-of-type(1) {
+    grid-column: 1;
+    justify-self: end;
+}
+
+.controls button:nth-of-type(2) {
+    grid-column: 2;
+    justify-self: start;
+}
+
+/* 3D viewport container */
+#viewport  {
+    height: 95vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 3D canvas */
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Modal buttons */
+.level-complete button {
+    border-radius: 999px;
+    padding: 8px 24px;
+    font-weight: 600;
+    background: #2f2f2f;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    border: none;
+    margin: 0 5px;
+}
+
+/* Animated stars background */
+.star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 4s infinite;
+}
+
+/* Star twinkling animation */
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}

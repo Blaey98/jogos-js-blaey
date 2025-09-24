@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Midnight's Journey</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="micro3d.js"></script>
+    <script src="cat.js"></script>
+    <link rel="stylesheet" href="styles.css"> 
+</head>
+<body>
+    <h1>☁ Midnight's Journey ☁</h1>
+    <div id="starfield"></div>
+    
+    <div class="level-display">
+        <span id="world-level">World 1 • Level 1</span>
+        <div class="sub-text" id="level-name">Shadow Dance</div>
+    </div>
+    
+    <div id="hint-display">?</div>
+    
+    <div id="viewport">
+        <canvas id="game-canvas"></canvas>
+    </div>
+    
+    <div class="controls">
+        <div class="controls-title">Rotate: Mouse • Zoom: Scroll • Move: WASD/Arrows</div>
+        <button id="hint-button" onclick="getHint()">Hint (<span id="hint-count">3</span>)</button>
+        <button onclick="resetLevel()">Reset</button>
+    </div>
+    
+    <div class="stats">
+        <div>Moves: <span id="move-counter">0</span></div>
+        <div>Targets: <span id="target-counter">0/0</span></div>
+    </div>
+    
+    <div id="game-complete" class="level-complete" style="display:none">
+        <h2>Game Complete</h2>
+        <p id="game-stats">All levels!</p>
+        <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+    
+    <div id="level-complete" class="level-complete">
+        <h2>Level Complete!</h2>
+        <div id="star-display" style="font-size:2em;margin:15px 0"></div>
+        <button onclick="continueToNextLevel()">Continue</button>
+        <button onclick="retryLevel()">Try Again</button>
+    </div>
+
+    <script>
+        /**
+         * Simple Web Audio API sound effects system
+         */
+        (function initAudioSystem(window) {
+            const audioContext = new AudioContext();
+            
+            const resumeAudio = () => {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            };
+            
+            // Step sound effect (when moving)
+            const playStepSound = () => {
+                resumeAudio();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = 'triangle';
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 700;
+                gainNode.gain.setValueAtTime(0.045, audioContext.currentTime);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.035);
+            };
+            
+            // Target sound effect (when completing level)
+            const playTargetSound = () => {
+                resumeAudio();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 440;
+                gainNode.gain.setValueAtTime(0.06, audioContext.currentTime);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.06);
+            };
+            
+            // Expose sound effects globally
+            window.sfx = {
+                step: playStepSound,
+                target: playTargetSound
+            };
+            
+            // Initialize audio context on first user interaction
+            ['pointerdown', 'keydown'].forEach(event => {
+                document.addEventListener(event, resumeAudio, { once: true });
+            });
+        })(window);
+
+        // =============================================================================
+        // LEVEL DATA
+        // =============================================================================
+
+        /**
+         * World and level definitions
+         * Each world contains multiple levels with map data
+         * 
+         * Map Legend:
+         * '0' = Empty walkable path
+         * '1' = Grass (not walkable)
+         * '2' = Target location
+         * '3' = Box
+         * '4' = Cat starting position
+         * '5' = Box on target
+         */
+        const WORLDS = [
+            {
+                name: "Feather Isles",
+                levels: [
+                    { map: ["11111", "14321", "11111"] },
+                    { map: ["1111100", "1000111", "1003001", "1150201", "0100041", "0111111"] },
+                    { map: ["00111110", "11100010", "10301011", "10100201", "10000101", "11010001", "01400111", "01111100"] },
+                    { map: ["00001111", "11111001", "10003001", "10021001", "11011011", "10000001", "10410001", "10011111", "11110000"] }
+                ]
+            },
+            {
+                name: "Crescent Cloud",
+                levels: [
+                    { map: ["111110", "120011", "143301", "110001", "011001", "001121", "000111"] },
+                    { map: ["1111100", "1000110", "1010011", "1201301", "1004001", "1211311", "1000010", "1111110"] },
+                    { map: ["1111000", "1001111", "1020201", "1033141", "1100001", "0111111"] },
+                    { map: ["1111000", "1001110", "1000011", "1021301", "1104001", "0121311", "0100010", "0111110"] }
+                ]
+            },
+            {
+                name: "Glimmer Aeries",
+                levels: [
+                    { map: ["00011110", "11110010", "10300010", "10021011", "11012001", "10400301", "10001111", "11111000"] },
+                    { map: ["1111111", "1000001", "1010101", "1203541", "1000111", "1111100"] },
+                    { map: ["1111100", "1000100", "1040100", "1033111", "1120201", "0100001", "0111111"] },
+                    { map: ["00111110", "11100010", "10301011", "10100201", "10000101", "11312001", "01400111", "01111100"] }
+                ]
+            },
+            {
+                name: "Starforge Valley",
+                levels: [
+                    { map: ["11110000", "10011100", "10000111", "10035401", "11102101", "00100001", "00111111"] },
+                    { map: ["01111100", "01000100", "11310111", "10003401", "10100101", "10120201", "10001111", "11111000"] },
+                    { map: ["1111111", "1005001", "1000001", "1101011", "0134210", "0100010", "0111110"] },
+                    { map: ["01111100", "01000110", "11013011", "10300001", "12021001", "11104011", "00101010", "00100010", "00111110"] }
+                ]
+            }
+        ];
+
+        /**
+         * Color palettes for different worlds
+         * Each world has its own visual theme
+         * Format: "primaryColor|secondaryColor" for main and edge colors
+         */
+        const PALETTES = [
+            {
+                grass: "4B7B68|365C4F",           // Green grass colors
+                path: "E2EAD9|C0C7B9",            // Light path colors
+                ground: "ADB5A8|8B9187",          // Ground base colors
+                tree: "386957|2A4E3F",            // Tree colors
+                trunk: "32433C|26312E",           // Tree trunk colors
+                box: "9BB589|7D9170",             // Box colors
+                target: "F2E38F|D5C86F",          // Target glow colors
+                gradient: "linear-gradient(180deg, #B8FFD7 0%, #4B967E 30%, #0B1714 100%), radial-gradient(750px 370px at 40% 22%, rgba(140,255,200,0.08), transparent 68%)"
+            },
+            {
+                grass: "3F6578|2B4653",
+                path: "D9E1EA|B6BBC0",
+                ground: "9DA9B4|7B838C",
+                tree: "345064|243844",
+                trunk: "29363F|1A2228",
+                box: "5CC5FF|3B99C7",
+                target: "E4D27F|C4B15F",
+                gradient: "linear-gradient(180deg, #D6F4FF 0%, #3E7D94 35%, #07121A 100%), radial-gradient(900px 450px at 50% 12%, rgba(140,210,255,0.10), transparent 75%)"
+            },
+            {
+                grass: "536D92|3A4E69",
+                path: "E0DDF6|BCBAD3",
+                ground: "B1ADCA|8D89A7",
+                tree: "42567A|2E3E56",
+                trunk: "343E4F|242C38",
+                box: "C177FF|9C5DD4",
+                target: "F6E983|D4C865",
+                gradient: "linear-gradient(180deg, #D2E8FF 0%, #6F80C2 40%, #0A101F 100%), radial-gradient(850px 400px at 60% 15%, rgba(190,150,255,0.10), transparent 70%)"
+            },
+            {
+                grass: "7F6C56|5A4B3B",
+                path: "F0E3CA|CBBDA8",
+                ground: "BFAF97|9B8D77",
+                tree: "66533E|4B3D2D",
+                trunk: "4B382B|34251E",
+                box: "FF8736|D16C29",
+                target: "FFE47F|DCC562",
+                gradient: "linear-gradient(180deg, #FFD7A3 0%, #AD7842 35%, #0D0A06 100%), radial-gradient(900px 420px at 55% 12%, rgba(255,180,100,0.14), transparent 65%)"
+            }
+        ];
+
+        // =============================================================================
+        // GAME STATE VARIABLES
+        // =============================================================================
+
+        // stats progress tracking
+        let stats = {
+            totalMoves: 0,
+            levelsCleared: 0,
+            startTime: Date.now()
+        };
+
+        // Core game state
+        let isGameOver = false;
+        let currentWorld = 0;
+        let currentLevel = 0;
+        let moves = 0;
+        let catX = 1;  // Cat's current X position on grid
+        let catY = 1;  // Cat's current Y position on grid
+        let gameObjects = [];  // Array of boxes and targets
+        let isMoving = false;  // Prevents input during movement animation
+
+        // Level dimensions
+        let gridWidth = 0;
+        let gridHeight = 0;
+        let halfX = 0;  // Used for centering coordinate conversion
+        let halfZ = 0;  // Used for centering coordinate conversion
+
+        // Hint system
+        let hintsThisLevel = 3;
+        let hintTimeout = 0;
+        let solutionPath = null;  // Current hint path being followed
+
+        // 3D Scene components (assuming M3D library is available)
+        const canvas = document.getElementById("game-canvas");
+        const renderer = new M3D.WebGLRenderer({ canvas });
+        const scene = new M3D.Scene();
+        const camera = new M3D.PerspectiveCamera(45, 1, 0.1, 100);
+
+        camera.position.set(6, 8, 9);
+        camera.lookAt(0, 0.8, 0);
+
+        const controls = new M3D.OrbitControls(camera, canvas);
+        controls.minRadius = 4;
+        controls.maxRadius = 30;
+
+        // Color constants (will be updated by palette system)
+        const COLORS = {
+            floor: 0x31414d,
+            rim: 0x2a3944,
+            box: 0x2ec3d1,
+            boxOK: 0xffd54f,
+            grass: 0x4CAF50
+        };
+
+        // Geometry cache
+        const GEOMETRIES = {
+            unit: new M3D.BoxGeometry(1, 1, 1),
+            tile: new M3D.BoxGeometry(1, 0.06, 1)
+        };
+
+        // 3D scene root object
+        const root = new M3D.Object3D();
+        scene.add(root);
+
+        // Object tracking maps
+        const byId = new Map();           // Track all 3D objects by ID
+        const tilesByCell = new Map();    // Track floor tiles by grid position
+
+        // =============================================================================
+        // UTILITY FUNCTIONS
+        // =============================================================================
+
+        /**
+         * Convert grid coordinates to world coordinates
+         */
+        const toWorldX = (x) => x - halfX;
+        const toWorldZ = (z) => z - halfZ;
+
+        /**
+         * Create a cell key for position lookup
+         */
+        const cellKey = (x, z) => `${x},${z}`;
+
+        /**
+         * Parse color string with optional variant (e.g., "FF0000|AA0000")
+         * @param {string} colorString - Color in format "primary|secondary" or just "primary"
+         * @param {number} index - Index of the '|' separator
+         * @returns {number[]} Array of [primaryColor, secondaryColor]
+         */
+        const parseColor = (colorString, index = colorString.indexOf('|')) => {
+            if (index > 0) {
+                return [
+                    parseInt(colorString.slice(0, index), 16),
+                    parseInt(colorString.slice(index + 1), 16)
+                ];
+            }
+            const color = parseInt(colorString, 16);
+            return [color, color];
+        };
+
+        /**
+         * Clear hint display
+         */
+        const clearHint = () => {
+            document.getElementById("hint-display").style.display = 'none';
+            clearTimeout(hintTimeout);
+        };
+
+        // =============================================================================
+        // BOARD 3D SYSTEM
+        // =============================================================================
+
+        /**
+         * 3D Board management system
+         * Handles creation and manipulation of 3D game objects
+         */
+        window.Board3D = {
+            /**
+             * Clear all objects from the 3D scene
+             */
+            clear() {
+                for (const child of [...root.children]) {
+                    root.remove(child);
+                }
+                byId.clear();
+                tilesByCell.clear();
+            },
+
+            /**
+             * Add a floor tile to the scene
+             * @param {string} id - Unique identifier for the tile
+             * @param {number} x - World X coordinate
+             * @param {number} z - World Z coordinate
+             * @param {boolean} isRim - Whether this is a border tile
+             * @param {number} edgeColor - Color for the tile edges
+             */
+            addTile(id, x, z, isRim = false, edgeColor = 0xffffff) {
+                const material = new M3D.MeshLambertMaterial({
+                    color: isRim ? COLORS.rim : COLORS.path,
+                    ambient: 0.45,
+                    diffuse: 0.85
+                });
+                
+                const mesh = new M3D.Mesh(GEOMETRIES.tile, material);
+                mesh.position.set(x, -0.03, z);
+                root.add(mesh);
+                
+                // Add edges for visual clarity
+                const edges = M3D.addEdges(mesh, edgeColor, 1);
+                edges.material.ambient = 1;
+                edges.material.diffuse = 0;
+                
+                byId.set(id, { kind: "tile", mesh: mesh });
+                tilesByCell.set(cellKey(x, z), mesh);
+            },
+
+            /**
+             * Add target glow effect to a tile
+             * @param {string} id - Tile identifier
+             * @param {number} x - World X coordinate
+             * @param {number} z - World Z coordinate
+             */
+            addGlow(id, x, z) {
+                const tile = tilesByCell.get(cellKey(x, z));
+                if (tile) {
+                    tile.material = new M3D.MeshLambertMaterial({
+                        color: COLORS.target,
+                        ambient: 0.55,
+                        diffuse: 0.9
+                    });
+                }
+            },
+
+            /**
+             * Add a pushable box to the scene
+             * @param {string} id - Unique identifier for the box
+             * @param {number} x - World X coordinate
+             * @param {number} z - World Z coordinate
+             * @param {boolean} isOnTarget - Whether box starts on a target
+             */
+            addBox(id, x, z, isOnTarget = false) {
+                const container = new M3D.Object3D();
+                
+                // Box wireframe outline
+                const boxGeometry = new M3D.EdgesGeometry(GEOMETRIES.unit);
+                const wireframeMaterial = new M3D.MeshLambertMaterial({
+                    color: 0xffffff,
+                    emissive: 0x444444,
+                    emissiveIntensity: 0.1,
+                    opacity: 0.9,
+                    transparent: true,
+                    ambient: 1,
+                    diffuse: 0,
+                    depthWrite: false
+                });
+                
+                const wireframe = new M3D.Mesh(boxGeometry, wireframeMaterial);
+                wireframe.scale.set(0.8, 0.8, 0.8);
+                wireframe.position.set(0, 0.4, 0);
+                
+                // Box core (star shape for visual appeal)
+                const starGeometry = new M3D.StarGeometry(0.28, 0.112, 5, 0.2);
+                const coreColor = isOnTarget ? COLORS.boxOK : COLORS.box;
+                const coreMaterial = new M3D.MeshLambertMaterial({
+                    color: coreColor,
+                    emissive: coreColor,
+                    emissiveIntensity: 0.3,
+                    opacity: 0.95,
+                    transparent: true,
+                    ambient: 0.7,
+                    diffuse: 0.5
+                });
+                
+                const starCore = new M3D.Mesh(starGeometry, coreMaterial);
+                starCore.position.set(0, 0.42, 0);
+                starCore._pulseSpeed = 1.5;
+                starCore._basePulse = 0.4;
+                
+                container.add(wireframe);
+                container.add(starCore);
+                container.position.set(x, 0, z);
+                root.add(container);
+                
+                byId.set(id, { kind: "box", mesh: container });
+            },
+
+            /**
+             * Add the cat character to the scene
+             * @param {string} id - Unique identifier for the cat
+             * @param {number} x - World X coordinate
+             * @param {number} z - World Z coordinate
+             */
+            addCat(id, x, z) {
+                const cat = new Cat({ baseY: 0.01 });
+                cat.position.set(x, 0, z);
+                root.add(cat);
+                
+                byId.set(id, { kind: "cat", mesh: cat });
+                this._cat = cat;
+            },
+
+            /**
+             * Move an object to a new position
+             * @param {string} id - Object identifier
+             * @param {number} x - New world X coordinate
+             * @param {number} z - New world Z coordinate
+             */
+            moveTo(id, x, z) {
+                const entity = byId.get(id);
+                if (entity) {
+                    entity.mesh.position.set(x, entity.mesh.position.y, z);
+                }
+            },
+
+            /**
+             * Update box color based on target status
+             * @param {string} id - Box identifier
+             * @param {boolean} isOnTarget - Whether box is on target
+             */
+            recolorBox(id, isOnTarget) {
+                const entity = byId.get(id);
+                if (!entity || entity.kind !== "box") return;
+                
+                const core = entity.mesh.children[1];
+                if (core && core.material) {
+                    const newColor = isOnTarget ? COLORS.boxOK : COLORS.box;
+                    core.material.setColor(newColor);
+                    core.material.setEmissive(newColor);
+                }
+            },
+
+            /**
+             * Make cat face movement direction
+             * @param {number} dx - X direction (-1, 0, 1)
+             * @param {number} dz - Z direction (-1, 0, 1)
+             */
+            faceCat(dx, dz) {
+                this._cat?.faceStep?.(dx, dz);
+            },
+
+            /**
+             * Set cat facing direction
+             * @param {string} direction - Cardinal direction ('N', 'S', 'E', 'W')
+             */
+            setCatFacing(direction) {
+                this._cat?.setFacing?.(direction);
+            },
+
+            /**
+             * Update animations (called every frame)
+             * @param {number} deltaTime - Time since last frame in seconds
+             */
+            update(deltaTime) {
+                // Update cat animations
+                this._cat?.update?.(deltaTime);
+                
+                // Update box pulsing animations
+                byId.forEach(entity => {
+                    if (entity.kind === "box") {
+                        const core = entity.mesh.children[1];
+                        if (core && core._pulseSpeed) {
+                            M3D.MaterialAnimator.pulseEmissive(core.material, core._pulseSpeed, core._basePulse);
+                        }
+                    }
+                });
+            }
+        };
+
+        // =============================================================================
+        // TREE GENERATION
+        // =============================================================================
+
+        /**
+         * Add a decorative tree to the scene
+         * @param {number} x - Grid X coordinate
+         * @param {number} z - Grid Z coordinate
+         * @param {Object} options - Tree generation options
+         */
+        function addTree(x, z, options = {}) {
+            const {
+                canopyScale = 0.78,
+                trunkScale = 0.22,
+                canopyHeightRange = [0.85, 1.7]
+            } = options;
+            
+            const worldX = toWorldX(x);
+            const worldZ = toWorldZ(z);
+            
+            // Create trunk
+            const trunkHeight = 0.6;
+            const trunkGeometry = new M3D.BoxGeometry(trunkScale, trunkHeight, trunkScale);
+            const trunkMaterial = new M3D.MeshLambertMaterial({
+                color: COLORS.trunk,
+                ambient: 0.4,
+                diffuse: 0.9
+            });
+            
+            const trunk = new M3D.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.set(worldX, trunkHeight / 2, worldZ);
+            root.add(trunk);
+            M3D.addEdges(trunk, COLORS.trunkEdge, 1.002);
+            
+            // Create canopy with random height variation
+            const canopyHeight = canopyHeightRange[0] + Math.random() * (canopyHeightRange[1] - canopyHeightRange[0]);
+            const canopyGeometry = new M3D.BoxGeometry(canopyScale, canopyHeight * 0.8, canopyScale);
+            const canopyMaterial = new M3D.MeshLambertMaterial({
+                color: COLORS.tree,
+                ambient: 0.5,
+                diffuse: 0.8
+            });
+            
+            const canopy = new M3D.Mesh(canopyGeometry, canopyMaterial);
+            canopy.position.set(worldX, trunkHeight + (canopyHeight * 0.8) / 2, worldZ);
+            root.add(canopy);
+            M3D.addEdges(canopy, COLORS.treeEdge, 1.001);
+        }
+
+        // =============================================================================
+        // LEVEL BUILDING
+        // =============================================================================
+
+        /**
+         * Create ground platform for the level
+         * @param {Object} level - Level data with map array
+         * @returns {Object} Ground mesh object
+         */
+        function createGround(level) {
+            const mapHeight = level.map.length;
+            const mapWidth = Math.max(...level.map.map(row => row.length));
+            
+            // Find actual content bounds (ignore empty space)
+            let minX = mapWidth, maxX = -1, minY = mapHeight, maxY = -1;
+            
+            for (let y = 0; y < mapHeight; y++) {
+                const row = level.map[y] || '';
+                for (let x = 0; x < mapWidth; x++) {
+                    const cell = row[x];
+                    if (cell && cell !== ' ') {
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minY = Math.min(minY, y);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+            }
+            
+            // Calculate ground dimensions
+            const boardWidth = (maxX - minX + 1);
+            const boardHeight = (maxY - minY + 1);
+            const groundPadding = 0.1;
+            const groundWidth = boardWidth + (groundPadding * 2);
+            const groundDepth = boardHeight + (groundPadding * 2);
+            const groundThickness = 1.8;
+            
+            // Position ground at center of level
+            const centerX = (minX + maxX) / 2 - halfX;
+            const centerZ = (minY + maxY) / 2 - halfZ;
+            
+            // Create ground mesh
+            const groundGeometry = new M3D.BoxGeometry(groundWidth, groundThickness, groundDepth);
+            const groundMaterial = new M3D.MeshLambertMaterial({
+                color: COLORS.ground,
+                ambient: 0.45,
+                diffuse: 0.85
+            });
+            
+            const groundMesh = new M3D.Mesh(groundGeometry, groundMaterial);
+            groundMesh.position.set(centerX, -(groundThickness / 2) - 0.001, centerZ);
+            root.add(groundMesh);
+            M3D.addEdges(groundMesh, COLORS.groundEdge, 1.002);
+            
+            return groundMesh;
+        }
+
+        /**
+         * Check if a tile is on the border of the playable area
+         * @param {number} x - Grid X coordinate
+         * @param {number} y - Grid Y coordinate  
+         * @param {Object} level - Level data
+         * @returns {boolean} True if tile is on border
+         */
+        function isBorderTile(x, y, level) {
+            const map = level.map;
+            const mapHeight = map.length;
+            const mapWidth = Math.max(...map.map(row => row.length));
+            
+            // Check if on map border
+            if (y === 0 || y === mapHeight - 1) return true;
+            if (x === 0 || x === mapWidth - 1) return true;
+            
+            // Check if adjacent to empty space
+            const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+            for (const [dx, dy] of directions) {
+                const nx = x + dx;
+                const ny = y + dy;
+                const cell = (map[ny] || '')[nx];
+                if (cell === undefined || cell === ' ') {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        /**
+         * Set up camera position and constraints for current level
+         */
+        function setupCamera() {
+            const level = WORLDS[currentWorld].levels[currentLevel];
+            const mapHeight = level.map.length;
+            const mapWidth = Math.max(...level.map.map(r => r.length));
+            
+            // Find level content bounds
+            let minX = mapWidth, maxX = -1, minY = mapHeight, maxY = -1;
+            
+            for (let y = 0; y < mapHeight; y++) {
+                const row = level.map[y] || '';
+                for (let x = 0; x < mapWidth; x++) {
+                    if (row[x] && row[x] !== ' ') {
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minY = Math.min(minY, y);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+            }
+            
+            // Calculate optimal camera position
+            const centerX = (minX + maxX) / 2 - halfX;
+            const centerZ = (minY + maxY) / 2 - halfZ;
+            const maxDimension = Math.max(maxX - minX + 1, maxY - minY + 1);
+            
+            // Configure camera controls
+            controls.target.set(centerX, -0.9, centerZ);
+            controls.minRadius = Math.max(3, maxDimension * 0.9);
+            controls.maxRadius = Math.max(15, maxDimension * 4);
+            controls.radius = Math.min(controls.maxRadius, Math.max(controls.minRadius, maxDimension * 2.2));
+            controls.theta = Math.PI / 4.5;   // Horizontal rotation
+            controls.phi = Math.PI / 3.2;     // Vertical angle
+            controls.update();
+        }
+
+        /**
+         * Update level display UI
+         */
+        function updateLevelDisplay() {
+            const worldName = WORLDS[currentWorld].name;
+            const levelNumber = currentLevel + 1;
+            
+            document.getElementById("world-level").textContent = `${worldName}`;
+            document.getElementById("level-name").textContent = `Level ${levelNumber}`;
+        }
+
+        // =============================================================================
+        // LEVEL LOGIC
+        // =============================================================================
+
+        /**
+         * Get cell content at grid coordinates
+         * @param {number} x - Grid X coordinate
+         * @param {number} y - Grid Y coordinate
+         * @returns {string} Cell character ('0', '1', '2', '3', '4', '5', or ' ')
+         */
+        function getCell(x, y) {
+            const level = WORLDS[currentWorld].levels[currentLevel];
+            if (y < 0 || y >= level.map.length) return '0';
+            const row = level.map[y] || '';
+            return (x < 0 || x >= row.length) ? '0' : row[x] || '0';
+        }
+
+        /**
+         * Check if a position is walkable
+         * @param {number} x - Grid X coordinate
+         * @param {number} y - Grid Y coordinate
+         * @returns {boolean} True if position can be walked on
+         */
+        function isWalkable(x, y) {
+            const cell = getCell(x, y);
+            return cell !== '1' && cell !== ' ';
+        }
+
+        /**
+         * Find box at given position
+         * @param {number} x - Grid X coordinate
+         * @param {number} y - Grid Y coordinate
+         * @returns {Object|undefined} Box object if found, undefined otherwise
+         */
+        function findBox(x, y) {
+            return gameObjects.find(obj => obj.type === 'box' && obj.x === x && obj.y === y);
+        }
+
+        /**
+         * Initialize a new level
+         */
+        function initializeLevel() {
+            gameObjects = [];
+            moves = 0;
+            const level = WORLDS[currentWorld].levels[currentLevel];
+            
+            // Reset hint system
+            hintsThisLevel = 3;
+            document.getElementById("hint-count").textContent = hintsThisLevel;
+            document.getElementById("hint-button").disabled = false;
+            document.getElementById("move-counter").textContent = moves;
+            
+            updateLevelDisplay();
+            clearHint();
+            
+            Board3D.clear();
+            
+            // Calculate grid dimensions and centering offsets
+            gridHeight = level.map.length;
+            gridWidth = Math.max(...level.map.map(r => r.length));
+            halfX = gridWidth / 2 - 0.5;
+            halfZ = gridHeight / 2 - 0.5;
+            
+            createGround(level);
+            
+            // Parse level map and create 3D objects
+            for (let y = 0; y < gridHeight; y++) {
+                const row = level.map[y] || '';
+                for (let x = 0; x < gridWidth; x++) {
+                    const cell = (x < row.length) ? row[x] : ' ';
+                    const worldX = toWorldX(x);
+                    const worldZ = toWorldZ(y);
+                    
+                    if (cell === ' ') continue;
+                    
+                    switch (cell) {
+                        case '0': // Empty walkable tile
+                            Board3D.addTile(`t_${x}_${y}`, worldX, worldZ, false, COLORS.pathEdge);
+                            if (isBorderTile(x, y, level)) {
+                                const tile = tilesByCell.get(cellKey(worldX, worldZ));
+                                if (tile) {
+                                    // Convert border tiles to grass
+                                    // Convert border tiles to grass
+                                    tile.material = new M3D.MeshLambertMaterial({
+                                        color: COLORS.grass,
+                                        ambient: 0.45,
+                                        diffuse: 0.85
+                                    });
+                                    const edges = tile.children.find(child => 
+                                        child.material && child.material.ambient === 1.0
+                                    );
+                                    if (edges) {
+                                        edges.material.color = new Float32Array([
+                                            (COLORS.grassEdge >> 16 & 255) / 255,
+                                            (COLORS.grassEdge >> 8 & 255) / 255,
+                                            (COLORS.grassEdge & 255) / 255,
+                                            1
+                                        ]);
+                                    }
+                                }
+                            }
+                            break;
+                            
+                        case '1': // Grass (not walkable)
+                            Board3D.addTile(`t_${x}_${y}`, worldX, worldZ, false, COLORS.grassEdge);
+                            const tile = tilesByCell.get(cellKey(worldX, worldZ));
+                            if (tile) {
+                                tile.material = new M3D.MeshLambertMaterial({
+                                    color: COLORS.grass,
+                                    ambient: 0.45,
+                                    diffuse: 0.85
+                                });
+                            }
+                            // 10% chance to add tree
+                            if (Math.random() < 0.1) {
+                                addTree(x, y);
+                            }
+                            break;
+                            
+                        case '2': // Target location
+                            Board3D.addTile(`t_${x}_${y}`, worldX, worldZ, false, COLORS.targetEdge);
+                            Board3D.addGlow(`g_${x}_${y}`, worldX, worldZ);
+                            gameObjects.push({ type: 'target', x, y });
+                            break;
+                            
+                        case '3': // Box
+                            Board3D.addTile(`t_${x}_${y}`, worldX, worldZ, false, COLORS.pathEdge);
+                            Board3D.addBox(`box_${x}_${y}`, worldX, worldZ);
+                            gameObjects.push({ type: 'box', x, y, id: `box_${x}_${y}` });
+                            break;
+                            
+                        case '4': // Cat starting position
+                            Board3D.addTile(`t_${x}_${y}`, worldX, worldZ, false, COLORS.pathEdge);
+                            catX = x;
+                            catY = y;
+                            Board3D.addCat('cat', worldX, worldZ);
+                            Board3D.setCatFacing('S'); // Face south initially
+                            break;
+                            
+                        case '5': // Box already on target
+                            Board3D.addTile(`t_${x}_${y}`, worldX, worldZ, false, COLORS.targetEdge);
+                            Board3D.addGlow(`g_${x}_${y}`, worldX, worldZ);
+                            gameObjects.push({ type: 'target', x, y });
+                            Board3D.addBox(`box_${x}_${y}`, worldX, worldZ, true);
+                            gameObjects.push({ 
+                                type: 'box', 
+                                x, 
+                                y, 
+                                id: `box_${x}_${y}`, 
+                                onTarget: true 
+                            });
+                            break;
+                    }
+                }
+            }
+            
+            setupCamera();
+            updateTargetCounter();
+        }
+
+        // =============================================================================
+        // GAME MECHANICS
+        // =============================================================================
+
+        /**
+         * Attempt to move the cat in a given direction
+         * @param {number} dx - X direction (-1, 0, 1)
+         * @param {number} dy - Y direction (-1, 0, 1)
+         */
+        function tryMove(dx, dy) {
+            clearHint();
+            if (isMoving) return;
+            
+            const newX = catX + dx;
+            const newY = catY + dy;
+            
+            // Check if target position is walkable
+            if (!isWalkable(newX, newY)) return;
+            
+            // Make cat face the movement direction
+            Board3D.faceCat(dx, dy);
+            
+            // Check if there's a box at target position
+            const box = findBox(newX, newY);
+            sfx.step();
+            
+            if (box) {
+                // Try to push the box
+                const boxNewX = box.x + dx;
+                const boxNewY = box.y + dy;
+                
+                // Check if box can be pushed
+                if (!isWalkable(boxNewX, boxNewY) || findBox(boxNewX, boxNewY)) {
+                    return; // Can't push box - blocked
+                }
+                
+                isMoving = true;
+                
+                // Move the box
+                box.x = boxNewX;
+                box.y = boxNewY;
+                Board3D.moveTo(box.id, toWorldX(boxNewX), toWorldZ(boxNewY));
+                
+                // Check if box is now on a target
+                const target = gameObjects.find(obj => 
+                    obj.type === 'target' && obj.x === boxNewX && obj.y === boxNewY
+                );
+                box.onTarget = !!target;
+                Board3D.recolorBox(box.id, box.onTarget);
+                
+                // Move cat after a short delay for animation
+                setTimeout(() => {
+                    catX = newX;
+                    catY = newY;
+                    Board3D.moveTo('cat', toWorldX(newX), toWorldZ(newY));
+                    moves++;
+                    document.getElementById("move-counter").textContent = moves;
+                    updateTargetCounter();
+                    isMoving = false;
+                    
+                    // Update solution path if following hint
+                    if (solutionPath && solutionPath[0]?.dx === dx && solutionPath[0]?.dy === dy) {
+                        solutionPath.shift();
+                    } else {
+                        solutionPath = null;
+                    }
+                }, 100);
+                
+            } else {
+                // Move cat directly (no box to push)
+                isMoving = true;
+                catX = newX;
+                catY = newY;
+                Board3D.moveTo('cat', toWorldX(newX), toWorldZ(newY));
+                moves++;
+                document.getElementById("move-counter").textContent = moves;
+                
+                setTimeout(() => {
+                    isMoving = false;
+                    
+                    // Update solution path if following hint
+                    if (solutionPath && solutionPath[0]?.dx === dx && solutionPath[0]?.dy === dy) {
+                        solutionPath.shift();
+                    } else {
+                        solutionPath = null;
+                    }
+                }, 100);
+            }
+        }
+
+        /**
+         * Update the target counter display and check for level completion
+         */
+        function updateTargetCounter() {
+            const totalTargets = gameObjects.filter(obj => obj.type === 'target').length;
+            const completedTargets = gameObjects.filter(obj => 
+                obj.type === 'box' && obj.onTarget
+            ).length;
+            
+            document.getElementById("target-counter").textContent = `${completedTargets}/${totalTargets}`;
+            
+            // Check for level completion
+            if (completedTargets === totalTargets && totalTargets > 0) {
+                setTimeout(completeLevelCheck, 1000);
+            }
+        }
+
+        // =============================================================================
+        // HINT SYSTEM
+        // =============================================================================
+
+        /**
+         * Provide a hint to the player using pathfinding
+         */
+        function getHint() {
+            if (hintsThisLevel <= 0) {
+                showHint("No more hints. Try reset.", 3000);
+                return;
+            }
+            
+            solutionPath = findSolution();
+            if (!solutionPath || !solutionPath.length) {
+                showHint("Can't find path. Try moving.", 2800);
+                return;
+            }
+            
+            hintsThisLevel--;
+            document.getElementById("hint-count").textContent = hintsThisLevel;
+            if (hintsThisLevel <= 0) {
+                document.getElementById("hint-button").disabled = true;
+            }
+            
+            // Generate hint message
+            const move = solutionPath[0];
+            const targetX = catX + move.dx;
+            const targetY = catY + move.dy;
+            const box = findBox(targetX, targetY);
+            
+            let message = box ? "Push box " : "Move ";
+            message += move.dx > 0 ? "right" : 
+                    move.dx < 0 ? "left" : 
+                    move.dy > 0 ? "down" : "up";
+            
+            showHint(message, 4000);
+        }
+
+        /**
+         * Display a hint message
+         * @param {string} message - Hint text to display
+         * @param {number} duration - How long to show hint in milliseconds
+         */
+        function showHint(message, duration) {
+            const element = document.getElementById("hint-display");
+            if (!element) return;
+            
+            element.textContent = message;
+            element.style.display = 'block';
+            clearTimeout(hintTimeout);
+            hintTimeout = setTimeout(() => {
+                element.style.display = 'none';
+            }, duration);
+        }
+
+        /**
+         * Find solution using breadth-first search pathfinding
+         * @returns {Array|null} Array of move objects or null if no solution
+         */
+        function findSolution() {
+            const targets = gameObjects.filter(obj => obj.type === 'target');
+            const boxes = gameObjects.filter(obj => obj.type === 'box');
+            
+            // Initial state
+            const startState = {
+                catX,
+                catY,
+                boxes: boxes.map(box => ({ x: box.x, y: box.y })),
+                moves: []
+            };
+            
+            const queue = [startState];
+            const visited = new Set();
+            const maxIterations = 8000; // Prevent infinite loops
+            let iterations = 0;
+            
+            /**
+             * Create unique key for game state
+             */
+            const stateKey = (state) => 
+                `${state.catX},${state.catY}:${state.boxes.map(b => `${b.x},${b.y}`).sort().join('|')}`;
+            
+            /**
+             * Check if current state is solved (all boxes on targets)
+             */
+            const isSolved = (state) => 
+                targets.every(target => 
+                    state.boxes.some(box => box.x === target.x && box.y === target.y)
+                );
+            
+            // Breadth-first search
+            while (queue.length && iterations++ < maxIterations) {
+                const state = queue.shift();
+                const key = stateKey(state);
+                
+                if (visited.has(key)) continue;
+                visited.add(key);
+                
+                if (isSolved(state)) {
+                    return state.moves;
+                }
+                
+                // Try all four directions
+                const directions = [
+                    { dx: 0, dy: -1 }, // Up
+                    { dx: 0, dy: 1 },  // Down
+                    { dx: -1, dy: 0 }, // Left
+                    { dx: 1, dy: 0 }   // Right
+                ];
+                
+                for (const direction of directions) {
+                    const newX = state.catX + direction.dx;
+                    const newY = state.catY + direction.dy;
+                    
+                    // Find if there's a box at the new position
+                    const boxIndex = state.boxes.findIndex(box => box.x === newX && box.y === newY);
+                    
+                    if (boxIndex !== -1) {
+                        // Pushing a box
+                        const boxNewX = newX + direction.dx;
+                        const boxNewY = newY + direction.dy;
+                        const boxCell = getCell(boxNewX, boxNewY);
+                        
+                        // Check if box can be pushed
+                        if (boxCell === '1' || boxCell === ' ' || 
+                            state.boxes.some(box => box.x === boxNewX && box.y === boxNewY)) {
+                            continue;
+                        }
+                        
+                        // Create new state with moved box
+                        const newBoxes = state.boxes.map((box, index) => 
+                            index === boxIndex ? { x: boxNewX, y: boxNewY } : { x: box.x, y: box.y }
+                        );
+                        
+                        queue.push({
+                            catX: newX,
+                            catY: newY,
+                            boxes: newBoxes,
+                            moves: state.moves.concat({ dx: direction.dx, dy: direction.dy })
+                        });
+                        
+                    } else {
+                        // Moving without pushing
+                        const cell = getCell(newX, newY);
+                        if (cell === '1' || cell === ' ' || 
+                            state.boxes.some(box => box.x === newX && box.y === newY)) {
+                            continue;
+                        }
+                        
+                        queue.push({
+                            catX: newX,
+                            catY: newY,
+                            boxes: state.boxes.map(box => ({ x: box.x, y: box.y })),
+                            moves: state.moves.concat({ dx: direction.dx, dy: direction.dy })
+                        });
+                    }
+                }
+            }
+            
+            return null; // No solution found
+        }
+
+        // =============================================================================
+        // LEVEL PROGRESSION
+        // =============================================================================
+
+        /**
+         * Handle level completion
+         * Shows completion modal with star rating and disables game controls
+         */
+        function completeLevelCheck() {
+            clearHint();
+            
+            const totalTargets = gameObjects.filter(obj => obj.type === 'target').length;
+            const par = Math.max(6, totalTargets * 5); // Par score calculation
+            const hintsUsed = 3 - hintsThisLevel;
+            
+            // Calculate star rating (1-3 stars)
+            const stars = hintsUsed > 0 ? 1 :           // Used hints = 1 star
+                        moves <= par ? 3 :             // Under par = 3 stars  
+                        moves <= par * 1.25 ? 2 : 1;   // Close to par = 2 stars
+            
+            stats.totalMoves += moves;
+            stats.levelsCleared += 1;
+            
+            // Check if this was the final level of the entire game
+            if (isLastLevelInWorld() && isLastWorld()) {
+                setTimeout(() => {
+                    const modal = document.getElementById("level-complete");
+                    modal.style.display = 'none';
+                    gameComplete();
+                }, 2000);
+                sfx.target();
+                return;
+            }
+            
+            // Display star rating
+            document.getElementById("star-display").innerHTML = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+            document.getElementById("star-display").style.color = '#FFD700';
+            
+            // Show level complete modal
+            const modal = document.getElementById("level-complete");
+            if (modal) {
+                modal.style.display = 'block';
+                
+                // DISABLE GAME CONTROLS TO PREVENT CLICKING WHILE MODAL IS OPEN
+                document.getElementById("hint-button").disabled = true;
+                const resetButton = document.querySelector('button[onclick*="resetLevel"]') || 
+                                document.querySelector('button[onclick*="rstLvl"]');
+                if (resetButton) {
+                    resetButton.disabled = true;
+                }
+                
+                // Focus the first button in the modal for accessibility
+                setTimeout(() => modal.querySelector('button').focus(), 100);
+            }
+            
+            sfx.target();
+        }
+
+        /**
+         * Retry current level
+         */
+        function retryLevel() {
+            const modal = document.getElementById("level-complete");
+            modal.style.display = 'none';
+            
+            // RE-ENABLE GAME CONTROLS
+            // Hint button should only be enabled if there are hints remaining
+            document.getElementById("hint-button").disabled = (hintsThisLevel <= 0);
+            
+            const resetButton = document.querySelector('button[onclick*="resetLevel"]') || 
+                            document.querySelector('button[onclick*="rstLvl"]');
+            if (resetButton) {
+                resetButton.disabled = false;
+            }
+            
+            // Reset the current level
+            resetLevel();
+        }
+
+        /**
+         * Reset current level
+         */
+        function resetLevel() {
+            clearHint();
+            document.getElementById("level-complete").style.display = 'none';
+            solutionPath = null;
+            hintsThisLevel = 3;
+            document.getElementById("hint-count").textContent = hintsThisLevel;
+            document.getElementById("hint-button").disabled = false;
+            initializeLevel();
+        }
+
+        /**
+         * Apply color palette for current world
+         * @param {number} worldIndex - Index of world (0-3)
+         */
+        function applyPalette(worldIndex) {
+            const palette = PALETTES[worldIndex] || PALETTES[0];
+            
+            // Parse and assign colors
+            [COLORS.grass, COLORS.grassEdge] = parseColor(palette.grass);
+            [COLORS.ground, COLORS.groundEdge] = parseColor(palette.ground);
+            [COLORS.path, COLORS.pathEdge] = parseColor(palette.path);
+            [COLORS.tree, COLORS.treeEdge] = parseColor(palette.tree);
+            [COLORS.trunk, COLORS.trunkEdge] = parseColor(palette.trunk);
+            [COLORS.box, COLORS.boxEdge] = parseColor(palette.box);
+            [COLORS.target, COLORS.targetEdge] = parseColor(palette.target);
+            COLORS.gradient = palette.gradient;
+            
+            // Apply background gradient
+            document.body.style.background = COLORS.gradient;
+        }
+
+        /**
+         * Check if current level is the last in its world
+         * @returns {boolean} True if this is the last level in current world
+         */
+        function isLastLevelInWorld() {
+            return currentLevel >= WORLDS[currentWorld].levels.length - 1;
+        }
+
+        /**
+         * Check if current world is the last world
+         * @returns {boolean} True if this is the last world
+         */
+        function isLastWorld() {
+            return currentWorld >= WORLDS.length - 1;
+        }
+
+        /**
+         * Complete the entire game
+         */
+        function gameComplete() {
+            isGameOver = true;
+            
+            try {
+                sfx.target();
+            } catch (e) {
+                console.log("Audio error:", e);
+            }
+            
+            // Calculate completion stats
+            const timeMs = Math.max(0, Date.now() - stats.startTime);
+            const minutes = Math.floor(timeMs / 60000);
+            const seconds = String(Math.floor((timeMs % 60000) / 1000)).padStart(2, '0');
+            
+            const summary = `Cleared ${stats.levelsCleared} levels • ${stats.totalMoves} moves • ${minutes}:${seconds}`;
+            
+            const element = document.getElementById("game-stats");
+            if (element) element.textContent = summary;
+            
+            const modal = document.getElementById("game-complete");
+            if (modal) {
+                modal.style.display = 'block';
+                setTimeout(() => modal.querySelector('button').focus(), 100);
+            }
+        }
+
+        /**
+         * Reset entire game to beginning
+         */
+        function resetGame() {
+            const modal = document.getElementById("game-complete");
+            if (modal) modal.style.display = 'none';
+            
+            isGameOver = false;
+            currentWorld = 0;
+            currentLevel = 0;
+            stats = {
+                totalMoves: 0,
+                levelsCleared: 0,
+                startTime: Date.now()
+            };
+            
+            hintsThisLevel = 3;
+            document.getElementById('hint-count').textContent = hintsThisLevel;
+            document.getElementById('hint-button').disabled = false;
+            
+            applyPalette(0);
+            initializeLevel();
+        }
+
+        /**
+         * Continue to next level
+         */
+        function continueToNextLevel() {
+            const modal = document.getElementById("level-complete");
+            modal.style.display = 'none';
+            
+            // RE-ENABLE GAME CONTROLS
+            document.getElementById("hint-button").disabled = false;
+            
+            const resetButton = document.querySelector('button[onclick*="resetLevel"]') || 
+                            document.querySelector('button[onclick*="rstLvl"]');
+            if (resetButton) {
+                resetButton.disabled = false;
+            }
+            
+            // Update stats stats
+            stats.totalMoves += moves;
+            stats.levelsCleared += 1;
+            
+            let newWorld = currentWorld;
+            let newLevel = currentLevel + 1;
+            
+            // Check if we need to advance to next world
+            if (newLevel >= WORLDS[currentWorld].levels.length) {
+                newWorld++;
+                newLevel = 0;
+                
+                // Check if we've completed all worlds
+                if (newWorld >= WORLDS.length) {
+                    gameComplete();
+                    return;
+                }
+            }
+            
+            // Advance to next level/world
+            currentWorld = newWorld;
+            currentLevel = newLevel;
+            
+            // Apply new world's color palette
+            applyPalette(currentWorld);
+            
+            // Initialize the new level
+            initializeLevel();
+        }
+
+        // =============================================================================
+        // STARFIELD BACKGROUND
+        // =============================================================================
+
+        /**
+         * Create animated starfield background
+         */
+        function createStarfield() {
+            let starfield = document.getElementById('starfield');
+            if (!starfield) return;
+            
+            for (let i = 0; i < 150; i++) {
+                let star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = star.style.height = '2px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 4 + 's';
+                starfield.appendChild(star);
+            }
+        }
+
+        // =============================================================================
+        // INPUT HANDLING
+        // =============================================================================
+
+        /**
+         * Handle keyboard input for movement
+         */
+        document.addEventListener('keydown', (event) => {
+            if (isMoving) return;
+            
+            switch (event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    tryMove(0, -1); // Move up
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    tryMove(0, 1);  // Move down
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    tryMove(-1, 0); // Move left
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    tryMove(1, 0);  // Move right
+                    break;
+            }
+            event.preventDefault();
+        });
+
+        // =============================================================================
+        // RENDERING LOOP
+        // =============================================================================
+
+        /**
+         * Main rendering loop
+         */
+        let lastTime = performance.now();
+
+        function renderLoop(currentTime) {
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            
+            // Update game systems
+            Board3D.update?.(deltaTime);
+            
+            // Render 3D scene
+            renderer.render(scene, camera, [0.6, 1, 0.5]);
+            
+            requestAnimationFrame(renderLoop);
+        }
+
+        // =============================================================================
+        // CANVAS MANAGEMENT
+        // =============================================================================
+
+        /**
+         * Handle canvas resizing for responsive display
+         */
+        function handleResize() {
+            const devicePixelRatio = Math.min(2, window.devicePixelRatio || 1);
+            const width = Math.round(canvas.clientWidth * devicePixelRatio);
+            const height = Math.round(canvas.clientHeight * devicePixelRatio);
+            
+            if (canvas.width !== width || canvas.height !== height) {
+                canvas.width = width;
+                canvas.height = height;
+                renderer.setSize(width, height);
+            }
+        }
+
+        // Set up resize handling
+        new ResizeObserver(handleResize).observe(canvas);
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        
+        
+        /* ========================================= */
+        /* INITIALIZATION                           */
+        /* ========================================= */
+        
+        /**
+         * Initialize the game
+         */
+        function initializeGame() {
+            applyPalette(0);
+            initializeLevel();
+        }
+
+        // Start the game systems
+        createStarfield();
+        renderLoop(lastTime);
+
+        // Initialize the game when DOM is ready
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof initializeGame === 'function') {
+                initializeGame();
+            }
+        });
+
+        if (document.readyState !== 'loading') {
+            if (typeof initializeGame === 'function') {
+                initializeGame();
+            }
+        }
+    </script>
+</body>
+</html>

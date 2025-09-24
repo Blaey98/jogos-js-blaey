@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": false,
+    "lib": ["dom", "ES2017"],
+    "removeComments": true,
+    "sourceMap": false,
+    "forceConsistentCasingInFileNames": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "experimentalDecorators": false,
+    "esModuleInterop": true,
+    "checkJs": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment"
+  },
+  "references": [],
+  "include": ["src/**/*"],
+  "exclude": ["scripts/**/*"]
+}
