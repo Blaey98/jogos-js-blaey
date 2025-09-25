@@ -702,7 +702,7 @@
 					context.fillStyle = '#FFF';
 					context.fillText('x' + (_LIFE-1), startX + 100, this.y);
 					
-					// Score above the x4 with bigger padding
+					// Score and x4 on the same line
 					context.font = 'bold 20px PressStart2P';
 					context.textAlign = 'left';
 					context.textBaseline = 'middle';
@@ -710,6 +710,7 @@
 					context.fillText('SCORE: ', startX + 100, this.y - 25);
 					context.fillStyle = '#FFF';
 					context.fillText(_SCORE, startX + 220, this.y - 25);
+					context.fillText('x' + (_LIFE-1), startX + 280, this.y - 25);
 				}
 			});
 			//状态文字 - 在游戏中心
