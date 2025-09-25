@@ -556,7 +556,7 @@
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillStyle = '#FFF';
-				context.fillText('Pac-Man',this.x,this.y);
+				context.fillText('Pac Social',this.x,this.y);
 			}
 		});
 		// 提示
@@ -570,7 +570,7 @@
 					context.textAlign = 'center';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#AAA';
-					context.fillText('Press Enter to start',this.x,this.y);
+					context.fillText('Toque na tela para começar',this.x,this.y);
 				}
 			}
 		});
@@ -592,15 +592,10 @@
 		}).bind('click',function(){
 			window.open('https://passer-by.com');
 		});
-		//事件绑定
-		stage.bind('keydown',function(e){
-			switch(e.keyCode){
-				case 13:
-				case 32:
-				game.nextStage();
-				break;
-			}
-		});
+		//自动进入游戏 - 无需按Enter
+		setTimeout(function(){
+			game.nextStage();
+		}, 2000); // 2秒后自动进入游戏
 	})();
 	//游戏主程序
 	(function(){
@@ -738,31 +733,24 @@
 					}
 				}
 			});
-			//关卡得分
+			//关卡得分 - 在游戏上方
 			stage.createItem({
-				x:690,
-				y:80,
+				x:game.width/2,
+				y:30,
 				draw:function(context){
-					context.font = 'bold 24px PressStart2P';
+					// Score
+					context.font = 'bold 20px PressStart2P';
 					context.textAlign = 'left';
-					context.textBaseline = 'bottom';
+					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
-					context.fillText('SCORE',this.x,this.y);
-					context.font = '24px PressStart2P';
-					context.textAlign = 'left';
-					context.textBaseline = 'top';
-					context.fillStyle = '#FFF';
-					context.fillText(_SCORE,this.x+12,this.y+10);
-					context.font = 'bold 24px PressStart2P';
-					context.textAlign = 'left';
-					context.textBaseline = 'bottom';
+					context.fillText('SCORE: ' + _SCORE, 20, this.y);
+					
+					// Level
+					context.font = 'bold 20px PressStart2P';
+					context.textAlign = 'right';
+					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
-					context.fillText('LEVEL',this.x,this.y+72);
-					context.font = '24px PressStart2P';
-					context.textAlign = 'left';
-					context.textBaseline = 'top';
-					context.fillStyle = '#FFF';
-					context.fillText(index+1,this.x+12,this.y+82);
+					context.fillText('LEVEL: ' + (index+1), game.width-20, this.y);
 				}
 			});
 			//状态文字

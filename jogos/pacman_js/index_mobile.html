@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pac Social</title>
+    <link rel="shortcut icon" href="favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        .game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+        }
+        
+        #canvas {
+            width: 100vw;
+            height: calc(100vh - 80px);
+            background: #000;
+            display: block;
+            object-fit: contain;
+            margin-top: 40px;
+        }
+        
+        
+        
+        
+        
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        
+        <canvas id="canvas" width="960" height="640">Jogo não suportado</canvas>
+        
+        
+    </div>
+
+    <script src="./static/script/game.js"></script>
+    <script src="./static/script/index.js"></script>
+    
+    <script>
+        // Mobile controls
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('canvas');
+            
+            // Touch controls - direct canvas touch
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+            
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            });
+            
+            canvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                const touch = e.changedTouches[0];
+                touchEndX = touch.clientX;
+                touchEndY = touch.clientY;
+                
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                const minSwipeDistance = 30;
+                
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal swipe
+                    if (Math.abs(deltaX) > minSwipeDistance) {
+                        if (deltaX > 0) {
+                            simulateKeyPress('right');
+                        } else {
+                            simulateKeyPress('left');
+                        }
+                    }
+                } else {
+                    // Vertical swipe
+                    if (Math.abs(deltaY) > minSwipeDistance) {
+                        if (deltaY > 0) {
+                            simulateKeyPress('down');
+                        } else {
+                            simulateKeyPress('up');
+                        }
+                    }
+                }
+            });
+            
+            
+            // Prevent scrolling
+            document.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Prevent context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            // Keyboard support for desktop
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    simulateKeyPress('space');
+                }
+            });
+            
+            function simulateKeyPress(key) {
+                let keyCode;
+                switch(key) {
+                    case 'up': keyCode = 38; break;
+                    case 'down': keyCode = 40; break;
+                    case 'left': keyCode = 37; break;
+                    case 'right': keyCode = 39; break;
+                    case 'space': keyCode = 32; break;
+                }
+                
+                if (keyCode) {
+                    const event = new KeyboardEvent('keydown', {
+                        keyCode: keyCode,
+                        which: keyCode,
+                        key: key === 'space' ? ' ' : key
+                    });
+                    document.dispatchEvent(event);
+                }
+            }
+            
+            // Update score and lives display
+            setInterval(function() {
+                if (window.game && window.game.score !== undefined) {
+                    scoreElement.textContent = window.game.score;
+                }
+                if (window.game && window.game.lives !== undefined) {
+                    document.getElementById('lives').textContent = window.game.lives;
+                }
+            }, 100);
+            
+            // Resize canvas for mobile - full width
+            function resizeCanvas() {
+                const container = document.querySelector('.game-container');
+                const containerWidth = container.clientWidth;
+                const containerHeight = container.clientHeight - 80; // Account for margin
+                
+                // Use full width and calculate height to maintain aspect ratio
+                const aspectRatio = 960 / 640;
+                const newWidth = containerWidth;
+                const newHeight = containerWidth / aspectRatio;
+                
+                canvas.style.width = newWidth + 'px';
+                canvas.style.height = Math.min(newHeight, containerHeight) + 'px';
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>
