@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "jest"
+    "test": "jest",
+    "build": "echo 'Build completed - static files ready for deployment'",
+    "serve": "firebase serve",
+    "deploy": "firebase deploy"
   },
   "keywords": [
     "javascript",
