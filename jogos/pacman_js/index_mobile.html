@@ -247,28 +247,45 @@
                     newHeight = newWidth / gameAspectRatio;
                 }
                 
-                // Aumentar 40% o tamanho
-                newWidth = newWidth * 1.4;
-                newHeight = newHeight * 1.4;
+                // Aumentar 50% o tamanho (40% + 10%)
+                newWidth = newWidth * 1.5;
+                newHeight = newHeight * 1.5;
                 
                 canvas.style.width = newWidth + 'px';
                 canvas.style.height = newHeight + 'px';
                 
                 // Center the canvas
                 canvas.style.marginLeft = (containerWidth - newWidth) / 2 + 'px';
-                canvas.style.marginTop = (containerHeight - newHeight) / 2 + 'px';
+                canvas.style.marginTop = (containerHeight - newHeight) / 2 - 30 + 'px';
                 
-                // Ensure canvas covers full screen on mobile with 40% increase
+                // Ensure canvas covers full screen on mobile with responsive sizing
                 if (window.innerWidth <= 768) {
-                    // Aplicar 40% de aumento também no mobile
-                    const mobileWidth = containerWidth * 1.4;
-                    const mobileHeight = containerHeight * 1.4;
+                    // Calcular tamanho responsivo para mostrar o tabuleiro completo
+                    const gameAspectRatio = 960 / 640;
+                    const screenAspectRatio = containerWidth / containerHeight;
                     
-                    canvas.style.width = mobileWidth + 'px';
-                    canvas.style.height = mobileHeight + 'px';
+                    let responsiveWidth, responsiveHeight;
+                    
+                    if (screenAspectRatio > gameAspectRatio) {
+                        // Tela mais larga - ajustar pela altura
+                        responsiveHeight = containerHeight - 100; // Espaço para score/lives
+                        responsiveWidth = responsiveHeight * gameAspectRatio;
+                    } else {
+                        // Tela mais alta - ajustar pela largura
+                        responsiveWidth = containerWidth;
+                        responsiveHeight = responsiveWidth / gameAspectRatio;
+                    }
+                    
+                    // Aplicar 50% de aumento
+                    responsiveWidth = responsiveWidth * 1.5;
+                    responsiveHeight = responsiveHeight * 1.5;
+                    
+                    canvas.style.width = responsiveWidth + 'px';
+                    canvas.style.height = responsiveHeight + 'px';
                     canvas.style.position = 'fixed';
-                    canvas.style.top = '0';
-                    canvas.style.left = '0';
+                    canvas.style.top = '50%';
+                    canvas.style.left = '70%';
+                    canvas.style.transform = 'translate(-50%, -50%)';
                     canvas.style.marginLeft = '0px';
                     canvas.style.marginTop = '0px';
                 }

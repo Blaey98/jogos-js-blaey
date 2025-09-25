@@ -677,26 +677,12 @@
 					}
 				}
 			});
-			//关卡得分 - 在游戏上方
+			//关卡得分 - Fora do tabuleiro, acima
 			stage.createItem({
 				x:game.width/2,
-				y:30,
+				y:25,
 				draw:function(context){
-					// Score
-					context.font = 'bold 18px PressStart2P';
-					context.textAlign = 'left';
-					context.textBaseline = 'middle';
-					context.fillStyle = '#C33';
-					context.fillText('SCORE: ' + _SCORE, 20, this.y);
-				}
-			});
-			
-			// Lives - Embaixo do score
-			stage.createItem({
-				x:20,
-				y:60,
-				draw:function(context){
-					// Draw Pacman icons
+					// Draw Pacman icons to the left
 					var max = Math.min(_LIFE-1,5);
 					var startX = 20;
 					for(var i=0;i<max;i++){
@@ -710,11 +696,18 @@
 					}
 					
 					// x4 on the same line with space
-					context.font = 'bold 18px PressStart2P';
+					context.font = 'bold 16px PressStart2P';
 					context.textAlign = 'left';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#FFF';
 					context.fillText('x' + (_LIFE-1), startX + 100, this.y);
+					
+					// Score above the x4
+					context.font = 'bold 16px PressStart2P';
+					context.textAlign = 'left';
+					context.textBaseline = 'middle';
+					context.fillStyle = '#C33';
+					context.fillText('SCORE: ' + _SCORE, startX + 100, this.y - 20);
 				}
 			});
 			//状态文字 - 在游戏中心
