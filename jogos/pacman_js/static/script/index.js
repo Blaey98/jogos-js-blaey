@@ -836,7 +836,8 @@
 							isSick = this.timeout>80||this.times%2?true:false;
 						}
 						if(this.status!=4){
-							context.fillStyle = isSick?'#BABABA':this.color;
+							// Quando o fantasma está vulnerável, usar verde piscando
+							context.fillStyle = isSick?'#00FF00':this.color;
 							context.beginPath();
 							context.arc(this.x,this.y,this.width*.5,0,Math.PI,true);
 							switch(this.times%2){
@@ -992,7 +993,7 @@
 			}
 		});
 		// Botão Novamente
-		stage.createItem({
+		var novamenteButton = stage.createItem({
 			x:game.width/2,
 			y:game.height*.65,
 			width:200,
@@ -1009,7 +1010,21 @@
 				context.textBaseline = 'middle';
 				context.fillText('NOVAMENTE', this.x, this.y);
 			}
-		}).bind('click', function(){
+		});
+		
+		// Evento de clique para o botão
+		novamenteButton.bind('click', function(){
+			console.log('Botão Novamente clicado!');
+			// Reiniciar jogo
+			_SCORE = 0;
+			_LIFE = 5;
+			game.setStage(0); // Voltar para o primeiro stage
+		});
+		
+		// Evento de toque para mobile
+		novamenteButton.bind('touchstart', function(e){
+			e.preventDefault();
+			console.log('Botão Novamente tocado!');
 			// Reiniciar jogo
 			_SCORE = 0;
 			_LIFE = 5;
