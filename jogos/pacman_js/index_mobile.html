@@ -126,6 +126,7 @@
         <div id="debugPanel" style="position: fixed; top: 10px; right: 10px; z-index: 10000; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; color: white; font-family: Arial, sans-serif;">
             <div style="margin-bottom: 10px;">
                 <button id="nextLevelBtn" style="background: #4CAF50; color: white; border: none; padding: 8px 12px; border-radius: 3px; cursor: pointer; margin-right: 5px;">🎮 Próximo Nível</button>
+                <button id="gameOverBtn" style="background: #F44336; color: white; border: none; padding: 8px 12px; border-radius: 3px; cursor: pointer; margin-right: 5px;">💀 Game Over</button>
                 <button id="logBtn" style="background: #2196F3; color: white; border: none; padding: 8px 12px; border-radius: 3px; cursor: pointer;">📝 Log</button>
             </div>
             <div id="debugInfo" style="font-size: 12px; max-height: 200px; overflow-y: auto;">
@@ -282,6 +283,27 @@
                     addDebugLog('Tentando encontrar funções disponíveis...');
                     addDebugLog('window.game:', typeof window.game);
                     addDebugLog('window.createLevel:', typeof window.createLevel);
+                }
+                
+                updateDebugDisplay();
+            });
+            
+            // Botão Game Over
+            document.getElementById('gameOverBtn').addEventListener('click', function() {
+                addDebugLog('Testando Game Over...');
+                
+                // Simular Game Over
+                if (window.game && typeof window.game.getStages === 'function') {
+                    const stages = window.game.getStages();
+                    addDebugLog(`Total de stages: ${stages.length}`);
+                    addDebugLog(`Stages: ${stages.map((s, i) => `Stage ${i}`).join(', ')}`);
+                    addDebugLog('Indo para stage 1 (Game Over)');
+                    
+                    // Ir para tela de Game Over (stage 1)
+                    window.game.setStage(1);
+                    addDebugLog('Tela de Game Over ativada');
+                } else {
+                    addDebugLog('ERRO: game.getStages não encontrado!');
                 }
                 
                 updateDebugDisplay();

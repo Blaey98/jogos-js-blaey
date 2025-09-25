@@ -603,11 +603,21 @@
 					}else if(stage.status==3){		//场景临时状态
 						if(!stage.timeout){
 							_LIFE--;
+							console.log('🎮 Pacman morreu! Vidas restantes:', _LIFE);
 							if(_LIFE){
+								console.log('🎮 Reiniciando items do nível atual');
 								stage.resetItems();
 							}else{
+								console.log('🎮 GAME OVER! Indo para tela de Game Over');
+								// Verificar quantos stages existem
 								var stages = game.getStages();
-								game.setStage(stages.length-1);
+								console.log('🎮 Total de stages:', stages.length);
+								console.log('🎮 Stages disponíveis:', stages.map((s, i) => `Stage ${i}`));
+								
+								// Ir para tela de Game Over (stage 1 - que é o Game Over)
+								// O stage 0 é o jogo, stage 1 é Game Over, stage 2 é Vitória Final
+								game.setStage(1);
+								console.log('🎮 Stage 1 (Game Over) ativado');
 								return false;
 							}
 						}
@@ -1059,7 +1069,7 @@
 		console.log('🎮 Iniciando primeiro nível...');
 		createLevel(0);
 	})();
-	//结束画面 - Apenas quando todos os níveis são completados
+	//结束画面 - Game Over (Stage 1)
 	(function(){
 		var stage = game.createStage();
 		//游戏结束
@@ -1110,30 +1120,36 @@
 		
 		// Evento de clique para o botão
 		novamenteButton.bind('click', function(){
-			console.log('Botão Novamente clicado!');
+			console.log('🎮 Botão Novamente clicado! Reiniciando jogo...');
 			// Reiniciar jogo
 			_SCORE = 0;
 			_LIFE = 5;
-			game.setStage(0); // Voltar para o primeiro stage
+			// Voltar para o primeiro stage (nível 1)
+			game.setStage(0);
+			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
 		});
 		
 		// Evento de toque para mobile
 		novamenteButton.bind('touchstart', function(e){
 			e.preventDefault();
-			console.log('Botão Novamente tocado!');
+			console.log('🎮 Botão Novamente tocado! Reiniciando jogo...');
 			// Reiniciar jogo
 			_SCORE = 0;
 			_LIFE = 5;
-			game.setStage(0); // Voltar para o primeiro stage
+			// Voltar para o primeiro stage (nível 1)
+			game.setStage(0);
+			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
 		});
 		//事件绑定
 		stage.bind('keydown',function(e){
 			switch(e.keyCode){
 				case 13: //回车
 				case 32: //空格
+				console.log('🎮 Tecla pressionada na tela de Game Over - Reiniciando jogo...');
 				_SCORE = 0;
 				_LIFE = 5;
 				game.setStage(0); // Voltar para o primeiro stage
+				console.log('🎮 Jogo reiniciado via teclado - Score:', _SCORE, 'Vidas:', _LIFE);
 				break;
 			}
 		});
