@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pacman - Jogo</title>
+    <link rel="shortcut icon" href="favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+        }
+        
+        .game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: block;
+            object-fit: contain;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        /* Mobile controls */
+        .mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+            opacity: 0.8;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 0, 0.8);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:active {
+            background: rgba(255, 255, 0, 1);
+            transform: scale(0.9);
+        }
+        
+        /* Hide controls on desktop */
+        @media (min-width: 769px) {
+            .mobile-controls {
+                display: none;
+            }
+        }
+        
+        /* Score display */
+        .score-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .lives-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        /* Responsive canvas */
+        @media (max-width: 768px) {
+            #canvas {
+                width: 100vw;
+                height: 100vh;
+                object-fit: contain;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            #canvas {
+                width: 100vw;
+                height: 100vh;
+                object-fit: contain;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="canvas" width="960" height="640">Jogo não suportado</canvas>
+        
+        <!-- Score and Lives Display -->
+        <div class="score-display">
+            <div>Score: <span id="score">0</span></div>
+        </div>
+        
+        <div class="lives-display">
+            <div>Lives: <span id="lives">3</span></div>
+        </div>
+        
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+            <div class="control-btn" data-direction="up">↑</div>
+            <div class="control-btn" data-direction="left">←</div>
+            <div class="control-btn" data-direction="down">↓</div>
+            <div class="control-btn" data-direction="right">→</div>
+        </div>
+    </div>
+
+    <script src="./static/script/game.js"></script>
+    <script src="./static/script/index.js"></script>
+    
+    <script>
+        // Mobile controls
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('canvas');
+            const scoreElement = document.getElementById('score');
+            const livesElement = document.getElementById('lives');
+            
+            // Touch controls - direct canvas touch
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+            
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            });
+            
+            canvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                const touch = e.changedTouches[0];
+                touchEndX = touch.clientX;
+                touchEndY = touch.clientY;
+                
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                const minSwipeDistance = 30;
+                
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal swipe
+                    if (Math.abs(deltaX) > minSwipeDistance) {
+                        if (deltaX > 0) {
+                            simulateKeyPress('right');
+                        } else {
+                            simulateKeyPress('left');
+                        }
+                    }
+                } else {
+                    // Vertical swipe
+                    if (Math.abs(deltaY) > minSwipeDistance) {
+                        if (deltaY > 0) {
+                            simulateKeyPress('down');
+                        } else {
+                            simulateKeyPress('up');
+                        }
+                    }
+                }
+            });
+            
+            // Mobile control buttons
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    const direction = this.getAttribute('data-direction');
+                    simulateKeyPress(direction);
+                });
+                
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const direction = this.getAttribute('data-direction');
+                    simulateKeyPress(direction);
+                });
+            });
+            
+            // Prevent scrolling
+            document.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Prevent context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            // Keyboard support for desktop
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    simulateKeyPress('space');
+                }
+            });
+            
+            function simulateKeyPress(key) {
+                let keyCode;
+                switch(key) {
+                    case 'up': keyCode = 38; break;
+                    case 'down': keyCode = 40; break;
+                    case 'left': keyCode = 37; break;
+                    case 'right': keyCode = 39; break;
+                    case 'space': keyCode = 32; break;
+                }
+                
+                if (keyCode) {
+                    const event = new KeyboardEvent('keydown', {
+                        keyCode: keyCode,
+                        which: keyCode,
+                        key: key === 'space' ? ' ' : key
+                    });
+                    document.dispatchEvent(event);
+                }
+            }
+            
+            // Update score and lives display
+            setInterval(function() {
+                if (window.game && window.game.score !== undefined) {
+                    scoreElement.textContent = window.game.score;
+                }
+                if (window.game && window.game.lives !== undefined) {
+                    livesElement.textContent = window.game.lives;
+                }
+            }, 100);
+            
+            // Responsive canvas resize
+            function resizeCanvas() {
+                const container = document.querySelector('.game-container');
+                const containerWidth = container.clientWidth;
+                const containerHeight = container.clientHeight;
+                
+                // Game aspect ratio (960x640)
+                const gameAspectRatio = 960 / 640;
+                const screenAspectRatio = containerWidth / containerHeight;
+                
+                let newWidth, newHeight;
+                
+                if (screenAspectRatio > gameAspectRatio) {
+                    // Screen is wider than game - fit to height
+                    newHeight = containerHeight;
+                    newWidth = newHeight * gameAspectRatio;
+                } else {
+                    // Screen is taller than game - fit to width
+                    newWidth = containerWidth;
+                    newHeight = newWidth / gameAspectRatio;
+                }
+                
+                canvas.style.width = newWidth + 'px';
+                canvas.style.height = newHeight + 'px';
+                
+                // Center the canvas
+                canvas.style.marginLeft = (containerWidth - newWidth) / 2 + 'px';
+                canvas.style.marginTop = (containerHeight - newHeight) / 2 + 'px';
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>
