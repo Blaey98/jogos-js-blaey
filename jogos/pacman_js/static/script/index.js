@@ -687,23 +687,29 @@
 					context.textAlign = 'left';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
-					context.fillText('SCORE: ', 20, this.y - 25);
+					context.fillText('SCORE: ', 80, this.y - 25);
 					context.fillStyle = '#FFF';
-					context.fillText(_SCORE, 180, this.y - 25);
-					context.fillText('x' + (_LIFE-1), 280, this.y - 25);
+					context.fillText(_SCORE, 200, this.y - 25);
 					
-					// Draw Pacman icons to the right of score
+					// Draw heart icons first
 					var max = Math.min(_LIFE-1,5);
-					var startX = 350;
+					var startX = 360;
 					for(var i=0;i<max;i++){
-						var x=startX+20*i,y=this.y - 25;
-						context.fillStyle = '#FFE600';
+						var x=startX+25*i,y=this.y - 25;
+						context.fillStyle = '#FF0000';
 						context.beginPath();
-						context.arc(x,y,8,.15*Math.PI,-.15*Math.PI,false);
-						context.lineTo(x,y);
+						context.moveTo(x, y + 4);
+						context.bezierCurveTo(x, y - 3, x - 8, y - 3, x - 8, y + 1);
+						context.bezierCurveTo(x - 8, y + 5, x, y + 10, x, y + 10);
+						context.bezierCurveTo(x, y + 10, x + 8, y + 5, x + 8, y + 1);
+						context.bezierCurveTo(x + 8, y - 3, x, y - 3, x, y + 4);
 						context.closePath();
 						context.fill();
 					}
+					
+					// x4 after heart icons with more space - white color
+					context.fillStyle = '#FFF';
+					context.fillText('x' + (_LIFE-1), startX + 100, this.y - 25);
 				}
 			});
 			//状态文字 - 在游戏中心
@@ -726,11 +732,11 @@
 				x:game.width/2,
 				y:game.height - 40,
 				draw:function(context){
-					// Draw Level
+					// Draw Level with 50% transparency
 					context.font = '16px PressStart2P';
 					context.textAlign = 'center';
 					context.textBaseline = 'center';
-					context.fillStyle = '#C33';
+					context.fillStyle = 'rgba(204, 51, 51, 0.5)';
 					context.fillText('LEVEL: ' + (index+1), this.x, this.y);
 				}
 			});
