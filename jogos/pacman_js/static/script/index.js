@@ -688,10 +688,17 @@
 					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
 					context.fillText('SCORE: ' + _SCORE, 20, this.y);
-					
-					// Draw Pacman icons to the left of x4
+				}
+			});
+			
+			// Lives - Embaixo do score
+			stage.createItem({
+				x:20,
+				y:60,
+				draw:function(context){
+					// Draw Pacman icons
 					var max = Math.min(_LIFE-1,5);
-					var startX = game.width - 140; // Moved further left to add space
+					var startX = 20;
 					for(var i=0;i<max;i++){
 						var x=startX+20*i,y=this.y;
 						context.fillStyle = '#FFE600';
@@ -704,10 +711,10 @@
 					
 					// x4 on the same line with space
 					context.font = 'bold 18px PressStart2P';
-					context.textAlign = 'right';
+					context.textAlign = 'left';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#FFF';
-					context.fillText('x' + (_LIFE-1), game.width-20, this.y);
+					context.fillText('x' + (_LIFE-1), startX + 100, this.y);
 				}
 			});
 			//状态文字 - 在游戏中心
@@ -989,6 +996,30 @@
 				context.fillText('FINAL SCORE: '+(_SCORE+50*Math.max(_LIFE-1,0)),this.x,this.y);
 			}
 		});
+		// Botão Novamente
+		stage.createItem({
+			x:game.width/2,
+			y:game.height*.65,
+			width:200,
+			height:50,
+			draw:function(context){
+				// Desenhar botão
+				context.fillStyle = '#FFE600';
+				context.fillRect(this.x-100, this.y-25, 200, 50);
+				
+				// Desenhar texto do botão
+				context.fillStyle = '#000';
+				context.font = 'bold 18px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('NOVAMENTE', this.x, this.y);
+			}
+		}).bind('click', function(){
+			// Reiniciar jogo
+			_SCORE = 0;
+			_LIFE = 5;
+			game.setStage(0); // Voltar para o primeiro stage
+		});
 		//事件绑定
 		stage.bind('keydown',function(e){
 			switch(e.keyCode){
@@ -996,7 +1027,7 @@
 				case 32: //空格
 				_SCORE = 0;
 				_LIFE = 5;
-				game.setStage(1);
+				game.setStage(0); // Voltar para o primeiro stage
 				break;
 			}
 		});

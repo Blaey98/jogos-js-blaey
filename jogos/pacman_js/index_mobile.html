@@ -225,7 +225,7 @@
                 }
             }, 100);
             
-            // Mobile-optimized canvas resize
+            // Mobile-optimized canvas resize - 40% maior
             function resizeCanvas() {
                 const container = document.querySelector('.game-container');
                 const containerWidth = container.clientWidth;
@@ -247,6 +247,10 @@
                     newHeight = newWidth / gameAspectRatio;
                 }
                 
+                // Aumentar 40% o tamanho
+                newWidth = newWidth * 1.4;
+                newHeight = newHeight * 1.4;
+                
                 canvas.style.width = newWidth + 'px';
                 canvas.style.height = newHeight + 'px';
                 
@@ -254,10 +258,14 @@
                 canvas.style.marginLeft = (containerWidth - newWidth) / 2 + 'px';
                 canvas.style.marginTop = (containerHeight - newHeight) / 2 + 'px';
                 
-                // Ensure canvas covers full screen on mobile
+                // Ensure canvas covers full screen on mobile with 40% increase
                 if (window.innerWidth <= 768) {
-                    canvas.style.width = '100vw';
-                    canvas.style.height = '100vh';
+                    // Aplicar 40% de aumento também no mobile
+                    const mobileWidth = containerWidth * 1.4;
+                    const mobileHeight = containerHeight * 1.4;
+                    
+                    canvas.style.width = mobileWidth + 'px';
+                    canvas.style.height = mobileHeight + 'px';
                     canvas.style.position = 'fixed';
                     canvas.style.top = '0';
                     canvas.style.left = '0';
