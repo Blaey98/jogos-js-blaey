@@ -14,6 +14,17 @@ const games = [
         featured: true
     },
     {
+        id: 'space-goblins-mobile',
+        title: 'The Maze of Space Goblins',
+        description: 'O jogo completo com controles touch otimizados para mobile!',
+        icon: '👾',
+        path: 'jogos/blaey go!/passatempo/the-maze-of-space-goblins-main/index.html',
+        status: 'available',
+        category: 'adventure',
+        tags: ['mobile', 'adventure', 'space', 'touch', 'maze', 'complete'],
+        featured: true
+    },
+    {
         id: 'space-exploration',
         title: 'Space Exploration',
         description: 'Explore o espaço voando de planeta em planeta. Colete moedas e desbloqueie novas naves espaciais!',

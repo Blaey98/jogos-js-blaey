@@ -42,7 +42,6 @@
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
-            border: 2px solid #333;
         }
         
         #controls {
@@ -189,7 +188,7 @@
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="160" height="144"></canvas>
+        <canvas id="gameCanvas" width="320" height="288"></canvas>
         
         <div id="controls">
             <div id="directionalPad">
@@ -206,116 +205,14 @@
         </div>
     </div>
 
+    <script src="js/main.js" type="module"></script>
     <script>
-        // The Maze of Space Goblins - Simple Game Implementation
-        class SimpleGame {
-            constructor() {
-                this.canvas = document.getElementById('gameCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.keys = {};
-                this.gameState = 'menu';
-                this.player = { x: 80, y: 72, size: 4, speed: 1 };
-                this.animationId = null;
-                this.setupKeyboard();
-                this.start();
-            }
-            
-            setupKeyboard() {
-                document.addEventListener('keydown', (e) => {
-                    this.keys[e.code] = true;
-                    e.preventDefault();
-                });
-                
-                document.addEventListener('keyup', (e) => {
-                    this.keys[e.code] = false;
-                    e.preventDefault();
-                });
-            }
-            
-            start() {
-                this.gameLoop();
-            }
-            
-            gameLoop() {
-                this.update();
-                this.draw();
-                this.animationId = requestAnimationFrame(() => this.gameLoop());
-            }
-            
-            update() {
-                if (this.gameState === 'menu') {
-                    if (this.keys['Enter']) {
-                        this.gameState = 'playing';
-                    }
-                } else if (this.gameState === 'playing') {
-                    // Player movement
-                    if (this.keys['ArrowLeft']) {
-                        this.player.x -= this.player.speed;
-                    }
-                    if (this.keys['ArrowRight']) {
-                        this.player.x += this.player.speed;
-                    }
-                    if (this.keys['ArrowUp']) {
-                        this.player.y -= this.player.speed;
-                    }
-                    if (this.keys['ArrowDown']) {
-                        this.player.y += this.player.speed;
-                    }
-                    
-                    // Keep player in bounds
-                    this.player.x = Math.max(this.player.size, Math.min(this.canvas.width - this.player.size, this.player.x));
-                    this.player.y = Math.max(this.player.size, Math.min(this.canvas.height - this.player.size, this.player.y));
-                }
-            }
-            
-            draw() {
-                // Clear canvas
-                this.ctx.fillStyle = '#000';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                if (this.gameState === 'menu') {
-                    this.drawMenu();
-                } else if (this.gameState === 'playing') {
-                    this.drawGame();
-                }
-            }
-            
-            drawMenu() {
-                this.ctx.fillStyle = '#fff';
-                this.ctx.font = 'bold 12px Arial';
-                this.ctx.textAlign = 'center';
-                this.ctx.fillText('THE MAZE OF', this.canvas.width / 2, 40);
-                this.ctx.fillText('SPACE GOBLINS', this.canvas.width / 2, 55);
-                
-                this.ctx.font = '8px Arial';
-                this.ctx.fillText('Touch ENTER to start', this.canvas.width / 2, 80);
-                this.ctx.fillText('Use directional pad', this.canvas.width / 2, 95);
-            }
-            
-            drawGame() {
-                // Draw player
-                this.ctx.fillStyle = '#00ff00';
-                this.ctx.fillRect(this.player.x - this.player.size/2, this.player.y - this.player.size/2, this.player.size, this.player.size);
-                
-                // Draw some obstacles
-                this.ctx.fillStyle = '#666';
-                this.ctx.fillRect(20, 20, 8, 8);
-                this.ctx.fillRect(120, 40, 8, 8);
-                this.ctx.fillRect(60, 100, 8, 8);
-                
-                // Draw instructions
-                this.ctx.fillStyle = '#fff';
-                this.ctx.font = '6px Arial';
-                this.ctx.textAlign = 'left';
-                this.ctx.fillText('Use D-pad to move', 2, 10);
-                this.ctx.fillText('Touch screen = Enter', 2, 18);
-            }
-        }
-
-        // Mobile controls integration
+        // Mobile touch controls integration
         class MobileControls {
             constructor() {
+                this.canvas = document.getElementById('gameCanvas');
                 this.setupTouchControls();
+                this.setupKeyboardMapping();
             }
             
             setupTouchControls() {
@@ -372,13 +269,12 @@
                 });
                 
                 // Touch anywhere on screen for enter
-                const canvas = document.getElementById('gameCanvas');
-                canvas.addEventListener('touchstart', (e) => {
+                this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     this.simulateKeyPress('Enter');
                 });
                 
-                canvas.addEventListener('touchend', (e) => {
+                this.canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     this.simulateKeyRelease('Enter');
                 });
@@ -437,19 +333,35 @@
                 };
                 return keyCodeMap[keyCode] || 0;
             }
+            
+            setupKeyboardMapping() {
+                // Prevent default browser behavior for game keys
+                const gameKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Space'];
+                
+                document.addEventListener('keydown', (e) => {
+                    if (gameKeys.includes(e.code)) {
+                        e.preventDefault();
+                    }
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    if (gameKeys.includes(e.code)) {
+                        e.preventDefault();
+                    }
+                });
+            }
         }
-
-        // Initialize game and mobile controls when page loads
+        
+        // Initialize mobile controls when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            new SimpleGame();
             new MobileControls();
         });
-
+        
         // Prevent context menu on long press
         document.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
-
+        
         // Prevent zoom on double tap
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
