@@ -1,47 +1,78 @@
 # 🎮 Jogos JS Blaey
 
-Coleção de jogos em JavaScript para GitHub Pages.
+Coleção de jogos em JavaScript para GitHub Pages e Firebase Hosting.
 
-## 🎱 Sinuca - 8 Ball Billiards
+## 🎯 Jogos Principais
 
-### 🚀 Acesso Rápido:
-- **Jogo Principal:** [index.html](jogos/sinuca/index.html)
-- **Versão Simplificada:** [index_simple.html](jogos/sinuca/index_simple.html)
+### 🎱 Sinuca (8 Ball Billiards)
+- **Localização:** `jogos/sinuca/`
+- **Versões:** 
+  - `index.html` - Versão completa
+  - `index_simple.html` - Versão simplificada
+- **Recursos:** Phaser.js, HTML5 Canvas, Responsivo
 
-### 🎯 Modos de Jogo:
-- **Modo Clássico:** Jogador vs Bot
-- **Modo Modular:** [game_modular_simple.html](jogos/sinuca/game_modular_simple.html)
-- **Modo Eliminação:** [game_elimination_working.html](jogos/sinuca/game_elimination_working.html)
+### ♟️ Xadrez
+- **Localização:** `jogos/chess_js/`
+- **Engine:** Chess.js + Stockfish
+- **Recursos:** IA avançada, Análise de jogadas
 
-### 🎮 Outros Jogos:
-- **Xadrez:** [public/games/chess/index.html](public/games/chess/index.html)
-- **Damas:** [public/games/checkers/index.html](public/games/checkers/index.html)
-- **Damas Internacionais:** [public/games/checkers-international/index.html](public/games/checkers-international/index.html)
-- **Pacman:** [jogos/pacman_js/index.html](jogos/pacman_js/index.html)
+### 🔴 Damas
+- **Localização:** `jogos/damas/`
+- **Versões:** Clássica e Internacional
+- **Recursos:** Motor Python, Interface web
 
-## 🛠️ Tecnologias:
-- **JavaScript** - Lógica do jogo
-- **Phaser.js** - Engine de jogos
-- **HTML5 Canvas** - Renderização
-- **CSS3** - Interface e responsividade
+### 👻 Pacman
+- **Localização:** `jogos/pacman_js/`
+- **Recursos:** HTML5 Canvas, Responsivo
 
-## 📱 Recursos:
-- ✅ **Responsivo** - Funciona em desktop e mobile
-- ✅ **Fundo Preto** - Visual limpo e moderno
-- ✅ **Interface Limpa** - Sem elementos desnecessários
-- ✅ **Controles Intuitivos** - Fácil de jogar
+## 🚀 Acesso Rápido
 
-## 🎯 Como Jogar:
-1. Acesse o link do jogo
-2. Aguarde o carregamento
-3. Use o mouse para mirar
-4. Clique e arraste para definir a força
-5. Solte para atirar
+### 🎱 Sinuca
+- [Versão Completa](jogos/sinuca/index.html)
+- [Versão Simplificada](jogos/sinuca/index_simple.html)
 
-## 🔧 Desenvolvimento:
-- **Servidor Local:** `python3 -m http.server 8080`
-- **Porta:** 8080
-- **URL Local:** `http://localhost:8080`
+### ♟️ Xadrez
+- [Jogar Xadrez](jogos/chess_js/index.html)
+
+### 👻 Pacman
+- [Jogar Pacman](jogos/pacman_js/index.html)
+
+## 🛠️ Desenvolvimento
+
+### Servidor Local
+```bash
+# Python
+python3 -m http.server 8080
+
+# Node.js
+npm start
+```
+
+### Firebase Deploy
+```bash
+# Configurar projeto
+firebase use --add
+
+# Deploy
+firebase deploy
+```
+
+## 📱 Recursos
+
+- ✅ **Responsivo** - Desktop e Mobile
+- ✅ **PWA Ready** - Service Workers
+- ✅ **SEO Optimized** - Meta tags
+- ✅ **Performance** - Lazy loading
+- ✅ **Acessibilidade** - ARIA labels
+
+## 🔧 Tecnologias
+
+- **Frontend:** HTML5, CSS3, JavaScript ES6+
+- **Game Engines:** Phaser.js, Canvas API
+- **Backend:** Node.js, Express
+- **Deploy:** GitHub Pages, Firebase Hosting
+- **Versionamento:** Git, GitHub
 
 ---
-*Desenvolvido com ❤️ para GitHub Pages*
+
+*Desenvolvido com ❤️ para a comunidade de jogos JavaScript*

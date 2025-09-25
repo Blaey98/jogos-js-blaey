@@ -836,8 +836,12 @@
 							isSick = this.timeout>80||this.times%2?true:false;
 						}
 						if(this.status!=4){
-							// Quando o fantasma está vulnerável, usar verde piscando
-							context.fillStyle = isSick?'#00FF00':this.color;
+							// Quando o fantasma está vulnerável, piscar entre verde e verde escuro
+							if(this.status==3){
+								context.fillStyle = this.times%2?'#00FF00':'#006600';
+							} else {
+								context.fillStyle = this.color;
+							}
 							context.beginPath();
 							context.arc(this.x,this.y,this.width*.5,0,Math.PI,true);
 							switch(this.times%2){
