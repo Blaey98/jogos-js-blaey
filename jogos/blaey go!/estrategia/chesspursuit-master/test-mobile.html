@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Chess Pursuit - Mobile Test</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+			background: #f0f0f0;
+		}
+		.test-container {
+			background: white;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+			margin-bottom: 20px;
+		}
+		.test-link {
+			display: inline-block;
+			background: #007bff;
+			color: white;
+			padding: 15px 30px;
+			text-decoration: none;
+			border-radius: 5px;
+			margin: 10px 5px;
+			font-weight: bold;
+		}
+		.test-link:hover {
+			background: #0056b3;
+		}
+		.instructions {
+			background: #e7f3ff;
+			padding: 15px;
+			border-left: 4px solid #007bff;
+			margin: 20px 0;
+		}
+		.features {
+			background: #f8f9fa;
+			padding: 15px;
+			border-radius: 5px;
+			margin: 20px 0;
+		}
+		.features ul {
+			margin: 10px 0;
+			padding-left: 20px;
+		}
+		.features li {
+			margin: 5px 0;
+		}
+	</style>
+</head>
+<body>
+	<div class="test-container">
+		<h1>Chess Pursuit - Teste da Versão Mobile</h1>
+		
+		<div class="instructions">
+			<h3>📱 Controles Mobile Implementados:</h3>
+			<p>Esta versão mobile inclui controles de toque e deslize para jogar Chess Pursuit em dispositivos móveis.</p>
+		</div>
+		
+		<div class="features">
+			<h3>🎮 Recursos de Controle:</h3>
+			<ul>
+				<li><strong>Botões de Toque:</strong> Botões direcionais na tela (↑ ← ↓ →)</li>
+				<li><strong>Gestos de Deslize:</strong> Deslize em qualquer direção para se mover</li>
+				<li><strong>Toque para Mover:</strong> Toque no tabuleiro para se mover para aquela posição</li>
+				<li><strong>Design Responsivo:</strong> Otimizado para telas móveis</li>
+				<li><strong>Prevenção de Toque:</strong> Previne zoom e rolagem durante o jogo</li>
+			</ul>
+		</div>
+		
+		<div class="test-container">
+			<h3>🚀 Teste a Versão Mobile:</h3>
+			<a href="mobile.html" class="test-link" target="_blank">Abrir Versão Mobile</a>
+			<a href="src/index.html" class="test-link" target="_blank">Abrir Versão Original</a>
+		</div>
+		
+		<div class="instructions">
+			<h3>📋 Instruções de Teste:</h3>
+			<ol>
+				<li>Abra a versão mobile em um dispositivo móvel ou use o modo mobile das ferramentas de desenvolvedor do navegador</li>
+				<li>Teste os botões de toque na parte inferior da tela</li>
+				<li>Teste deslizar em diferentes direções na área do jogo</li>
+				<li>Teste tocar no tabuleiro para se mover</li>
+				<li>Teste em orientações retrato e paisagem</li>
+			</ol>
+		</div>
+		
+		<div class="features">
+			<h3>🔧 Implementação Técnica:</h3>
+			<ul>
+				<li>Manipulação de eventos de toque com preventDefault()</li>
+				<li>Detecção de deslize com limite mínimo de distância</li>
+				<li>Simulação de botões de toque para entrada de teclado</li>
+				<li>Simulação de clique do mouse para interação com o tabuleiro</li>
+				<li>CSS responsivo para diferentes tamanhos de tela</li>
+				<li>Prevenção de gestos para melhor experiência mobile</li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

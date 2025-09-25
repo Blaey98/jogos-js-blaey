@@ -1119,7 +1119,7 @@ window.onload = function(){
 			//Waiting for space
 		}else if(introStep == 1){
 			if(init){
-				showDialog(true,['Surrender Black King !', 'Your army is defeated, and your Queen is mine !']);
+				showDialog(true,['Renda-se, Rei Negro!', 'Seu exército foi derrotado, e sua Rainha é minha!']);
 				whiteKing.talking = true;
 			}
 		}else if(introStep == 2){
@@ -1133,18 +1133,18 @@ window.onload = function(){
 			}
         }else if(introStep == 3){
             if(init){
-                showDialog(true,['You thought I\'d only bring two knights to battle ?','You are surrounded,','admit defeat now and I shall be merciful.']);
+                showDialog(true,['Você pensou que eu traria apenas dois cavaleiros para a batalha?','Você está cercado,','admita a derrota agora e serei misericordioso.']);
                 whiteKing.talking = true;
             }
         }else if(introStep == 4){
             if(init){
-                showDialog(false,['Never !']);
+                showDialog(false,['Nunca!']);
                 blackKing.talking = true;
             }
             //sword ?
         }else if(introStep == 5){
             if(init){
-                showDialog(true, ['As you wish...','I am taking the prisoner back to the castle.','Knights, capture him, I want him alive.']);
+                showDialog(true, ['Como desejar...','Estou levando o prisioneiro de volta ao castelo.','Cavaleiros, capturem-no, quero ele vivo.']);
                 whiteKing.talking = true;
             }
         }else if(introStep == 6){
@@ -1166,7 +1166,7 @@ window.onload = function(){
         }else if(introStep == 7){
             if(init){
                 var anim = '<animate attributeType="CSS" attributeName="fill" from="red" to="orange" dur="0.5s" repeatCount="indefinite"/>';
-                showDialog(false, ['It looks like our roles are <tspan fill="red" font-family="impact">REVERSED'+anim+'</tspan> my Queen.',"Today, it is my turn to protect you !"]);
+                showDialog(false, ['Parece que nossos papéis foram <tspan fill="red" font-family="impact">INVERTIDOS'+anim+'</tspan> minha Rainha.',"Hoje, é minha vez de protegê-la!"]);
                 blackKing.talking = true;
 
                 //remove intro pieces
@@ -2047,7 +2047,7 @@ window.onload = function(){
 				'text-anchor': 'middle',
 				'font-family':'Impact'
 			});
-			svgInnerHtml(text, 'CHECKMATE !');
+			svgInnerHtml(text, 'XEQUE-MATE!');
 			gameOverScreen.appendChild(text);
 
 			text = document.createElementNS (xmlns, 'text');
@@ -2087,7 +2087,7 @@ window.onload = function(){
                 'text-anchor': 'middle',
                 'font-family':'Impact'
             });
-            svgInnerHtml(text, 'CHESS<tspan style="font-style:italic;">PURSUIT</tspan>');
+            svgInnerHtml(text, 'XADREZ<tspan style="font-style:italic;">PURSUIT</tspan>');
             introScreen.appendChild(text);
         }
 
@@ -2103,7 +2103,7 @@ window.onload = function(){
                 'text-anchor': 'middle',
                 'font-family':'Impact'
             });
-            svgInnerHtml(pressSpaceText, 'Press <tspan style="fill:orange;">SPACE</tspan> or <tspan style="fill:orange;">CLICK</tspan>');
+            svgInnerHtml(pressSpaceText, 'Pressione <tspan style="fill:orange;">ESPAÇO</tspan> ou <tspan style="fill:orange;">CLIQUE</tspan>');
             svgElem.appendChild(pressSpaceText);
         }
 
@@ -2119,7 +2119,7 @@ window.onload = function(){
                 'text-anchor': 'middle',
                 'font-family':'Impact'
             });
-            svgInnerHtml(pauseText, 'PAUSED');
+            svgInnerHtml(pauseText, 'PAUSADO');
             pauseText.style.display = 'none';
             svgElem.appendChild(pauseText);
         }
@@ -2182,7 +2182,7 @@ window.onload = function(){
                 'text-anchor': 'middle',
                 'font-family':'Impact'
             });
-            svgInnerHtml(text, 'YOU WIN !');
+            svgInnerHtml(text, 'VOCÊ VENCEU!');
             winScreen.appendChild(text);
 
             text = document.createElementNS (xmlns, 'text');
@@ -2196,7 +2196,7 @@ window.onload = function(){
                 'text-anchor': 'middle',
                 'font-family':'Impact'
             });
-            svgInnerHtml(text, 'Alas, your Queen is in another castle...');
+            svgInnerHtml(text, 'Infelizmente, sua Rainha está em outro castelo...');
             winScreen.appendChild(text);
         }
 	}
@@ -2205,9 +2205,9 @@ window.onload = function(){
 	var dialogCloseY;
 	function showDialog(whiteKing,texts){
 		if(whiteKing){
-			 svgInnerHtml(dialogSpeakerText, 'White King :');
+			 svgInnerHtml(dialogSpeakerText, 'Rei Branco:');
 		}else{
-			 svgInnerHtml(dialogSpeakerText, 'Black King :');
+			 svgInnerHtml(dialogSpeakerText, 'Rei Negro:');
 		}
 		var txt = '';
 		for(var i=0; i<texts.length; i++){

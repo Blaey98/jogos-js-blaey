@@ -14,6 +14,28 @@ const games = [
         featured: true
     },
     {
+        id: 'space-exploration',
+        title: 'Space Exploration',
+        description: 'Explore o espaço voando de planeta em planeta. Colete moedas e desbloqueie novas naves espaciais!',
+        icon: '🚀',
+        path: 'jogos/blaey go!/space/(top3 )space-exploration-2021-master/auto-start.html',
+        status: 'available',
+        category: 'adventure',
+        tags: ['space', 'exploration', 'adventure', 'coins'],
+        featured: true
+    },
+    {
+        id: 'chess-pursuit',
+        title: 'Chess Pursuit',
+        description: 'Escape do tabuleiro de xadrez! Toque e deslize para se mover. Versão mobile otimizada.',
+        icon: '♔',
+        path: 'jogos/blaey go!/estrategia/chesspursuit-master/mobile.html',
+        status: 'available',
+        category: 'strategy',
+        tags: ['mobile', 'strategy', 'chess', 'touch', 'swipe'],
+        featured: true
+    },
+    {
         id: 'chess',
         title: 'Xadrez',
         description: 'O jogo de estratégia mais popular do mundo. Desafie sua mente!',
@@ -29,7 +51,7 @@ const games = [
         title: 'Sinuca',
         description: 'Jogue sinuca online com física realista e controles suaves.',
         icon: '🎱',
-        path: 'jogos/sinuca/index_simple.html',
+        path: 'http://localhost:8080/index_simple.html',
         status: 'available',
         category: 'sports',
         tags: ['sports', 'physics', 'realistic'],
