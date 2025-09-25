@@ -894,15 +894,36 @@
 				orientation:2,
 				speed:2,
 				frames:10,
+				// Adicionar buffer de direção
+				bufferDirection: null,
 				update:function(){
 					var coord = this.coord;
 					if(!coord.offset){
+						// Verificar se há uma direção em buffer e se é possível virar
+						// Só aplicar buffer quando o Pacman está em uma posição válida
+						if(this.bufferDirection !== null){
+							var bufferValue = map.get(coord.x+_COS[this.bufferDirection],coord.y+_SIN[this.bufferDirection]);
+							if(bufferValue == 0){
+								// Pode virar na direção do buffer
+								this.orientation = this.bufferDirection;
+								this.bufferDirection = null; // Limpar buffer após usar
+							}
+						}
+						
+						// Processar controle de direção atual
 						if(typeof this.control.orientation != 'undefined'){
-							if(!map.get(coord.x+_COS[this.control.orientation],coord.y+_SIN[this.control.orientation])){
+							var controlValue = map.get(coord.x+_COS[this.control.orientation],coord.y+_SIN[this.control.orientation]);
+							if(controlValue == 0){
+								// Pode virar imediatamente
 								this.orientation = this.control.orientation;
+								this.bufferDirection = null; // Limpar buffer se virou
+							} else {
+								// Não pode virar agora, salvar no buffer
+								this.bufferDirection = this.control.orientation;
 							}
 						}
 						this.control = {};
+						
 						var value = map.get(coord.x+_COS[this.orientation],coord.y+_SIN[this.orientation]);
 						if(value==0){
 							this.x += this.speed*_COS[this.orientation];
@@ -911,7 +932,19 @@
 							this.x -= map.size*(map.x_length-1)*_COS[this.orientation];
 							this.y -= map.size*(map.y_length-1)*_SIN[this.orientation];
 						}
+						// Se há uma parede (value > 0), não mover - parar na parede
 					}else{
+						// Verificar buffer de direção também durante o movimento
+						// Só verificar o buffer quando o Pacman está em uma posição válida (não em parede)
+						if(this.bufferDirection !== null && coord.offset < 0.1){
+							var bufferValue = map.get(coord.x+_COS[this.bufferDirection],coord.y+_SIN[this.bufferDirection]);
+							if(bufferValue == 0){
+								// Pode virar na direção do buffer
+								this.orientation = this.bufferDirection;
+								this.bufferDirection = null; // Limpar buffer após usar
+							}
+						}
+						
 						if(!beans.get(this.coord.x,this.coord.y)){	//吃豆
 							_SCORE++;
 							beans.set(this.coord.x,this.coord.y,1);
