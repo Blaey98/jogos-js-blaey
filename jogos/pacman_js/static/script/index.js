@@ -682,11 +682,21 @@
 				x:game.width/2,
 				y:35,
 				draw:function(context){
-					// Draw Pacman icons to the left
+					// Score and Pacman icons on the same line
+					context.font = 'bold 20px PressStart2P';
+					context.textAlign = 'left';
+					context.textBaseline = 'middle';
+					context.fillStyle = '#C33';
+					context.fillText('SCORE: ', 20, this.y - 25);
+					context.fillStyle = '#FFF';
+					context.fillText(_SCORE, 180, this.y - 25);
+					context.fillText('x' + (_LIFE-1), 280, this.y - 25);
+					
+					// Draw Pacman icons to the right of score
 					var max = Math.min(_LIFE-1,5);
-					var startX = 20;
+					var startX = 350;
 					for(var i=0;i<max;i++){
-						var x=startX+20*i,y=this.y;
+						var x=startX+20*i,y=this.y - 25;
 						context.fillStyle = '#FFE600';
 						context.beginPath();
 						context.arc(x,y,8,.15*Math.PI,-.15*Math.PI,false);
@@ -694,23 +704,6 @@
 						context.closePath();
 						context.fill();
 					}
-					
-					// x4 on the same line with space
-					context.font = 'bold 16px PressStart2P';
-					context.textAlign = 'left';
-					context.textBaseline = 'middle';
-					context.fillStyle = '#FFF';
-					context.fillText('x' + (_LIFE-1), startX + 100, this.y);
-					
-					// Score and x4 on the same line
-					context.font = 'bold 20px PressStart2P';
-					context.textAlign = 'left';
-					context.textBaseline = 'middle';
-					context.fillStyle = '#C33';
-					context.fillText('SCORE: ', startX + 100, this.y - 25);
-					context.fillStyle = '#FFF';
-					context.fillText(_SCORE, startX + 220, this.y - 25);
-					context.fillText('x' + (_LIFE-1), startX + 280, this.y - 25);
 				}
 			});
 			//状态文字 - 在游戏中心
