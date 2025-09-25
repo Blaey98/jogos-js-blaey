@@ -1077,7 +1077,7 @@
 		console.log('🎮 Iniciando primeiro nível...');
 		createLevel(0);
 	})();
-	//结束画面 - Game Over Dialog Overlay (Stage 1)
+	//结束画面 - Game Over Floating Window (Stage 1)
 	(function(){
 		var stage = game.createStage();
 		
@@ -1089,123 +1089,123 @@
 			height:game.height,
 			draw:function(context){
 				// Fundo semi-transparente com efeito de vidro
-				context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+				context.fillStyle = 'rgba(0, 0, 0, 0.6)';
 				context.fillRect(0, 0, game.width, game.height);
 			}
 		});
 		
-		// Diálogo central - Caixa do Game Over
+		// Janela flutuante - Caixa do Game Over (posicionada à esquerda)
 		stage.createItem({
-			x:game.width/2,
+			x:game.width/3,
 			y:game.height/2,
-			width:400,
-			height:300,
+			width:350,
+			height:250,
 			draw:function(context){
-				// Sombra do diálogo
-				context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-				context.fillRect(this.x-200, this.y-140, 400, 300);
+				// Sombra da janela
+				context.fillStyle = 'rgba(0, 0, 0, 0.4)';
+				context.fillRect(this.x-175, this.y-115, 350, 250);
 				
-				// Fundo do diálogo com efeito de vidro
-				context.fillStyle = 'rgba(255, 255, 255, 0.15)';
-				context.fillRect(this.x-200, this.y-150, 400, 300);
+				// Fundo da janela com efeito de vidro
+				context.fillStyle = 'rgba(255, 255, 255, 0.2)';
+				context.fillRect(this.x-175, this.y-125, 350, 250);
 				
-				// Borda do diálogo
-				context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-				context.lineWidth = 2;
-				context.strokeRect(this.x-200, this.y-150, 400, 300);
+				// Borda da janela
+				context.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+				context.lineWidth = 3;
+				context.strokeRect(this.x-175, this.y-125, 350, 250);
 				
 				// Efeito de vidro - gradiente interno
-				var gradient = context.createLinearGradient(this.x-200, this.y-150, this.x+200, this.y+150);
-				gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-				gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.05)');
-				gradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+				var gradient = context.createLinearGradient(this.x-175, this.y-125, this.x+175, this.y+125);
+				gradient.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+				gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
+				gradient.addColorStop(1, 'rgba(255, 255, 255, 0.15)');
 				context.fillStyle = gradient;
-				context.fillRect(this.x-200, this.y-150, 400, 300);
+				context.fillRect(this.x-175, this.y-125, 350, 250);
 			}
 		});
 		
-		// Título GAME OVER no diálogo
+		// Título GAME OVER na janela flutuante (posicionado à esquerda)
 		stage.createItem({
-			x:game.width/2,
-			y:game.height/2 - 80,
+			x:game.width/3,
+			y:game.height/2 - 70,
 			draw:function(context){
 				// Sombra do texto
-				context.fillStyle = 'rgba(255, 0, 0, 0.8)';
-				context.font = 'bold 36px PressStart2P';
+				context.fillStyle = 'rgba(255, 0, 0, 0.9)';
+				context.font = 'bold 32px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('GAME OVER', this.x + 2, this.y + 2);
 				
 				// Texto principal
 				context.fillStyle = '#FFE600';
-				context.font = 'bold 36px PressStart2P';
+				context.font = 'bold 32px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('GAME OVER', this.x, this.y);
 			}
 		});
 		
-		// Score final no diálogo
+		// Score final na janela flutuante (posicionado à esquerda)
 		stage.createItem({
-			x:game.width/2,
+			x:game.width/3,
 			y:game.height/2 - 20,
 			draw:function(context){
 				var finalScore = _SCORE + 50 * Math.max(_LIFE-1, 0);
 				
 				// Label do score
-				context.fillStyle = 'rgba(255, 255, 255, 0.9)';
-				context.font = 'bold 18px PressStart2P';
+				context.fillStyle = 'rgba(255, 255, 255, 0.95)';
+				context.font = 'bold 16px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
-				context.fillText('SCORE FINAL', this.x, this.y - 15);
+				context.fillText('SCORE FINAL', this.x, this.y - 12);
 				
 				// Score numérico
 				context.fillStyle = '#FFE600';
-				context.font = 'bold 28px PressStart2P';
+				context.font = 'bold 24px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
-				context.fillText(finalScore.toString(), this.x, this.y + 15);
+				context.fillText(finalScore.toString(), this.x, this.y + 12);
 			}
 		});
 		
-		// Botão Novamente no diálogo
+		// Botão Novamente na janela flutuante (posicionado à esquerda)
 		var novamenteButton = stage.createItem({
-			x:game.width/2,
-			y:game.height/2 + 60,
-			width:280,
-			height:60,
+			x:game.width/3,
+			y:game.height/2 + 50,
+			width:260,
+			height:50,
 			draw:function(context){
 				// Sombra do botão
-				context.fillStyle = 'rgba(0, 0, 0, 0.3)';
-				context.fillRect(this.x-140, this.y-25, 280, 60);
+				context.fillStyle = 'rgba(0, 0, 0, 0.4)';
+				context.fillRect(this.x-130, this.y-20, 260, 50);
 				
 				// Botão principal com efeito de vidro
-				context.fillStyle = 'rgba(255, 230, 0, 0.9)';
-				context.fillRect(this.x-140, this.y-30, 280, 60);
+				context.fillStyle = 'rgba(255, 230, 0, 0.95)';
+				context.fillRect(this.x-130, this.y-25, 260, 50);
 				
 				// Borda do botão
-				context.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-				context.lineWidth = 3;
-				context.strokeRect(this.x-140, this.y-30, 280, 60);
+				context.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+				context.lineWidth = 2;
+				context.strokeRect(this.x-130, this.y-25, 260, 50);
 				
 				// Efeito de vidro no botão
-				var buttonGradient = context.createLinearGradient(this.x-140, this.y-30, this.x+140, this.y+30);
-				buttonGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-				buttonGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
-				buttonGradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
+				var buttonGradient = context.createLinearGradient(this.x-130, this.y-25, this.x+130, this.y+25);
+				buttonGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+				buttonGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+				buttonGradient.addColorStop(1, 'rgba(255, 255, 255, 0.4)');
 				context.fillStyle = buttonGradient;
-				context.fillRect(this.x-140, this.y-30, 280, 60);
+				context.fillRect(this.x-130, this.y-25, 260, 50);
 				
 				// Sombra do texto
-				context.fillStyle = 'rgba(0, 0, 0, 0.8)';
-				context.font = 'bold 22px PressStart2P';
+				context.fillStyle = 'rgba(0, 0, 0, 0.9)';
+				context.font = 'bold 20px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('NOVAMENTE', this.x + 1, this.y + 1);
 				
 				// Texto do botão
 				context.fillStyle = '#000000';
-				context.font = 'bold 22px PressStart2P';
+				context.font = 'bold 20px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('NOVAMENTE', this.x, this.y);
@@ -1214,25 +1214,17 @@
 		
 		// Evento de clique para o botão
 		novamenteButton.bind('click', function(){
-			console.log('🎮 Botão Novamente clicado! Reiniciando jogo...');
-			// Reiniciar jogo
-			_SCORE = 0;
-			_LIFE = 5;
-			// Voltar para o primeiro stage (nível 1)
-			game.setStage(0);
-			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
+			console.log('🎮 Botão Novamente clicado! Atualizando página...');
+			// Atualizar a página para voltar ao nível 1
+			window.location.reload();
 		});
 		
 		// Evento de toque para mobile
 		novamenteButton.bind('touchstart', function(e){
 			e.preventDefault();
-			console.log('🎮 Botão Novamente tocado! Reiniciando jogo...');
-			// Reiniciar jogo
-			_SCORE = 0;
-			_LIFE = 5;
-			// Voltar para o primeiro stage (nível 1)
-			game.setStage(0);
-			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
+			console.log('🎮 Botão Novamente tocado! Atualizando página...');
+			// Atualizar a página para voltar ao nível 1
+			window.location.reload();
 		});
 		
 		//事件绑定 - Removido suporte a teclado para Game Over
