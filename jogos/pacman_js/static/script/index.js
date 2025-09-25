@@ -739,45 +739,48 @@
 				y:30,
 				draw:function(context){
 					// Score
-					context.font = 'bold 20px PressStart2P';
+					context.font = 'bold 18px PressStart2P';
 					context.textAlign = 'left';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
 					context.fillText('SCORE: ' + _SCORE, 20, this.y);
 					
 					// Level
-					context.font = 'bold 20px PressStart2P';
+					context.font = 'bold 18px PressStart2P';
 					context.textAlign = 'right';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
 					context.fillText('LEVEL: ' + (index+1), game.width-20, this.y);
 				}
 			});
-			//状态文字
+			//状态文字 - 在游戏中心
 			stage.createItem({
-				x:690,
-				y:285,
+				x:game.width/2,
+				y:game.height/2,
 				frames:25,
 				draw:function(context){
 					if(stage.status==2&&this.times%2){
 						context.font = '24px PressStart2P';
-						context.textAlign = 'left';
+						context.textAlign = 'center';
 						context.textBaseline = 'center';
 						context.fillStyle = '#FFF';
 						context.fillText('PAUSE',this.x,this.y);
 					}
 				}
 			});
-			//生命值
+			//生命值 - 在游戏下方中心
 			stage.createItem({
-				x:705,
-				y:510,
-				width:30,
-				height:30,
+				x:game.width/2,
+				y:game.height - 40,
+				width:20,
+				height:20,
 				draw:function(context){
 					var max = Math.min(_LIFE-1,5);
+					var startX = this.x - (max * 12);
+					
+					// Draw Pacman icons
 					for(var i=0;i<max;i++){
-						var x=this.x+40*i,y=this.y;
+						var x=startX+25*i,y=this.y;
 						context.fillStyle = '#FFE600';
 						context.beginPath();
 						context.arc(x,y,this.width/2,.15*Math.PI,-.15*Math.PI,false);
@@ -785,13 +788,13 @@
 						context.closePath();
 						context.fill();
 					}
-					context.font = '18px PressStart2P';
-					context.textAlign = 'left';
+					
+					// Draw x4 text on the same line
+					context.font = '16px PressStart2P';
+					context.textAlign = 'center';
 					context.textBaseline = 'center';
 					context.fillStyle = '#FFF';
-					context.fillText('X',this.x-15,this.y+30);
-					context.font = '24px PressStart2P';
-					context.fillText((_LIFE-1),this.x+10,this.y+26);
+					context.fillText('x' + (_LIFE-1), this.x + 60, this.y);
 				}
 			});
 			//NPC
