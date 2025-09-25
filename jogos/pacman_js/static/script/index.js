@@ -1077,58 +1077,135 @@
 		console.log('🎮 Iniciando primeiro nível...');
 		createLevel(0);
 	})();
-	//结束画面 - Game Over (Stage 1)
+	//结束画面 - Game Over Dialog Overlay (Stage 1)
 	(function(){
 		var stage = game.createStage();
-		//游戏结束 - Responsivo para mobile
+		
+		// Overlay de fundo com efeito de vidro fosco
 		stage.createItem({
-			x:game.width/2,
-			y:game.height*.3,
+			x:0,
+			y:0,
+			width:game.width,
+			height:game.height,
 			draw:function(context){
-				context.fillStyle = '#FFF';
-				// Fonte responsiva baseada no tamanho da tela
-				var fontSize = Math.min(48, game.width / 20);
-				context.font = 'bold ' + fontSize + 'px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				// Mostrar apenas "GAME OVER" quando perder vidas
-				// "YOU WIN!" só aparece quando todos os níveis são completados
-				context.fillText('GAME OVER',this.x,this.y);
+				// Fundo semi-transparente com efeito de vidro
+				context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+				context.fillRect(0, 0, game.width, game.height);
 			}
 		});
-		//记分 - Responsivo para mobile
+		
+		// Diálogo central - Caixa do Game Over
 		stage.createItem({
 			x:game.width/2,
-			y:game.height*.5,
+			y:game.height/2,
+			width:400,
+			height:300,
 			draw:function(context){
-				context.fillStyle = '#FFF';
-				// Fonte responsiva baseada no tamanho da tela
-				var fontSize = Math.min(20, game.width / 48);
-				context.font = fontSize + 'px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillText('FINAL SCORE: '+(_SCORE+50*Math.max(_LIFE-1,0)),this.x,this.y);
+				// Sombra do diálogo
+				context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+				context.fillRect(this.x-200, this.y-140, 400, 300);
+				
+				// Fundo do diálogo com efeito de vidro
+				context.fillStyle = 'rgba(255, 255, 255, 0.15)';
+				context.fillRect(this.x-200, this.y-150, 400, 300);
+				
+				// Borda do diálogo
+				context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+				context.lineWidth = 2;
+				context.strokeRect(this.x-200, this.y-150, 400, 300);
+				
+				// Efeito de vidro - gradiente interno
+				var gradient = context.createLinearGradient(this.x-200, this.y-150, this.x+200, this.y+150);
+				gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+				gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.05)');
+				gradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+				context.fillStyle = gradient;
+				context.fillRect(this.x-200, this.y-150, 400, 300);
 			}
 		});
-		// Botão Novamente - Maior para mobile
+		
+		// Título GAME OVER no diálogo
+		stage.createItem({
+			x:game.width/2,
+			y:game.height/2 - 80,
+			draw:function(context){
+				// Sombra do texto
+				context.fillStyle = 'rgba(255, 0, 0, 0.8)';
+				context.font = 'bold 36px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('GAME OVER', this.x + 2, this.y + 2);
+				
+				// Texto principal
+				context.fillStyle = '#FFE600';
+				context.font = 'bold 36px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('GAME OVER', this.x, this.y);
+			}
+		});
+		
+		// Score final no diálogo
+		stage.createItem({
+			x:game.width/2,
+			y:game.height/2 - 20,
+			draw:function(context){
+				var finalScore = _SCORE + 50 * Math.max(_LIFE-1, 0);
+				
+				// Label do score
+				context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+				context.font = 'bold 18px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('SCORE FINAL', this.x, this.y - 15);
+				
+				// Score numérico
+				context.fillStyle = '#FFE600';
+				context.font = 'bold 28px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText(finalScore.toString(), this.x, this.y + 15);
+			}
+		});
+		
+		// Botão Novamente no diálogo
 		var novamenteButton = stage.createItem({
 			x:game.width/2,
-			y:game.height*.65,
-			width:300,
-			height:80,
+			y:game.height/2 + 60,
+			width:280,
+			height:60,
 			draw:function(context){
-				// Desenhar botão maior para mobile
-				context.fillStyle = '#FFE600';
-				context.fillRect(this.x-150, this.y-40, 300, 80);
+				// Sombra do botão
+				context.fillStyle = 'rgba(0, 0, 0, 0.3)';
+				context.fillRect(this.x-140, this.y-25, 280, 60);
+				
+				// Botão principal com efeito de vidro
+				context.fillStyle = 'rgba(255, 230, 0, 0.9)';
+				context.fillRect(this.x-140, this.y-30, 280, 60);
 				
 				// Borda do botão
-				context.strokeStyle = '#000';
+				context.strokeStyle = 'rgba(0, 0, 0, 0.8)';
 				context.lineWidth = 3;
-				context.strokeRect(this.x-150, this.y-40, 300, 80);
+				context.strokeRect(this.x-140, this.y-30, 280, 60);
 				
-				// Desenhar texto do botão maior
-				context.fillStyle = '#000';
-				context.font = 'bold 24px PressStart2P';
+				// Efeito de vidro no botão
+				var buttonGradient = context.createLinearGradient(this.x-140, this.y-30, this.x+140, this.y+30);
+				buttonGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+				buttonGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+				buttonGradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
+				context.fillStyle = buttonGradient;
+				context.fillRect(this.x-140, this.y-30, 280, 60);
+				
+				// Sombra do texto
+				context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+				context.font = 'bold 22px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('NOVAMENTE', this.x + 1, this.y + 1);
+				
+				// Texto do botão
+				context.fillStyle = '#000000';
+				context.font = 'bold 22px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('NOVAMENTE', this.x, this.y);
@@ -1157,6 +1234,7 @@
 			game.setStage(0);
 			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
 		});
+		
 		//事件绑定 - Removido suporte a teclado para Game Over
 		// Agora só é possível sair do Game Over clicando no botão "NOVAMENTE"
 	})();
