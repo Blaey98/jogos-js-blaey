@@ -4,10 +4,10 @@
 const games = [
     {
         id: 'pacman',
-        title: 'Pac Social',
-        description: 'O clássico jogo do Pacman adaptado para mobile. Colete pontos e evite os fantasmas!',
+        title: 'Pacman',
+        description: 'O clássico jogo do Pacman. Colete pontos e evite os fantasmas!',
         icon: '👻',
-        path: 'jogos/pacman_js/index_mobile.html',
+        path: 'jogos/pacman_js/pacman.html',
         status: 'available',
         category: 'arcade',
         tags: ['mobile', 'classic', 'arcade'],
