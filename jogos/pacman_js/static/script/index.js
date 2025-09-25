@@ -680,7 +680,7 @@
 			//关卡得分 - Fora do tabuleiro, acima
 			stage.createItem({
 				x:game.width/2,
-				y:25,
+				y:35,
 				draw:function(context){
 					// Draw Pacman icons to the left
 					var max = Math.min(_LIFE-1,5);
@@ -702,12 +702,14 @@
 					context.fillStyle = '#FFF';
 					context.fillText('x' + (_LIFE-1), startX + 100, this.y);
 					
-					// Score above the x4
-					context.font = 'bold 16px PressStart2P';
+					// Score above the x4 with bigger padding
+					context.font = 'bold 20px PressStart2P';
 					context.textAlign = 'left';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
-					context.fillText('SCORE: ' + _SCORE, startX + 100, this.y - 20);
+					context.fillText('SCORE: ', startX + 100, this.y - 25);
+					context.fillStyle = '#FFF';
+					context.fillText(_SCORE, startX + 220, this.y - 25);
 				}
 			});
 			//状态文字 - 在游戏中心
