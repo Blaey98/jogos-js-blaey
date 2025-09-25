@@ -614,6 +614,14 @@
 								console.log('🎮 Total de stages:', stages.length);
 								console.log('🎮 Stages disponíveis:', stages.map((s, i) => `Stage ${i}`));
 								
+								// Verificar se está no nível 2 ou superior
+								if(window.currentLevelIndex >= 1) { // currentLevelIndex é 0-based, então nível 2+ = index 1+
+									console.log('🎮 Morreu no nível 2+ (nível ' + (window.currentLevelIndex + 1) + '), atualizando página...');
+									// Atualizar a página para reiniciar completamente
+									window.location.reload();
+									return false;
+								}
+								
 								// Ir para tela de Game Over (stage 1 - que é o Game Over)
 								// O stage 0 é o jogo, stage 1 é Game Over, stage 2 é Vitória Final
 								game.setStage(1);
@@ -1072,13 +1080,15 @@
 	//结束画面 - Game Over (Stage 1)
 	(function(){
 		var stage = game.createStage();
-		//游戏结束
+		//游戏结束 - Responsivo para mobile
 		stage.createItem({
 			x:game.width/2,
-			y:game.height*.35,
+			y:game.height*.3,
 			draw:function(context){
 				context.fillStyle = '#FFF';
-				context.font = 'bold 48px PressStart2P';
+				// Fonte responsiva baseada no tamanho da tela
+				var fontSize = Math.min(48, game.width / 20);
+				context.font = 'bold ' + fontSize + 'px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				// Mostrar apenas "GAME OVER" quando perder vidas
@@ -1086,32 +1096,39 @@
 				context.fillText('GAME OVER',this.x,this.y);
 			}
 		});
-		//记分
+		//记分 - Responsivo para mobile
 		stage.createItem({
 			x:game.width/2,
 			y:game.height*.5,
 			draw:function(context){
 				context.fillStyle = '#FFF';
-				context.font = '20px PressStart2P';
+				// Fonte responsiva baseada no tamanho da tela
+				var fontSize = Math.min(20, game.width / 48);
+				context.font = fontSize + 'px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('FINAL SCORE: '+(_SCORE+50*Math.max(_LIFE-1,0)),this.x,this.y);
 			}
 		});
-		// Botão Novamente
+		// Botão Novamente - Maior para mobile
 		var novamenteButton = stage.createItem({
 			x:game.width/2,
 			y:game.height*.65,
-			width:200,
-			height:50,
+			width:300,
+			height:80,
 			draw:function(context){
-				// Desenhar botão
+				// Desenhar botão maior para mobile
 				context.fillStyle = '#FFE600';
-				context.fillRect(this.x-100, this.y-25, 200, 50);
+				context.fillRect(this.x-150, this.y-40, 300, 80);
 				
-				// Desenhar texto do botão
+				// Borda do botão
+				context.strokeStyle = '#000';
+				context.lineWidth = 3;
+				context.strokeRect(this.x-150, this.y-40, 300, 80);
+				
+				// Desenhar texto do botão maior
 				context.fillStyle = '#000';
-				context.font = 'bold 18px PressStart2P';
+				context.font = 'bold 24px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('NOVAMENTE', this.x, this.y);
@@ -1140,74 +1157,74 @@
 			game.setStage(0);
 			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
 		});
-		//事件绑定
-		stage.bind('keydown',function(e){
-			switch(e.keyCode){
-				case 13: //回车
-				case 32: //空格
-				console.log('🎮 Tecla pressionada na tela de Game Over - Reiniciando jogo...');
-				_SCORE = 0;
-				_LIFE = 5;
-				game.setStage(0); // Voltar para o primeiro stage
-				console.log('🎮 Jogo reiniciado via teclado - Score:', _SCORE, 'Vidas:', _LIFE);
-				break;
-			}
-		});
+		//事件绑定 - Removido suporte a teclado para Game Over
+		// Agora só é possível sair do Game Over clicando no botão "NOVAMENTE"
 	})();
 	
 	// Tela de vitória final - Todos os níveis completados
 	(function(){
 		var stage = game.createStage();
-		// Vitória final
+		// Vitória final - Responsivo para mobile
 		stage.createItem({
 			x:game.width/2,
-			y:game.height*.35,
+			y:game.height*.3,
 			draw:function(context){
 				context.fillStyle = '#FFE600';
-				context.font = 'bold 48px PressStart2P';
+				// Fonte responsiva baseada no tamanho da tela
+				var fontSize = Math.min(48, game.width / 20);
+				context.font = 'bold ' + fontSize + 'px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('YOU WIN!',this.x,this.y);
 			}
 		});
-		// Parabéns
+		// Parabéns - Responsivo para mobile
 		stage.createItem({
 			x:game.width/2,
 			y:game.height*.5,
 			draw:function(context){
 				context.fillStyle = '#FFF';
-				context.font = '20px PressStart2P';
+				// Fonte responsiva baseada no tamanho da tela
+				var fontSize = Math.min(20, game.width / 48);
+				context.font = fontSize + 'px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('PARABÉNS! TODOS OS NÍVEIS COMPLETADOS!',this.x,this.y);
 			}
 		});
-		// Score final
+		// Score final - Responsivo para mobile
 		stage.createItem({
 			x:game.width/2,
 			y:game.height*.6,
 			draw:function(context){
 				context.fillStyle = '#FFF';
-				context.font = '20px PressStart2P';
+				// Fonte responsiva baseada no tamanho da tela
+				var fontSize = Math.min(20, game.width / 48);
+				context.font = fontSize + 'px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('FINAL SCORE: '+(_SCORE+50*Math.max(_LIFE-1,0)),this.x,this.y);
 			}
 		});
-		// Botão Jogar Novamente
+		// Botão Jogar Novamente - Maior para mobile
 		var jogarNovamenteButton = stage.createItem({
 			x:game.width/2,
 			y:game.height*.75,
-			width:200,
-			height:50,
+			width:350,
+			height:80,
 			draw:function(context){
-				// Desenhar botão
+				// Desenhar botão maior para mobile
 				context.fillStyle = '#FFE600';
-				context.fillRect(this.x-100, this.y-25, 200, 50);
+				context.fillRect(this.x-175, this.y-40, 350, 80);
 				
-				// Desenhar texto do botão
+				// Borda do botão
+				context.strokeStyle = '#000';
+				context.lineWidth = 3;
+				context.strokeRect(this.x-175, this.y-40, 350, 80);
+				
+				// Desenhar texto do botão maior
 				context.fillStyle = '#000';
-				context.font = 'bold 18px PressStart2P';
+				context.font = 'bold 20px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText('JOGAR NOVAMENTE', this.x, this.y);
@@ -1233,17 +1250,8 @@
 			game.setStage(0); // Voltar para o primeiro stage
 		});
 		
-		// Evento de teclado
-		stage.bind('keydown',function(e){
-			switch(e.keyCode){
-				case 13: //回车
-				case 32: //空格
-				_SCORE = 0;
-				_LIFE = 5;
-				game.setStage(0); // Voltar para o primeiro stage
-				break;
-			}
-		});
+		// Evento de teclado - Removido suporte a teclado para tela de vitória
+		// Agora só é possível reiniciar clicando no botão "JOGAR NOVAMENTE"
 	})();
 
 	const myFont = new FontFace('PressStart2P', 'url(./static/font/PressStart2P.ttf)');

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎱 Teste de Carregamento - Sinuca</title>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .debug-info {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .error {
+            background: #600;
+            color: #ff6b6b;
+        }
+        .success {
+            background: #060;
+            color: #6bff6b;
+        }
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>🎱 Testando carregamento...</div>
+    </div>
+    
+    <div id="debug-container" style="display: none;">
+        <h1>🎱 Debug de Carregamento - Sinuca</h1>
+        
+        <div class="debug-info">
+            <h3>📋 Informações do Sistema</h3>
+            <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+            <p><strong>URL:</strong> <span id="currentUrl"></span></p>
+            <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
+        </div>
+        
+        <div class="debug-info">
+            <h3>🔧 Teste de Carregamento de Scripts</h3>
+            <div id="script-tests"></div>
+        </div>
+        
+        <div class="debug-info">
+            <h3>📁 Verificação de Arquivos</h3>
+            <div id="file-tests"></div>
+        </div>
+        
+        <div class="debug-info">
+            <h3>🎮 Estado do Jogo</h3>
+            <div id="game-state"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração global do jogo
+        window.gameID = "8-ball-billiards-classic";
+        
+        // Lista de arquivos JavaScript do jogo
+        window.gameJS = [
+            "assets/src/01phaser.js",
+            "assets/src/02Ball.js",
+            "assets/src/03contactListener.js",
+            "assets/src/04billiardPhysics.js",
+            "assets/src/05levelData.js",
+            "assets/src/06maths.js",
+            "assets/src/07vector2d.js",
+            "assets/src/08render.js",
+            "assets/src/09sound.js",
+            "assets/src/10effects.js",
+            "assets/src/11timer.js",
+            "assets/src/12load.js",
+            "assets/src/13mainMenu.js",
+            "assets/src/14setup.js",
+            "assets/src/15gameController.js",
+            "assets/src/16boot.js"
+        ];
+        
+        let debugInfo = {
+            scriptsLoaded: 0,
+            scriptsFailed: 0,
+            errors: [],
+            startTime: Date.now()
+        };
+        
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            document.getElementById('debug-container').style.display = 'block';
+        }
+        
+        function showError(message) {
+            console.error('❌', message);
+            debugInfo.errors.push(message);
+            updateDebugDisplay();
+        }
+        
+        function updateDebugDisplay() {
+            // Atualizar informações do sistema
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('currentUrl').textContent = window.location.href;
+            document.getElementById('timestamp').textContent = new Date().toLocaleString();
+            
+            // Atualizar teste de scripts
+            const scriptTests = document.getElementById('script-tests');
+            scriptTests.innerHTML = `
+                <p><strong>Scripts Carregados:</strong> ${debugInfo.scriptsLoaded}/${window.gameJS.length}</p>
+                <p><strong>Scripts com Erro:</strong> ${debugInfo.scriptsFailed}</p>
+                <p><strong>Tempo de Carregamento:</strong> ${Date.now() - debugInfo.startTime}ms</p>
+            `;
+            
+            // Atualizar verificação de arquivos
+            const fileTests = document.getElementById('file-tests');
+            fileTests.innerHTML = `
+                <p><strong>Arquivos Testados:</strong> ${window.gameJS.length}</p>
+                <p><strong>Erros de Carregamento:</strong> ${debugInfo.errors.length}</p>
+            `;
+            
+            // Atualizar estado do jogo
+            const gameState = document.getElementById('game-state');
+            gameState.innerHTML = `
+                <p><strong>Game Object:</strong> ${typeof game !== 'undefined' ? 'Disponível' : 'Não encontrado'}</p>
+                <p><strong>Phaser:</strong> ${typeof Phaser !== 'undefined' ? 'Disponível' : 'Não encontrado'}</p>
+                <p><strong>Famobi API:</strong> ${typeof famobi !== 'undefined' ? 'Disponível' : 'Não encontrado'}</p>
+            `;
+        }
+        
+        function loadGameScripts() {
+            console.log('🎱 Iniciando carregamento de scripts...');
+            
+            let currentScript = 0;
+            
+            function loadNextScript() {
+                if (currentScript >= window.gameJS.length) {
+                    console.log('🎱 Todos os scripts carregados!');
+                    hideLoading();
+                    return;
+                }
+                
+                const scriptItem = window.gameJS[currentScript];
+                console.log(`🎱 Carregando: ${scriptItem}`);
+                
+                const script = document.createElement("script");
+                script.src = scriptItem;
+                script.onload = function() {
+                    console.log(`✅ Carregado: ${scriptItem}`);
+                    debugInfo.scriptsLoaded++;
+                    currentScript++;
+                    updateDebugDisplay();
+                    loadNextScript();
+                };
+                script.onerror = function() {
+                    console.error(`❌ Erro ao carregar: ${scriptItem}`);
+                    debugInfo.scriptsFailed++;
+                    showError(`Erro ao carregar: ${scriptItem}`);
+                    currentScript++;
+                    updateDebugDisplay();
+                    loadNextScript();
+                };
+                
+                document.head.appendChild(script);
+            }
+            
+            loadNextScript();
+        }
+        
+        // Inicializar quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎱 Iniciando teste de carregamento...');
+            updateDebugDisplay();
+            loadGameScripts();
+        });
+    </script>
+</body>
+</html>
