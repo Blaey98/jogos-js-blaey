@@ -522,84 +522,28 @@
 	_SCORE = 0;				//玩家得分
 
 	var game = new Game('canvas');
-	//启动页
+	//启动页 - 直接进入游戏
 	(function(){
-		var stage = game.createStage();
-		//logo
-		stage.createItem({
-			x:game.width/2,
-			y:game.height*.35,
-			width:100,
-			height:100,
-			frames:3,
-			draw:function(context){
-				var t = Math.abs(5-this.times%10);
-				context.fillStyle = '#FFE600';
-				context.beginPath();
-				context.arc(this.x,this.y,this.width/2,t*.04*Math.PI,(2-t*.04)*Math.PI,false);
-				context.lineTo(this.x,this.y);
-				context.closePath();
-				context.fill();
-				context.fillStyle = '#000';
-				context.beginPath();
-				context.arc(this.x+5,this.y-27,7,0,2*Math.PI,false);
-				context.closePath();
-				context.fill();
-			}
-		});
-		// 游戏名
-		stage.createItem({
-			x:game.width/2,
-			y:game.height*.5,
-			draw:function(context){
-				context.font = 'bold 42px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillStyle = '#FFF';
-				context.fillText('Pac Social',this.x,this.y);
-			}
-		});
-		// 提示
-		stage.createItem({
-			x:game.width/2,
-			y:game.height*.64,
-			frames:28,
-			draw:function(context){
-				if(this.times%2){
-					context.font = 'bold 14px PressStart2P';
-					context.textAlign = 'center';
-					context.textBaseline = 'middle';
-					context.fillStyle = '#AAA';
-					context.fillText('Toque na tela para começar',this.x,this.y);
-				}
-			}
-		});
-		//版权信息
-		stage.createItem({
-			x:game.width-10,
-			y:game.height-5,
-			draw:function(context){
-				var text = '© passer-by.com';
-				context.font = '12px/20px PressStart2P';
-				context.textAlign = 'left';
-				context.textBaseline = 'top';
-				context.fillStyle = '#AAA';
-				this.width = context.measureText(text).width;
-				this.x = game.width-this.width-10;
-				this.y = game.height-20-5;
-				context.fillText(text,this.x,this.y);
-			}
-		}).bind('click',function(){
-			window.open('https://passer-by.com');
-		});
-		//自动进入游戏 - 无需按Enter
+		//自动进入游戏 - 立即开始
 		setTimeout(function(){
-			game.nextStage();
-		}, 2000); // 2秒后自动进入游戏
+			console.log('Iniciando jogo...');
+			try {
+				// Garantir que inicia no stage 0 (primeiro stage do jogo)
+				game.setStage(0);
+			} catch(e) {
+				console.error('Erro ao iniciar jogo:', e);
+				// Tentar novamente após um delay
+				setTimeout(function(){
+					game.setStage(0);
+				}, 500);
+			}
+		}, 100); // Pequeno delay para garantir inicialização
 	})();
 	//游戏主程序
 	(function(){
-		_COIGIG.forEach(function(config,index){
+		// Criar apenas o primeiro nível (Level 1)
+		var config = _COIGIG[0];
+		var index = 0;
 			var stage,map,beans,items,player;
 			stage = game.createStage({
 				update:function(){
@@ -745,12 +689,25 @@
 					context.fillStyle = '#C33';
 					context.fillText('SCORE: ' + _SCORE, 20, this.y);
 					
-					// Level
+					// Draw Pacman icons to the left of x4
+					var max = Math.min(_LIFE-1,5);
+					var startX = game.width - 140; // Moved further left to add space
+					for(var i=0;i<max;i++){
+						var x=startX+20*i,y=this.y;
+						context.fillStyle = '#FFE600';
+						context.beginPath();
+						context.arc(x,y,8,.15*Math.PI,-.15*Math.PI,false);
+						context.lineTo(x,y);
+						context.closePath();
+						context.fill();
+					}
+					
+					// x4 on the same line with space
 					context.font = 'bold 18px PressStart2P';
 					context.textAlign = 'right';
 					context.textBaseline = 'middle';
-					context.fillStyle = '#C33';
-					context.fillText('LEVEL: ' + (index+1), game.width-20, this.y);
+					context.fillStyle = '#FFF';
+					context.fillText('x' + (_LIFE-1), game.width-20, this.y);
 				}
 			});
 			//状态文字 - 在游戏中心
@@ -772,29 +729,13 @@
 			stage.createItem({
 				x:game.width/2,
 				y:game.height - 40,
-				width:20,
-				height:20,
 				draw:function(context){
-					var max = Math.min(_LIFE-1,5);
-					var startX = this.x - (max * 12);
-					
-					// Draw Pacman icons
-					for(var i=0;i<max;i++){
-						var x=startX+25*i,y=this.y;
-						context.fillStyle = '#FFE600';
-						context.beginPath();
-						context.arc(x,y,this.width/2,.15*Math.PI,-.15*Math.PI,false);
-						context.lineTo(x,y);
-						context.closePath();
-						context.fill();
-					}
-					
-					// Draw x4 text on the same line
+					// Draw Level
 					context.font = '16px PressStart2P';
 					context.textAlign = 'center';
 					context.textBaseline = 'center';
-					context.fillStyle = '#FFF';
-					context.fillText('x' + (_LIFE-1), this.x + 60, this.y);
+					context.fillStyle = '#C33';
+					context.fillText('LEVEL: ' + (index+1), this.x, this.y);
 				}
 			});
 			//NPC
@@ -1020,7 +961,6 @@
 					break;
 				}
 			});
-		});
 	})();
 	//结束画面
 	(function(){
