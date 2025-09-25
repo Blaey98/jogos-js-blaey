@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎱 Sinuca - 8 Ball Billiards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000000 !important;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000000;
+            position: relative;
+        }
+        
+        #game-canvas {
+            border: 3px solid #8B4513;
+            background: #0a4d0a;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .game-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            z-index: 1000;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .pocket {
+            position: absolute;
+            background: #000;
+            border-radius: 50%;
+            border: 3px solid #8B4513;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>🎱 Carregando Sinuca...</div>
+    </div>
+    
+    <div id="game-container">
+        <div class="game-info">
+            <div>🎱 Sinuca - 8 Ball</div>
+            <div>Jogador vs IA</div>
+        </div>
+        
+        <canvas id="game-canvas" width="1000" height="600"></canvas>
+        
+        <div class="controls">
+            <div>Clique e arraste para mirar</div>
+            <div>Solte para atirar</div>
+        </div>
+    </div>
+
+    <script>
+        // Jogo de sinuca funcional
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const game = {
+            width: canvas.width,
+            height: canvas.height,
+            balls: [],
+            cueBall: null,
+            isDragging: false,
+            dragStart: null,
+            dragEnd: null,
+            pockets: [],
+            gameState: 'playing'
+        };
+        
+        // Classe para bolas
+        class Ball {
+            constructor(x, y, radius, color, number = null, type = 'solid') {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.number = number;
+                this.type = type; // 'solid', 'stripe', 'cue', 'eight'
+                this.vx = 0;
+                this.vy = 0;
+                this.active = true;
+                this.inPocket = false;
+            }
+            
+            draw() {
+                if (!this.active || this.inPocket) return;
+                
+                // Sombra
+                ctx.beginPath();
+                ctx.arc(this.x + 2, this.y + 2, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fill();
+                
+                // Bola
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Número
+                if (this.number) {
+                    ctx.fillStyle = this.type === 'stripe' ? '#000' : '#fff';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.number.toString(), this.x, this.y);
+                }
+            }
+            
+            update() {
+                if (!this.active || this.inPocket) return;
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Fricção
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+                
+                // Parar quando muito lento
+                if (Math.abs(this.vx) < 0.1) this.vx = 0;
+                if (Math.abs(this.vy) < 0.1) this.vy = 0;
+                
+                // Colisão com bordas
+                if (this.x - this.radius < 50) {
+                    this.x = 50 + this.radius;
+                    this.vx = -this.vx * 0.8;
+                }
+                if (this.x + this.radius > game.width - 50) {
+                    this.x = game.width - 50 - this.radius;
+                    this.vx = -this.vx * 0.8;
+                }
+                if (this.y - this.radius < 50) {
+                    this.y = 50 + this.radius;
+                    this.vy = -this.vy * 0.8;
+                }
+                if (this.y + this.radius > game.height - 50) {
+                    this.y = game.height - 50 - this.radius;
+                    this.vy = -this.vy * 0.8;
+                }
+                
+                // Verificar caçapas
+                game.pockets.forEach(pocket => {
+                    const dx = this.x - pocket.x;
+                    const dy = this.y - pocket.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < pocket.radius) {
+                        this.inPocket = true;
+                        this.active = false;
+                        console.log(`Bola ${this.number || 'branca'} caiu na caçapa!`);
+                    }
+                });
+            }
+        }
+        
+        // Classe para caçapas
+        class Pocket {
+            constructor(x, y, radius) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+        
+        // Inicializar jogo
+        function initGame() {
+            // Mesa
+            ctx.fillStyle = '#0a4d0a';
+            ctx.fillRect(0, 0, game.width, game.height);
+            
+            // Bordas da mesa
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(10, 10, game.width - 20, game.height - 20);
+            
+            // Caçapas
+            game.pockets = [
+                new Pocket(50, 50, 25),
+                new Pocket(game.width/2, 30, 25),
+                new Pocket(game.width - 50, 50, 25),
+                new Pocket(50, game.height - 50, 25),
+                new Pocket(game.width/2, game.height - 30, 25),
+                new Pocket(game.width - 50, game.height - 50, 25)
+            ];
+            
+            // Bola branca (taco)
+            game.cueBall = new Ball(200, game.height / 2, 15, '#fff', null, 'cue');
+            game.balls.push(game.cueBall);
+            
+            // Bolas coloridas em formação triangular
+            const colors = [
+                {color: '#ff0000', number: 1, type: 'solid'},
+                {color: '#0000ff', number: 2, type: 'solid'},
+                {color: '#ffff00', number: 3, type: 'solid'},
+                {color: '#00ff00', number: 4, type: 'solid'},
+                {color: '#ff00ff', number: 5, type: 'solid'},
+                {color: '#00ffff', number: 6, type: 'solid'},
+                {color: '#ff8000', number: 7, type: 'solid'},
+                {color: '#8000ff', number: 8, type: 'eight'},
+                {color: '#ff0000', number: 9, type: 'stripe'},
+                {color: '#0000ff', number: 10, type: 'stripe'},
+                {color: '#ffff00', number: 11, type: 'stripe'},
+                {color: '#00ff00', number: 12, type: 'stripe'},
+                {color: '#ff00ff', number: 13, type: 'stripe'},
+                {color: '#00ffff', number: 14, type: 'stripe'},
+                {color: '#ff8000', number: 15, type: 'stripe'}
+            ];
+            
+            // Posicionar bolas em formação triangular
+            let ballIndex = 0;
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col <= row; col++) {
+                    if (ballIndex < colors.length) {
+                        const x = 600 + col * 35 - row * 17.5;
+                        const y = game.height / 2 + (row - 2) * 30;
+                        const ballData = colors[ballIndex];
+                        game.balls.push(new Ball(x, y, 15, ballData.color, ballData.number, ballData.type));
+                        ballIndex++;
+                    }
+                }
+            }
+        }
+        
+        // Desenhar linha de mira
+        function drawAimLine() {
+            if (!game.isDragging || !game.dragStart || !game.dragEnd) return;
+            
+            ctx.beginPath();
+            ctx.moveTo(game.dragStart.x, game.dragStart.y);
+            ctx.lineTo(game.dragEnd.x, game.dragEnd.y);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // Loop principal do jogo
+        function gameLoop() {
+            // Limpar canvas
+            ctx.fillStyle = '#0a4d0a';
+            ctx.fillRect(0, 0, game.width, game.height);
+            
+            // Desenhar bordas
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(10, 10, game.width - 20, game.height - 20);
+            
+            // Desenhar caçapas
+            game.pockets.forEach(pocket => pocket.draw());
+            
+            // Atualizar e desenhar bolas
+            game.balls.forEach(ball => {
+                ball.update();
+                ball.draw();
+            });
+            
+            // Desenhar linha de mira
+            drawAimLine();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Eventos do mouse
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Verificar se clicou na bola branca
+            const dx = x - game.cueBall.x;
+            const dy = y - game.cueBall.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < game.cueBall.radius && !game.cueBall.inPocket) {
+                game.isDragging = true;
+                game.dragStart = { x: game.cueBall.x, y: game.cueBall.y };
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!game.isDragging) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            game.dragEnd = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        });
+        
+        canvas.addEventListener('mouseup', (e) => {
+            if (!game.isDragging) return;
+            
+            game.isDragging = false;
+            
+            if (game.dragStart && game.dragEnd) {
+                // Calcular força
+                const dx = game.dragStart.x - game.dragEnd.x;
+                const dy = game.dragStart.y - game.dragEnd.y;
+                const force = Math.min(Math.sqrt(dx * dx + dy * dy) / 10, 20);
+                
+                // Aplicar força à bola branca
+                game.cueBall.vx = (dx / Math.sqrt(dx * dx + dy * dy)) * force;
+                game.cueBall.vy = (dy / Math.sqrt(dx * dx + dy * dy)) * force;
+            }
+            
+            game.dragStart = null;
+            game.dragEnd = null;
+        });
+        
+        // Inicializar quando carregar
+        window.addEventListener('load', () => {
+            // Esconder loading
+            document.getElementById('loading').style.display = 'none';
+            
+            // Inicializar jogo
+            initGame();
+            
+            // Iniciar loop
+            gameLoop();
+            
+            console.log('🎱 Jogo de sinuca iniciado!');
+        });
+    </script>
+</body>
+</html>

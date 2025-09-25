@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎱 Sinuca - 8 Ball Billiards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #mygame {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+        
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #333;
+            border-top: 5px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="mygame">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Carregando Sinuca...</div>
+        </div>
+    </div>
+
+    <script>
+        // Simular carregamento do jogo
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            
+            // Criar canvas do jogo
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            canvas.style.border = '2px solid #333';
+            canvas.style.background = '#0a4d0a';
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Desenhar mesa de sinuca
+            ctx.fillStyle = '#0a4d0a';
+            ctx.fillRect(0, 0, 800, 600);
+            
+            // Desenhar bordas
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(10, 10, 780, 580);
+            
+            // Desenhar bolas
+            const balls = [
+                {x: 400, y: 300, color: '#fff', number: 'Cue'},
+                {x: 500, y: 280, color: '#ff0000', number: '1'},
+                {x: 500, y: 300, color: '#0000ff', number: '2'},
+                {x: 500, y: 320, color: '#ff8000', number: '3'},
+                {x: 520, y: 270, color: '#800080', number: '4'},
+                {x: 520, y: 290, color: '#008000', number: '5'},
+                {x: 520, y: 310, color: '#ff0080', number: '6'},
+                {x: 520, y: 330, color: '#000000', number: '8'},
+            ];
+            
+            balls.forEach(ball => {
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, 15, 0, 2 * Math.PI);
+                ctx.fillStyle = ball.color;
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Número da bola
+                ctx.fillStyle = ball.color === '#000' ? '#fff' : '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(ball.number, ball.x, ball.y + 4);
+            });
+            
+            // Adicionar canvas ao jogo
+            document.getElementById('mygame').appendChild(canvas);
+            
+            // Adicionar controles
+            const controls = document.createElement('div');
+            controls.style.position = 'absolute';
+            controls.style.bottom = '20px';
+            controls.style.left = '20px';
+            controls.style.background = 'rgba(0,0,0,0.7)';
+            controls.style.padding = '10px';
+            controls.style.borderRadius = '5px';
+            controls.innerHTML = `
+                <div style="color: white; font-size: 14px;">
+                    <div>🎱 Sinuca 8-Ball</div>
+                    <div style="margin-top: 5px;">Use o mouse para mirar e clicar para atirar</div>
+                </div>
+            `;
+            document.getElementById('mygame').appendChild(controls);
+            
+        }, 2000);
+    </script>
+</body>
+</html>
