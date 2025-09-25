@@ -82,6 +82,76 @@
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
+
+        /* Sistema de Níveis */
+        .level-system {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-width: 200px;
+        }
+
+        .level-info {
+            margin-bottom: 10px;
+        }
+
+        .level-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .level-number {
+            font-size: 24px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .level-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .level-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .level-btn:hover {
+            background: #45a049;
+        }
+
+        .level-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .test-btn {
+            background: #FF9800;
+        }
+
+        .test-btn:hover {
+            background: #F57C00;
+        }
+
+        .level-progress {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #ccc;
+        }
         
         .spinner {
             width: 40px;
@@ -178,6 +248,123 @@
     <script>
         // Configuração global do jogo
         window.gameID = "8-ball-billiards-classic";
+        
+        // Sistema de Níveis
+        window.gameLevel = {
+            current: 1,
+            max: 10,
+            progress: 0,
+            unlocked: [1],
+            
+            init: function() {
+                // Carregar nível salvo do localStorage
+                const savedLevel = localStorage.getItem('sinuca_level');
+                const savedProgress = localStorage.getItem('sinuca_progress');
+                const savedUnlocked = localStorage.getItem('sinuca_unlocked');
+                
+                if (savedLevel) this.current = parseInt(savedLevel);
+                if (savedProgress) this.progress = parseInt(savedProgress);
+                if (savedUnlocked) this.unlocked = JSON.parse(savedUnlocked);
+                
+                this.updateUI();
+                console.log('🎱 Sistema de níveis inicializado - Nível:', this.current);
+            },
+            
+            updateUI: function() {
+                const levelElement = document.getElementById('currentLevel');
+                const progressElement = document.getElementById('levelProgress');
+                
+                if (levelElement) {
+                    levelElement.textContent = this.current;
+                }
+                
+                if (progressElement) {
+                    progressElement.textContent = `Progresso: ${this.progress}/100`;
+                }
+            },
+            
+            save: function() {
+                localStorage.setItem('sinuca_level', this.current.toString());
+                localStorage.setItem('sinuca_progress', this.progress.toString());
+                localStorage.setItem('sinuca_unlocked', JSON.stringify(this.unlocked));
+            },
+            
+            nextLevel: function() {
+                if (this.current < this.max) {
+                    this.current++;
+                    this.progress = 0;
+                    
+                    // Desbloquear próximo nível
+                    if (!this.unlocked.includes(this.current)) {
+                        this.unlocked.push(this.current);
+                    }
+                    
+                    this.save();
+                    this.updateUI();
+                    this.showLevelTransition();
+                    
+                    console.log('🎱 Avançou para o nível:', this.current);
+                    return true;
+                }
+                return false;
+            },
+            
+            resetLevel: function() {
+                this.progress = 0;
+                this.save();
+                this.updateUI();
+                console.log('🎱 Nível reiniciado:', this.current);
+            },
+            
+            addProgress: function(points) {
+                this.progress += points;
+                if (this.progress >= 100) {
+                    this.progress = 100;
+                    this.nextLevel();
+                } else {
+                    this.save();
+                    this.updateUI();
+                }
+            },
+            
+            showLevelTransition: function() {
+                // Criar overlay de transição
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.9);
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 20000;
+                    color: white;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                `;
+                
+                overlay.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
+                        <div style="font-size: 32px; margin-bottom: 10px;">Nível ${this.current - 1} Concluído!</div>
+                        <div style="font-size: 24px; margin-bottom: 20px;">Avançando para o Nível ${this.current}</div>
+                        <div style="font-size: 16px; color: #ccc;">Preparando nova partida...</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(overlay);
+                
+                // Remover overlay após 3 segundos
+                setTimeout(() => {
+                    if (overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
+                    }
+                }, 3000);
+            }
+        };
         
         // Lista de arquivos JavaScript do jogo
         window.gameJS = [
@@ -457,6 +644,71 @@
             }
         }
         
+        // Funções de controle do sistema de níveis
+        function testNextLevel() {
+            console.log('🧪 Teste: Avançando para próximo nível...');
+            if (window.gameLevel.nextLevel()) {
+                console.log('✅ Avançou para o nível:', window.gameLevel.current);
+            } else {
+                console.log('❌ Já está no último nível');
+                alert('Você já está no último nível disponível!');
+            }
+        }
+        
+        function resetLevel() {
+            console.log('🔄 Reiniciando nível...');
+            window.gameLevel.resetLevel();
+        }
+        
+        function toggleLevelSystem() {
+            const levelSystem = document.getElementById('levelSystem');
+            if (levelSystem) {
+                const isVisible = levelSystem.style.display !== 'none';
+                levelSystem.style.display = isVisible ? 'none' : 'block';
+                console.log('🎱 Sistema de níveis:', isVisible ? 'oculto' : 'visível');
+            }
+        }
+        
+        function showLevelSystem() {
+            const levelSystem = document.getElementById('levelSystem');
+            if (levelSystem) {
+                levelSystem.style.display = 'block';
+                console.log('🎱 Sistema de níveis exibido');
+            }
+        }
+        
+        function hideLevelSystem() {
+            const levelSystem = document.getElementById('levelSystem');
+            if (levelSystem) {
+                levelSystem.style.display = 'none';
+                console.log('🎱 Sistema de níveis oculto');
+            }
+        }
+        
+        // Função para simular progresso do jogo (para teste)
+        function simulateGameProgress() {
+            // Simular progresso baseado em ações do jogo
+            const progressPoints = Math.floor(Math.random() * 20) + 5; // 5-25 pontos
+            window.gameLevel.addProgress(progressPoints);
+            console.log(`🎱 Progresso adicionado: +${progressPoints} pontos`);
+        }
+        
+        // Adicionar botão de teste de progresso
+        function addTestProgressButton() {
+            const levelSystem = document.getElementById('levelSystem');
+            if (levelSystem) {
+                const testProgressBtn = document.createElement('button');
+                testProgressBtn.className = 'level-btn test-btn';
+                testProgressBtn.textContent = '🎯 +Progresso (Teste)';
+                testProgressBtn.onclick = simulateGameProgress;
+                
+                const buttonsContainer = levelSystem.querySelector('.level-buttons');
+                if (buttonsContainer) {
+                    buttonsContainer.appendChild(testProgressBtn);
+                }
+            }
+        }
+
         // Inicializar quando o DOM estiver pronto
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎱 Inicializando jogo de sinuca...');
@@ -465,6 +717,15 @@
             document.body.style.backgroundColor = 'black';
             document.body.style.backgroundImage = 'none';
             document.body.style.background = '#000000';
+            
+            // Inicializar sistema de níveis
+            window.gameLevel.init();
+            
+            // Mostrar sistema de níveis após carregar
+            setTimeout(() => {
+                showLevelSystem();
+                addTestProgressButton();
+            }, 2000);
             
             // Remover texto "famobi"
             removeFamobiText();
@@ -487,6 +748,22 @@
     <div id="loading">
         <div class="spinner"></div>
         <div>🎱 Carregando Sinuca...</div>
+    </div>
+    
+    <!-- Sistema de Níveis -->
+    <div id="levelSystem" class="level-system" style="display: none;">
+        <div class="level-info">
+            <div class="level-title">Nível Atual</div>
+            <div class="level-number" id="currentLevel">1</div>
+        </div>
+        <div class="level-buttons">
+            <button class="level-btn test-btn" onclick="testNextLevel()">🧪 Teste: Próximo Nível</button>
+            <button class="level-btn" onclick="resetLevel()">🔄 Reiniciar Nível</button>
+            <button class="level-btn" onclick="toggleLevelSystem()">❌ Fechar</button>
+        </div>
+        <div class="level-progress" id="levelProgress">
+            Progresso: 0/100
+        </div>
     </div>
     
     <center>

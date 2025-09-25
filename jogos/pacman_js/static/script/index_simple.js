@@ -1,0 +1,631 @@
+/*!
+ * Pacman - HTML5 Game - Versão Simplificada
+ * https://passer-by.com/pacman/
+ *
+ * Copyright (c) 2016-present, HaoLe Zheng
+ * Released under the MIT License.
+ * https://github.com/mumuy/pacman/blob/master/LICENSE
+*/
+
+//主程序,业务逻辑
+(function(){
+	var _COIGIG = [		//关卡
+		{				//第1关
+			'map':[		//地图数据
+				[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+				[1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+				[1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+				[1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+				[1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+				[1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,0,1,1,1,2,2,1,1,1,0,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,0,1,2,2,2,2,2,2,1,0,1,1,0,1,1,1,1,1,1],
+				[0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0,0,0,0,0,0,0],
+				[1,1,1,1,1,1,0,1,1,0,1,2,2,2,2,2,2,1,0,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1],
+				[1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+				[1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+				[1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1],
+				[1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+				[1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+				[1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+				[1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+				[1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+			],
+			'wall_color':'#09f',
+			'goods':{		//能量豆
+				'1,3':1,
+				'26,3':1,
+				'1,23':1,
+				'26,23':1
+			}
+		}
+	];
+	_COLOR = ['#F00','#F93','#0CF','#F9C'],	//NPC颜色
+	_COS = [1,0,-1,0],
+	_SIN = [0,1,0,-1],
+	_LIFE = 5,				//玩家生命值
+	_SCORE = 0;				//玩家得分
+
+	var game = new Game('canvas');
+	
+	//启动页 - 直接进入游戏
+	(function(){
+		//自动进入游戏 - 立即开始
+		setTimeout(function(){
+			console.log('Iniciando jogo...');
+			try {
+				// Garantir que inicia no stage 0 (primeiro stage do jogo)
+				game.setStage(0);
+			} catch(e) {
+				console.error('Erro ao iniciar jogo:', e);
+				// Tentar novamente após um delay
+				setTimeout(function(){
+					game.setStage(0);
+				}, 500);
+			}
+		}, 100); // Pequeno delay para garantir inicialização
+	})();
+	
+	//游戏主程序
+	(function(){
+		// Criar apenas o primeiro nível (Level 1)
+		var config = _COIGIG[0];
+		var index = 0;
+			var stage,map,beans,items,player;
+			stage = game.createStage({
+				update:function(){
+					var stage = this;
+					if(stage.status==1){								//场景正常运行
+						items.forEach(function(item){
+							if(map&&!map.get(item.coord.x,item.coord.y)&&!map.get(player.coord.x,player.coord.y)){
+								var dx = item.x-player.x;
+								var dy = item.y-player.y;
+								if(dx*dx+dy*dy<750&&item.status!=4){		//物体检测
+									if(item.status==3){
+										item.status = 4;
+										_SCORE += 10;
+									}else{
+										stage.status = 3;
+										stage.timeout = 30;
+									}
+								}
+							}
+						});
+						if(JSON.stringify(beans.data).indexOf(0)<0){	//当没有物品的时候，进入下一关
+							game.nextStage();
+						}
+					}else if(stage.status==3){		//场景临时状态
+						if(!stage.timeout){
+							_LIFE--;
+							if(_LIFE){
+								stage.resetItems();
+							}else{
+								var stages = game.getStages();
+								game.setStage(stages.length-1);
+								return false;
+							}
+						}
+					}
+				}
+			});
+			//绘制地图
+			map = stage.createMap({
+				x:60,
+				y:10,
+				data:config['map'],
+				cache:true,
+				draw:function(context){
+					context.lineWidth = 2;
+					for(var j=0; j<this.y_length; j++){
+						for(var i=0; i<this.x_length; i++){
+							var value = this.get(i,j);
+							if(value){
+								var code = [0,0,0,0];
+								if(this.get(i+1,j)&&!(this.get(i+1,j-1)&&this.get(i+1,j+1)&&this.get(i,j-1)&&this.get(i,j+1))){
+									code[0]=1;
+								}
+								if(this.get(i,j+1)&&!(this.get(i-1,j+1)&&this.get(i+1,j+1)&&this.get(i-1,j)&&this.get(i+1,j))){
+									code[1]=1;
+								}
+								if(this.get(i-1,j)&&!(this.get(i-1,j-1)&&this.get(i-1,j+1)&&this.get(i,j-1)&&this.get(i,j+1))){
+									code[2]=1;
+								}
+								if(this.get(i,j-1)&&!(this.get(i-1,j-1)&&this.get(i+1,j-1)&&this.get(i-1,j)&&this.get(i+1,j))){
+									code[3]=1;
+								}
+								if(code.indexOf(1)>-1){
+									context.strokeStyle=value==2?"#FFF":config['wall_color'];
+									var pos = this.coord2position(i,j);
+									switch(code.join('')){
+										case '1100':
+											context.beginPath();
+											context.arc(pos.x+this.size/2,pos.y+this.size/2,this.size/2,Math.PI,1.5*Math.PI,false);
+											context.stroke();
+											context.closePath();
+											break;
+										case '0110':
+											context.beginPath();
+											context.arc(pos.x-this.size/2,pos.y+this.size/2,this.size/2,1.5*Math.PI,2*Math.PI,false);
+											context.stroke();
+											context.closePath();
+											break;
+										case '0011':
+											context.beginPath();
+											context.arc(pos.x-this.size/2,pos.y-this.size/2,this.size/2,0,.5*Math.PI,false);
+											context.stroke();
+											context.closePath();
+											break;
+										case '1001':
+											context.beginPath();
+											context.arc(pos.x+this.size/2,pos.y-this.size/2,this.size/2,.5*Math.PI,1*Math.PI,false);
+											context.stroke();
+											context.closePath();
+											break;
+										default:
+											var dist = this.size/2;
+											code.forEach(function(v,index){
+												if(v){
+													context.beginPath();
+													context.moveTo(pos.x,pos.y);
+													context.lineTo(pos.x-_COS[index]*dist,pos.y-_SIN[index]*dist);
+													context.stroke();
+													context.closePath();
+												}
+											});
+									}
+								}
+							}
+						}
+					}
+				}
+			});
+			//物品地图
+			beans = stage.createMap({
+				x:60,
+				y:10,
+				data:config['map'],
+				frames:8,
+				draw:function(context){
+					for(var j=0; j<this.y_length; j++){
+						for(var i=0; i<this.x_length; i++){
+							if(!this.get(i,j)){
+								var pos = this.coord2position(i,j);
+								context.fillStyle = "#F5F5DC";
+								if(config['goods'][i+','+j]){
+									context.beginPath();
+									context.arc(pos.x,pos.y,3+this.times%2,0,2*Math.PI,true);
+									context.fill();
+									context.closePath();
+								}else{
+									context.fillRect(pos.x-2,pos.y-2,4,4);
+								}
+							}
+						}
+					}
+				}
+			});
+			//关卡得分 - Fora do tabuleiro, acima
+			stage.createItem({
+				x:game.width/2,
+				y:35,
+				draw:function(context){
+					// Score and Pacman icons on the same line
+					context.font = 'bold 20px PressStart2P';
+					context.textAlign = 'left';
+					context.textBaseline = 'middle';
+					context.fillStyle = '#C33';
+					context.fillText('SCORE: ', 80, this.y - 25);
+					context.fillStyle = '#FFF';
+					context.fillText(_SCORE, 200, this.y - 25);
+					
+					// Draw heart icons first
+					var max = Math.min(_LIFE-1,5);
+					var startX = 360;
+					for(var i=0;i<max;i++){
+						var x=startX+25*i,y=this.y - 25;
+						context.fillStyle = '#FF0000';
+						context.beginPath();
+						context.moveTo(x, y + 4);
+						context.bezierCurveTo(x, y - 3, x - 8, y - 3, x - 8, y + 1);
+						context.bezierCurveTo(x - 8, y + 5, x, y + 10, x, y + 10);
+						context.bezierCurveTo(x, y + 10, x + 8, y + 5, x + 8, y + 1);
+						context.bezierCurveTo(x + 8, y - 3, x, y - 3, x, y + 4);
+						context.closePath();
+						context.fill();
+					}
+					
+					// x4 after heart icons with more space - white color
+					context.fillStyle = '#FFF';
+					context.fillText('x' + (_LIFE-1), startX + 100, this.y - 25);
+				}
+			});
+			//状态文字 - 在游戏中心
+			stage.createItem({
+				x:game.width/2,
+				y:game.height/2,
+				frames:25,
+				draw:function(context){
+					if(stage.status==2&&this.times%2){
+						context.font = '24px PressStart2P';
+						context.textAlign = 'center';
+						context.textBaseline = 'center';
+						context.fillStyle = '#FFF';
+						context.fillText('PAUSE',this.x,this.y);
+					}
+				}
+			});
+			//生命值 - 在游戏下方中心
+			stage.createItem({
+				x:game.width/2,
+				y:game.height - 40,
+				draw:function(context){
+					// Draw Level with 50% transparency
+					context.font = '16px PressStart2P';
+					context.textAlign = 'center';
+					context.textBaseline = 'center';
+					context.fillStyle = 'rgba(204, 51, 51, 0.5)';
+					context.fillText('LEVEL: ' + (index+1), this.x, this.y);
+				}
+			});
+			//NPC
+			for(var i=0;i<4;i++){
+				stage.createItem({
+					width:30,
+					height:30,
+					orientation:3,
+					color:_COLOR[i],
+					location:map,
+					coord:{x:12+i,y:14},
+					vector:{x:12+i,y:14},
+					type:2,
+					frames:10,
+					speed:1,
+					timeout:Math.floor(Math.random()*120),
+					update:function(){
+						var new_map;
+						if(this.status==3&&!this.timeout){
+							this.status = 1;
+						}
+						if(!this.coord.offset){			//到达坐标中心时计算
+							if(this.status==1){
+								if(!this.timeout){		//定时器
+									new_map = JSON.parse(JSON.stringify(map.data).replace(/2/g,0));
+									var id = this._id;
+									items.forEach(function(item){
+										if(item._id!=id&&item.status==1){	//NPC将其它所有还处于正常状态的NPC当成一堵墙
+											new_map[item.coord.y][item.coord.x]=1;
+										}
+									});
+									this.path = map.finder({
+										map:new_map,
+										start:this.coord,
+										end:player.coord
+									});
+									if(this.path.length){
+										this.vector = this.path[0];
+									}
+								}
+							}else if(this.status==3){
+								new_map = JSON.parse(JSON.stringify(map.data).replace(/2/g,0));
+								var id = this._id;
+								items.forEach(function(item){
+									if(item._id!=id){
+										new_map[item.coord.y][item.coord.x]=1;
+									}
+								});
+								this.path = map.finder({
+									map:new_map,
+									start:player.coord,
+									end:this.coord,
+									type:'next'
+								});
+								if(this.path.length){
+									this.vector = this.path[Math.floor(Math.random()*this.path.length)];
+								}
+							}else if(this.status==4){
+								new_map = JSON.parse(JSON.stringify(map.data).replace(/2/g,0));
+								this.path = map.finder({
+									map:new_map,
+									start:this.coord,
+									end:this._params.coord
+								});
+								if(this.path.length){
+									this.vector = this.path[0];
+								}else{
+									this.status = 1;
+									}
+								}
+							//是否转变方向
+							if(this.vector.change){
+								this.coord.x = this.vector.x;
+								this.coord.y = this.vector.y;
+								var pos = map.coord2position(this.coord.x,this.coord.y);
+								this.x = pos.x;
+								this.y = pos.y;
+							}
+							//方向判定
+							if(this.vector.x>this.coord.x){
+								this.orientation = 0;
+							}else if(this.vector.x<this.coord.x){
+								this.orientation = 2;
+							}else if(this.vector.y>this.coord.y){
+								this.orientation = 1;
+							}else if(this.vector.y<this.coord.y){
+								this.orientation = 3;
+							}
+						}
+						this.x += this.speed*_COS[this.orientation];
+						this.y += this.speed*_SIN[this.orientation];
+					},
+					draw:function(context){
+						var isSick = false;
+						if(this.status==3){
+							isSick = this.timeout>80||this.times%2?true:false;
+						}
+						if(this.status!=4){
+							// Quando o fantasma está vulnerável, piscar entre verde e verde escuro
+							if(this.status==3){
+								context.fillStyle = this.times%2?'#00FF00':'#006600';
+							} else {
+								context.fillStyle = this.color;
+							}
+							context.beginPath();
+							context.arc(this.x,this.y,this.width*.5,0,Math.PI,true);
+							switch(this.times%2){
+								case 0:
+								context.lineTo(this.x-this.width*.5,this.y+this.height*.4);
+								context.quadraticCurveTo(this.x-this.width*.4,this.y+this.height*.5,this.x-this.width*.2,this.y+this.height*.3);
+								context.quadraticCurveTo(this.x,this.y+this.height*.5,this.x+this.width*.2,this.y+this.height*.3);
+								context.quadraticCurveTo(this.x+this.width*.4,this.y+this.height*.5,this.x+this.width*.5,this.y+this.height*.4);
+								break;
+								case 1:
+								context.lineTo(this.x-this.width*.5,this.y+this.height*.3);
+								context.quadraticCurveTo(this.x-this.width*.25,this.y+this.height*.5,this.x,this.y+this.height*.3);
+								context.quadraticCurveTo(this.x+this.width*.25,this.y+this.height*.5,this.x+this.width*.5,this.y+this.height*.3);
+								break;
+							}
+							context.fill();
+							context.closePath();
+						}
+						context.fillStyle = '#FFF';
+						if(isSick){
+							context.beginPath();
+							context.arc(this.x-this.width*.15,this.y-this.height*.21,this.width*.08,0,2*Math.PI,false);
+							context.arc(this.x+this.width*.15,this.y-this.height*.21,this.width*.08,0,2*Math.PI,false);
+							context.fill();
+							context.closePath();
+						}else{
+							context.beginPath();
+							context.arc(this.x-this.width*.15,this.y-this.height*.21,this.width*.12,0,2*Math.PI,false);
+							context.arc(this.x+this.width*.15,this.y-this.height*.21,this.width*.12,0,2*Math.PI,false);
+							context.fill();
+							context.closePath();
+							context.fillStyle = '#000';
+							context.beginPath();
+							context.arc(this.x-this.width*(.15-.04*_COS[this.orientation]),this.y-this.height*(.21-.04*_SIN[this.orientation]),this.width*.07,0,2*Math.PI,false);
+							context.arc(this.x+this.width*(.15+.04*_COS[this.orientation]),this.y-this.height*(.21-.04*_SIN[this.orientation]),this.width*.07,0,2*Math.PI,false);
+							context.fill();
+							context.closePath();
+						}
+					}
+				});
+			}
+			items = stage.getItemsByType(2);
+			//主角
+			player = stage.createItem({
+				width:30,
+				height:30,
+				type:1,
+				location:map,
+				coord:{x:13.5,y:23},
+				orientation:2,
+				speed:2,
+				frames:10,
+				// Adicionar buffer de direção
+				bufferDirection: null,
+				update:function(){
+					var coord = this.coord;
+					if(!coord.offset){
+						// Verificar se há uma direção em buffer e se é possível virar
+						// Só aplicar buffer quando o Pacman está em uma posição válida
+						if(this.bufferDirection !== null){
+							var bufferValue = map.get(coord.x+_COS[this.bufferDirection],coord.y+_SIN[this.bufferDirection]);
+							if(bufferValue == 0){
+								// Pode virar na direção do buffer
+								this.orientation = this.bufferDirection;
+								this.bufferDirection = null; // Limpar buffer após usar
+							}
+						}
+						
+						// Processar controle de direção atual
+						if(typeof this.control.orientation != 'undefined'){
+							var controlValue = map.get(coord.x+_COS[this.control.orientation],coord.y+_SIN[this.control.orientation]);
+							if(controlValue == 0){
+								// Pode virar imediatamente
+								this.orientation = this.control.orientation;
+								this.bufferDirection = null; // Limpar buffer se virou
+							} else {
+								// Não pode virar agora, salvar no buffer
+								this.bufferDirection = this.control.orientation;
+							}
+						}
+						this.control = {};
+						
+						var value = map.get(coord.x+_COS[this.orientation],coord.y+_SIN[this.orientation]);
+						if(value==0){
+							this.x += this.speed*_COS[this.orientation];
+							this.y += this.speed*_SIN[this.orientation];
+						}else if(value<0){
+							this.x -= map.size*(map.x_length-1)*_COS[this.orientation];
+							this.y -= map.size*(map.y_length-1)*_SIN[this.orientation];
+						}
+						// Se há uma parede (value > 0), não mover - parar na parede
+					}else{
+						// Verificar buffer de direção também durante o movimento
+						// Só verificar o buffer quando o Pacman está em uma posição válida (não em parede)
+						if(this.bufferDirection !== null && coord.offset < 0.1){
+							var bufferValue = map.get(coord.x+_COS[this.bufferDirection],coord.y+_SIN[this.bufferDirection]);
+							if(bufferValue == 0){
+								// Pode virar na direção do buffer
+								this.orientation = this.bufferDirection;
+								this.bufferDirection = null; // Limpar buffer após usar
+							}
+						}
+						
+						if(!beans.get(this.coord.x,this.coord.y)){	//吃豆
+							_SCORE++;
+							beans.set(this.coord.x,this.coord.y,1);
+							if(config['goods'][this.coord.x+','+this.coord.y]){	//吃到能量豆
+								items.forEach(function(item){
+									if(item.status==1||item.status==3){	//如果NPC为正常状态，则置为临时状态
+										item.timeout = 450;
+										item.status = 3;
+									}
+								});
+							}
+						}
+						this.x += this.speed*_COS[this.orientation];
+						this.y += this.speed*_SIN[this.orientation];
+					}
+				},
+				draw:function(context){
+					context.fillStyle = '#FFE600';
+					context.beginPath();
+					if(stage.status!=3){	//玩家正常状态
+						if(this.times%2){
+							context.arc(this.x,this.y,this.width/2,(.5*this.orientation+.20)*Math.PI,(.5*this.orientation-.20)*Math.PI,false);
+						}else{
+							context.arc(this.x,this.y,this.width/2,(.5*this.orientation+.01)*Math.PI,(.5*this.orientation-.01)*Math.PI,false);
+						}
+					}else{	//玩家被吃
+						if(stage.timeout) {
+							context.arc(this.x,this.y,this.width/2,(.5*this.orientation+1-.02*stage.timeout)*Math.PI,(.5*this.orientation-1+.02*stage.timeout)*Math.PI,false);
+						}
+					}
+					context.lineTo(this.x,this.y);
+					context.closePath();
+					context.fill();
+				}
+			});
+			//事件绑定
+			stage.bind('keydown',function(e){
+				switch(e.keyCode){
+					case 13: //回车
+					case 32: //空格
+					this.status = this.status==2?1:2;
+					break;
+					case 39: //右
+					player.control = {orientation:0};
+					break;
+					case 40: //下
+					player.control = {orientation:1};
+					break;
+					case 37: //左
+					player.control = {orientation:2};
+					break;
+					case 38: //上
+					player.control = {orientation:3};
+					break;
+				}
+			});
+	})();
+	//结束画面
+	(function(){
+		var stage = game.createStage();
+		//游戏结束
+		stage.createItem({
+			x:game.width/2,
+			y:game.height*.35,
+			draw:function(context){
+				context.fillStyle = '#FFF';
+				context.font = 'bold 48px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText(_LIFE?'YOU WIN!':'GAME OVER',this.x,this.y);
+			}
+		});
+		//记分
+		stage.createItem({
+			x:game.width/2,
+			y:game.height*.5,
+			draw:function(context){
+				context.fillStyle = '#FFF';
+				context.font = '20px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('FINAL SCORE: '+(_SCORE+50*Math.max(_LIFE-1,0)),this.x,this.y);
+			}
+		});
+		// Botão Novamente
+		var novamenteButton = stage.createItem({
+			x:game.width/2,
+			y:game.height*.65,
+			width:200,
+			height:50,
+			draw:function(context){
+				// Desenhar botão
+				context.fillStyle = '#FFE600';
+				context.fillRect(this.x-100, this.y-25, 200, 50);
+				
+				// Desenhar texto do botão
+				context.fillStyle = '#000';
+				context.font = 'bold 18px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('NOVAMENTE', this.x, this.y);
+			}
+		});
+		
+		// Evento de clique para o botão
+		novamenteButton.bind('click', function(){
+			console.log('Botão Novamente clicado!');
+			// Reiniciar jogo
+			_SCORE = 0;
+			_LIFE = 5;
+			game.setStage(0); // Voltar para o primeiro stage
+		});
+		
+		// Evento de toque para mobile
+		novamenteButton.bind('touchstart', function(e){
+			e.preventDefault();
+			console.log('Botão Novamente tocado!');
+			// Reiniciar jogo
+			_SCORE = 0;
+			_LIFE = 5;
+			game.setStage(0); // Voltar para o primeiro stage
+		});
+		//事件绑定
+		stage.bind('keydown',function(e){
+			switch(e.keyCode){
+				case 13: //回车
+				case 32: //空格
+				_SCORE = 0;
+				_LIFE = 5;
+				game.setStage(0); // Voltar para o primeiro stage
+				break;
+			}
+		});
+	})();
+
+	const myFont = new FontFace('PressStart2P', 'url(./static/font/PressStart2P.ttf)');
+	myFont.load().then(font => {
+	  	document.fonts.add(font);
+		game.init();
+	}).catch(error => {
+		// Iniciar jogo mesmo sem a fonte
+		game.init();
+	});
+})();

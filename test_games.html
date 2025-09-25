@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Jogos Blaey</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .game-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .game-item:last-child {
+            border-bottom: none;
+        }
+        .game-info {
+            flex: 1;
+        }
+        .game-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-available {
+            background: #4CAF50;
+            color: white;
+        }
+        .status-coming-soon {
+            background: #FF9800;
+            color: white;
+        }
+        .featured {
+            background: #FFD700;
+            color: #333;
+        }
+        .category-header {
+            background: #2196F3;
+            color: white;
+            padding: 10px;
+            margin: 10px 0 5px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Jogos Blaey</h1>
+    <p>Esta página testa se todos os jogos estão sendo carregados corretamente.</p>
+    
+    <div class="test-section">
+        <h2>📊 Estatísticas</h2>
+        <div id="stats"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎮 Todos os Jogos</h2>
+        <div id="gamesList"></div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        // Função para renderizar estatísticas
+        function renderStats() {
+            const statsContainer = document.getElementById('stats');
+            const totalGames = games.length;
+            const availableGames = games.filter(game => game.status === 'available').length;
+            const featuredGames = games.filter(game => game.featured).length;
+            const categories = [...new Set(games.map(game => game.category))].length;
+            
+            statsContainer.innerHTML = `
+                <p><strong>Total de Jogos:</strong> ${totalGames}</p>
+                <p><strong>Disponíveis:</strong> ${availableGames}</p>
+                <p><strong>Em Destaque:</strong> ${featuredGames}</p>
+                <p><strong>Categorias:</strong> ${categories}</p>
+            `;
+        }
+        
+        // Função para renderizar lista de jogos
+        function renderGamesList() {
+            const gamesContainer = document.getElementById('gamesList');
+            
+            // Agrupar por categoria
+            const gamesByCategory = {};
+            games.forEach(game => {
+                if (!gamesByCategory[game.category]) {
+                    gamesByCategory[game.category] = [];
+                }
+                gamesByCategory[game.category].push(game);
+            });
+            
+            let html = '';
+            
+            Object.keys(gamesByCategory).forEach(category => {
+                const categoryGames = gamesByCategory[category];
+                html += `<div class="category-header">${getCategoryTitle(category)} (${categoryGames.length} jogos)</div>`;
+                
+                categoryGames.forEach(game => {
+                    const statusClass = game.status === 'available' ? 'status-available' : 'status-coming-soon';
+                    const featuredClass = game.featured ? 'featured' : '';
+                    
+                    html += `
+                        <div class="game-item">
+                            <div class="game-info">
+                                <strong>${game.icon} ${game.title}</strong>
+                                <br>
+                                <small>${game.description}</small>
+                                <br>
+                                <small>Caminho: ${game.path}</small>
+                                <br>
+                                <small>Tags: ${game.tags.join(', ')}</small>
+                            </div>
+                            <div>
+                                <span class="game-status ${statusClass}">${game.status}</span>
+                                ${game.featured ? '<span class="game-status featured">DESTAQUE</span>' : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            
+            gamesContainer.innerHTML = html;
+        }
+        
+        // Função para obter título da categoria
+        function getCategoryTitle(category) {
+            const titles = {
+                'strategy': '♟️ Estratégia',
+                'adventure': '🗺️ Aventura',
+                'arcade': '🕹️ Arcade',
+                'puzzle': '🧩 Puzzle',
+                'casual': '😊 Casual',
+                'space': '🌌 Espaço',
+                'racing': '🏁 Corrida',
+                'escape': '🚪 Escape',
+                'combat': '⚔️ Combate',
+                'flying': '✈️ Voo',
+                'sports': '🏆 Esportes',
+                'sensory': '🎨 Sensorial'
+            };
+            return titles[category] || category;
+        }
+        
+        // Carregar quando a página estiver pronta
+        document.addEventListener('DOMContentLoaded', function() {
+            renderStats();
+            renderGamesList();
+        });
+    </script>
+</body>
+</html>

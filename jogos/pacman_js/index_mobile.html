@@ -122,6 +122,19 @@
         
         <canvas id="canvas" width="960" height="640">Jogo não suportado</canvas>
         
+        <!-- Botões de Debug -->
+        <div id="debugPanel" style="position: fixed; top: 10px; right: 10px; z-index: 10000; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; color: white; font-family: Arial, sans-serif;">
+            <div style="margin-bottom: 10px;">
+                <button id="nextLevelBtn" style="background: #4CAF50; color: white; border: none; padding: 8px 12px; border-radius: 3px; cursor: pointer; margin-right: 5px;">🎮 Próximo Nível</button>
+                <button id="logBtn" style="background: #2196F3; color: white; border: none; padding: 8px 12px; border-radius: 3px; cursor: pointer;">📝 Log</button>
+            </div>
+            <div id="debugInfo" style="font-size: 12px; max-height: 200px; overflow-y: auto;">
+                <div>Nível: <span id="currentLevelDisplay">1</span></div>
+                <div>Score: <span id="currentScoreDisplay">0</span></div>
+                <div>Vidas: <span id="currentLivesDisplay">5</span></div>
+            </div>
+        </div>
+        
     </div>
 
     <script src="./static/script/game.js"></script>
@@ -224,6 +237,70 @@
                     document.getElementById('lives').textContent = window.game.lives;
                 }
             }, 100);
+            
+            // Debug Panel Functionality
+            let currentDebugLevel = 1;
+            let debugLogs = [];
+            
+            // Função para adicionar log
+            function addDebugLog(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugLogs.push(`[${timestamp}] ${message}`);
+                console.log(`🎮 DEBUG: ${message}`);
+                
+                // Manter apenas os últimos 20 logs
+                if (debugLogs.length > 20) {
+                    debugLogs.shift();
+                }
+                
+                updateDebugDisplay();
+            }
+            
+            // Função para atualizar display de debug
+            function updateDebugDisplay() {
+                const levelDisplay = document.getElementById('currentLevelDisplay');
+                const scoreDisplay = document.getElementById('currentScoreDisplay');
+                const livesDisplay = document.getElementById('currentLivesDisplay');
+                
+                if (levelDisplay) levelDisplay.textContent = currentDebugLevel;
+                if (scoreDisplay) scoreDisplay.textContent = window._SCORE || 0;
+                if (livesDisplay) livesDisplay.textContent = window._LIFE || 5;
+            }
+            
+            // Botão Próximo Nível
+            document.getElementById('nextLevelBtn').addEventListener('click', function() {
+                addDebugLog(`Testando mudança para nível ${currentDebugLevel + 1}`);
+                
+                // Tentar chamar a função createLevel se existir
+                if (typeof window.createLevel === 'function') {
+                    currentDebugLevel++;
+                    addDebugLog(`Chamando createLevel(${currentDebugLevel - 1})`);
+                    window.createLevel(currentDebugLevel - 1);
+                    addDebugLog(`Função createLevel executada para nível ${currentDebugLevel}`);
+                } else {
+                    addDebugLog('ERRO: Função createLevel não encontrada!');
+                    addDebugLog('Tentando encontrar funções disponíveis...');
+                    addDebugLog('window.game:', typeof window.game);
+                    addDebugLog('window.createLevel:', typeof window.createLevel);
+                }
+                
+                updateDebugDisplay();
+            });
+            
+            // Botão Log
+            document.getElementById('logBtn').addEventListener('click', function() {
+                addDebugLog('=== LOG COMPLETO ===');
+                console.log('🎮 === DEBUG LOGS ===');
+                debugLogs.forEach(log => console.log(log));
+                console.log('🎮 === FIM DOS LOGS ===');
+                
+                // Mostrar logs em um alert (para mobile)
+                alert('Logs enviados para o console. Verifique o console do navegador.');
+            });
+            
+            // Inicializar debug
+            addDebugLog('Sistema de debug inicializado');
+            updateDebugDisplay();
             
             // Mobile-optimized canvas resize - 40% maior
             function resizeCanvas() {

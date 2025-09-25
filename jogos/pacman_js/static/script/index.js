@@ -544,8 +544,20 @@
 		// Criar apenas o primeiro nível (Level 1)
 		var config = _COIGIG[0];
 		var index = 0;
-			var stage,map,beans,items,player;
-			stage = game.createStage({
+		
+		// Função para criar um novo nível
+		function createLevel(levelIndex) {
+			console.log('🎮 Criando nível:', levelIndex + 1);
+			console.log('🎮 Configuração do nível:', _COIGIG[levelIndex]);
+			config = _COIGIG[levelIndex];
+			
+			// Expor função globalmente para debug
+			window.createLevel = createLevel;
+			window.currentLevelIndex = levelIndex;
+			
+			// Criar novo stage
+			console.log('🎮 Criando novo stage para nível:', levelIndex + 1);
+			var stage = game.createStage({
 				update:function(){
 					var stage = this;
 					if(stage.status==1){								//场景正常运行
@@ -565,7 +577,28 @@
 							}
 						});
 						if(JSON.stringify(beans.data).indexOf(0)<0){	//当没有物品的时候，进入下一关
-							game.nextStage();
+							// Remover tela "You Win" e passar direto para próximo nível
+							console.log('🎮 Todas as comidas coletadas! Avançando para próximo nível...');
+							console.log('🎮 Nível atual:', levelIndex + 1);
+							console.log('🎮 Total de níveis disponíveis:', _COIGIG.length);
+							
+							// Verificar se há próximo nível disponível
+							if(levelIndex < _COIGIG.length - 1) {
+								// Avançar para próximo nível automaticamente
+								levelIndex++;
+								console.log('🎮 Avançando para nível:', levelIndex + 1);
+								console.log('🎮 Configuração do próximo nível:', _COIGIG[levelIndex]);
+								
+								// Criar novo nível
+								console.log('🎮 Chamando createLevel com índice:', levelIndex);
+								createLevel(levelIndex);
+								console.log('🎮 createLevel executado');
+							} else {
+								// Último nível - mostrar tela de vitória final
+								console.log('🎮 Todos os níveis completados!');
+								// Ir para tela de vitória final (stage 2)
+								game.setStage(2);
+							}
 						}
 					}else if(stage.status==3){		//场景临时状态
 						if(!stage.timeout){
@@ -581,6 +614,7 @@
 					}
 				}
 			});
+			
 			//绘制地图
 			map = stage.createMap({
 				x:60,
@@ -652,6 +686,7 @@
 					}
 				}
 			});
+			
 			//物品地图
 			beans = stage.createMap({
 				x:60,
@@ -677,6 +712,7 @@
 					}
 				}
 			});
+			
 			//关卡得分 - Fora do tabuleiro, acima
 			stage.createItem({
 				x:game.width/2,
@@ -712,6 +748,7 @@
 					context.fillText('x' + (_LIFE-1), startX + 100, this.y - 25);
 				}
 			});
+			
 			//状态文字 - 在游戏中心
 			stage.createItem({
 				x:game.width/2,
@@ -727,6 +764,7 @@
 					}
 				}
 			});
+			
 			//生命值 - 在游戏下方中心
 			stage.createItem({
 				x:game.width/2,
@@ -737,9 +775,10 @@
 					context.textAlign = 'center';
 					context.textBaseline = 'center';
 					context.fillStyle = 'rgba(204, 51, 51, 0.5)';
-					context.fillText('LEVEL: ' + (index+1), this.x, this.y);
+					context.fillText('LEVEL: ' + (levelIndex+1), this.x, this.y);
 				}
 			});
+			
 			//NPC
 			for(var i=0;i<4;i++){
 				stage.createItem({
@@ -884,6 +923,7 @@
 				});
 			}
 			items = stage.getItemsByType(2);
+			
 			//主角
 			player = stage.createItem({
 				width:30,
@@ -980,6 +1020,7 @@
 					context.fill();
 				}
 			});
+			
 			//事件绑定
 			stage.bind('keydown',function(e){
 				switch(e.keyCode){
@@ -1001,8 +1042,24 @@
 					break;
 				}
 			});
+			
+			console.log('🎮 Stage criado com sucesso para nível:', levelIndex + 1);
+			console.log('🎮 Mapa configurado:', map ? 'SIM' : 'NÃO');
+			console.log('🎮 Beans configurado:', beans ? 'SIM' : 'NÃO');
+			console.log('🎮 Player configurado:', player ? 'SIM' : 'NÃO');
+			console.log('🎮 Items configurado:', items ? 'SIM' : 'NÃO');
+			
+			// ATIVAR O NOVO STAGE - Esta é a parte crucial que estava faltando!
+			console.log('🎮 Ativando novo stage...');
+			game.setStage(stage.index);
+			console.log('🎮 Stage ativado com índice:', stage.index);
+		}
+		
+		// Criar primeiro nível
+		console.log('🎮 Iniciando primeiro nível...');
+		createLevel(0);
 	})();
-	//结束画面
+	//结束画面 - Apenas quando todos os níveis são completados
 	(function(){
 		var stage = game.createStage();
 		//游戏结束
@@ -1014,7 +1071,9 @@
 				context.font = 'bold 48px PressStart2P';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
-				context.fillText(_LIFE?'YOU WIN!':'GAME OVER',this.x,this.y);
+				// Mostrar apenas "GAME OVER" quando perder vidas
+				// "YOU WIN!" só aparece quando todos os níveis são completados
+				context.fillText('GAME OVER',this.x,this.y);
 			}
 		});
 		//记分
@@ -1068,6 +1127,97 @@
 			game.setStage(0); // Voltar para o primeiro stage
 		});
 		//事件绑定
+		stage.bind('keydown',function(e){
+			switch(e.keyCode){
+				case 13: //回车
+				case 32: //空格
+				_SCORE = 0;
+				_LIFE = 5;
+				game.setStage(0); // Voltar para o primeiro stage
+				break;
+			}
+		});
+	})();
+	
+	// Tela de vitória final - Todos os níveis completados
+	(function(){
+		var stage = game.createStage();
+		// Vitória final
+		stage.createItem({
+			x:game.width/2,
+			y:game.height*.35,
+			draw:function(context){
+				context.fillStyle = '#FFE600';
+				context.font = 'bold 48px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('YOU WIN!',this.x,this.y);
+			}
+		});
+		// Parabéns
+		stage.createItem({
+			x:game.width/2,
+			y:game.height*.5,
+			draw:function(context){
+				context.fillStyle = '#FFF';
+				context.font = '20px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('PARABÉNS! TODOS OS NÍVEIS COMPLETADOS!',this.x,this.y);
+			}
+		});
+		// Score final
+		stage.createItem({
+			x:game.width/2,
+			y:game.height*.6,
+			draw:function(context){
+				context.fillStyle = '#FFF';
+				context.font = '20px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('FINAL SCORE: '+(_SCORE+50*Math.max(_LIFE-1,0)),this.x,this.y);
+			}
+		});
+		// Botão Jogar Novamente
+		var jogarNovamenteButton = stage.createItem({
+			x:game.width/2,
+			y:game.height*.75,
+			width:200,
+			height:50,
+			draw:function(context){
+				// Desenhar botão
+				context.fillStyle = '#FFE600';
+				context.fillRect(this.x-100, this.y-25, 200, 50);
+				
+				// Desenhar texto do botão
+				context.fillStyle = '#000';
+				context.font = 'bold 18px PressStart2P';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText('JOGAR NOVAMENTE', this.x, this.y);
+			}
+		});
+		
+		// Evento de clique para o botão
+		jogarNovamenteButton.bind('click', function(){
+			console.log('Botão Jogar Novamente clicado!');
+			// Reiniciar jogo
+			_SCORE = 0;
+			_LIFE = 5;
+			game.setStage(0); // Voltar para o primeiro stage
+		});
+		
+		// Evento de toque para mobile
+		jogarNovamenteButton.bind('touchstart', function(e){
+			e.preventDefault();
+			console.log('Botão Jogar Novamente tocado!');
+			// Reiniciar jogo
+			_SCORE = 0;
+			_LIFE = 5;
+			game.setStage(0); // Voltar para o primeiro stage
+		});
+		
+		// Evento de teclado
 		stage.bind('keydown',function(e){
 			switch(e.keyCode){
 				case 13: //回车
