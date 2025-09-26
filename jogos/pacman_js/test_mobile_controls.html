@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Teste Controles Mobile - Pacman</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .test-info {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .test-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background: #45a049;
+        }
+        
+        .test-btn:active {
+            background: #3d8b40;
+        }
+        
+        .test-canvas {
+            border: 2px solid #fff;
+            background: #000;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .test-log {
+            background: #222;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .gesture-info {
+            background: #444;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎮 Teste de Controles Mobile - Pacman</h1>
+        
+        <div class="test-info">
+            <h3>Instruções de Teste:</h3>
+            <ul style="text-align: left;">
+                <li><strong>Swipe:</strong> Deslize para cima, baixo, esquerda ou direita</li>
+                <li><strong>Tap:</strong> Toque simples na tela</li>
+                <li><strong>Double Tap:</strong> Toque duplo rápido</li>
+                <li><strong>Long Press:</strong> Mantenha pressionado por 600ms</li>
+                <li><strong>Controles Virtuais:</strong> Use os botões na tela</li>
+            </ul>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="test-btn" onclick="toggleVirtualControls()">Toggle Controles Virtuais</button>
+            <button class="test-btn" onclick="clearLog()">Limpar Log</button>
+            <button class="test-btn" onclick="testGestures()">Testar Gestos</button>
+        </div>
+        
+        <canvas id="testCanvas" class="test-canvas" width="400" height="300"></canvas>
+        
+        <div class="gesture-info">
+            <div id="gestureStatus">Aguardando gestos...</div>
+        </div>
+        
+        <div class="test-log" id="testLog">
+            <div>Log de testes iniciado...</div>
+        </div>
+    </div>
+
+    <script src="./static/script/mobile-gestures.js"></script>
+    <script src="./static/script/virtual-controls.js"></script>
+    
+    <script>
+        // Test setup
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        const log = document.getElementById('testLog');
+        const status = document.getElementById('gestureStatus');
+        
+        let virtualControls = null;
+        let gestures = null;
+        
+        function logMessage(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            log.innerHTML = '<div>Log limpo...</div>';
+        }
+        
+        function updateStatus(message) {
+            status.textContent = message;
+        }
+        
+        function toggleVirtualControls() {
+            if (virtualControls) {
+                virtualControls.toggle();
+                logMessage(`Controles virtuais: ${virtualControls.isVisible ? 'VISÍVEIS' : 'OCULTOS'}`);
+            }
+        }
+        
+        function testGestures() {
+            logMessage('Iniciando teste de gestos...');
+            updateStatus('Teste de gestos ativo - Faça gestos na tela');
+            
+            // Simular alguns gestos
+            setTimeout(() => {
+                logMessage('Simulando swipe para direita...');
+                updateStatus('Swipe para direita detectado');
+            }, 1000);
+            
+            setTimeout(() => {
+                logMessage('Simulando tap...');
+                updateStatus('Tap detectado');
+            }, 2000);
+        }
+        
+        // Initialize mobile gestures
+        gestures = new MobileGestures(canvas, {
+            minSwipeDistance: 20,
+            maxSwipeTime: 500,
+            doubleTapDelay: 300,
+            longPressDelay: 600
+        });
+        
+        // Initialize virtual controls
+        virtualControls = new VirtualControls(canvas, {
+            size: 50,
+            padding: 20,
+            opacity: 0.8,
+            showLabels: true
+        });
+        
+        // Gesture callbacks
+        gestures.onSwipe(function(data) {
+            logMessage(`Swipe detectado: ${data.direction} (distância: ${Math.round(data.distance)}px)`);
+            updateStatus(`Swipe: ${data.direction}`);
+        });
+        
+        gestures.onTap(function(data) {
+            logMessage(`Tap detectado em (${Math.round(data.x)}, ${Math.round(data.y)})`);
+            updateStatus('Tap detectado');
+        });
+        
+        gestures.onDoubleTap(function(data) {
+            logMessage(`Double tap detectado em (${Math.round(data.x)}, ${Math.round(data.y)})`);
+            updateStatus('Double tap detectado');
+        });
+        
+        gestures.onLongPress(function(data) {
+            logMessage(`Long press detectado (${Math.round(data.duration)}ms)`);
+            updateStatus('Long press detectado');
+        });
+        
+        gestures.onTouchStart(function(data) {
+            logMessage(`Touch iniciado em (${Math.round(data.x)}, ${Math.round(data.y)})`);
+        });
+        
+        gestures.onTouchEnd(function(data) {
+            logMessage(`Touch finalizado - distância: ${Math.round(data.distance)}px, duração: ${data.duration}ms`);
+        });
+        
+        // Virtual controls callbacks
+        virtualControls.onDirection(function(direction) {
+            logMessage(`Direção virtual: ${direction}`);
+            updateStatus(`Direção: ${direction}`);
+        });
+        
+        virtualControls.onAction(function(action) {
+            logMessage(`Ação virtual: ${action}`);
+            updateStatus(`Ação: ${action}`);
+        });
+        
+        // Drawing loop
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw test content
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Teste de Controles Mobile', canvas.width/2, 50);
+            
+            ctx.font = '12px Arial';
+            ctx.fillText('Faça gestos ou use os controles virtuais', canvas.width/2, 80);
+            
+            // Draw virtual controls
+            if (virtualControls) {
+                virtualControls.draw(ctx);
+            }
+            
+            requestAnimationFrame(draw);
+        }
+        
+        // Start drawing
+        draw();
+        
+        // Initial log
+        logMessage('Sistema de controles mobile inicializado');
+        logMessage('Dispositivo: ' + (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'));
+        logMessage('Touch points: ' + (navigator.maxTouchPoints || 0));
+        
+        // Expose for global access
+        window.virtualControls = virtualControls;
+        window.gestures = gestures;
+    </script>
+</body>
+</html>

@@ -1348,5 +1348,29 @@
 	myFont.load().then(font => {
 	  	document.fonts.add(font);
 		game.init();
+		
+		// Integrate virtual controls with game drawing
+		setTimeout(() => {
+			if (window.virtualControls) {
+				// Hook into the game's drawing cycle after initialization
+				const canvas = document.getElementById('canvas');
+				const context = canvas.getContext('2d');
+				
+				// Add virtual controls to the game's draw cycle
+				const originalRequestAnimationFrame = window.requestAnimationFrame;
+				window.requestAnimationFrame = function(callback) {
+					return originalRequestAnimationFrame(function(timestamp) {
+						callback(timestamp);
+						
+						// Draw virtual controls on top of game
+						if (window.virtualControls && window.virtualControls.isVisible) {
+							context.save();
+							window.virtualControls.draw(context);
+							context.restore();
+						}
+					});
+				};
+			}
+		}, 1000);
 	});
 })();
