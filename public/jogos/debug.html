@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pacman Debug</title>
+    <style>
+        body { background: #000; color: #fff; margin: 0; padding: 20px; }
+        #canvas { border: 2px solid #fff; background: #000; }
+        .debug { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Pacman Debug</h1>
+    <div class="debug">Status: <span id="status">Carregando...</span></div>
+    <div class="debug">Erros: <span id="errors">Nenhum</span></div>
+    <canvas id="canvas" width="960" height="640"></canvas>
+    
+    <script>
+        console.log('Iniciando debug...');
+        document.getElementById('status').textContent = 'Scripts carregando...';
+        
+        // Verificar se os scripts existem
+        fetch('./static/script/game.js')
+            .then(response => {
+                if (response.ok) {
+                    console.log('game.js encontrado');
+                    document.getElementById('status').textContent = 'game.js OK';
+                } else {
+                    console.error('game.js não encontrado');
+                    document.getElementById('errors').textContent = 'game.js não encontrado';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar game.js:', error);
+                document.getElementById('errors').textContent = 'Erro ao carregar game.js';
+            });
+            
+        fetch('./static/script/index.js')
+            .then(response => {
+                if (response.ok) {
+                    console.log('index.js encontrado');
+                    document.getElementById('status').textContent = 'index.js OK';
+                } else {
+                    console.error('index.js não encontrado');
+                    document.getElementById('errors').textContent = 'index.js não encontrado';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar index.js:', error);
+                document.getElementById('errors').textContent = 'Erro ao carregar index.js';
+            });
+    </script>
+    
+    <script src="./static/script/game.js"></script>
+    <script src="./static/script/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Controles Virtuais</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: block;
+        }
+        
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        <div>Controles Visíveis: <span id="controls-visible">-</span></div>
+        <div>Dispositivo Móvel: <span id="mobile-device">-</span></div>
+        <div>Canvas Size: <span id="canvas-size">-</span></div>
+        <div>Última Ação: <span id="last-action">-</span></div>
+    </div>
+    
+    <canvas id="canvas" width="960" height="640"></canvas>
+    
+    <script src="./static/script/virtual-controls.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Initialize virtual controls
+            const virtualControls = new VirtualControls(canvas, {
+                size: 80,
+                padding: 20,
+                opacity: 0.8,
+                showLabels: true
+            });
+            
+            // Force show controls
+            virtualControls.show();
+            
+            // Set up callbacks
+            virtualControls.onDirection(function(direction) {
+                document.getElementById('last-action').textContent = 'Direção: ' + direction;
+                console.log('Direção:', direction);
+            });
+            
+            virtualControls.onAction(function(action) {
+                document.getElementById('last-action').textContent = 'Ação: ' + action;
+                console.log('Ação:', action);
+            });
+            
+            // Update debug info
+            function updateDebugInfo() {
+                document.getElementById('controls-visible').textContent = virtualControls.isVisible ? 'Sim' : 'Não';
+                document.getElementById('mobile-device').textContent = isMobileDevice() ? 'Sim' : 'Não';
+                document.getElementById('canvas-size').textContent = canvas.width + 'x' + canvas.height;
+            }
+            
+            function isMobileDevice() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                       (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
+                       ('ontouchstart' in window) ||
+                       (window.innerWidth <= 768);
+            }
+            
+            // Draw loop
+            function draw() {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw some background
+                context.fillStyle = '#111';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw virtual controls
+                if (virtualControls.isVisible) {
+                    virtualControls.draw(context);
+                }
+                
+                updateDebugInfo();
+                requestAnimationFrame(draw);
+            }
+            
+            // Start drawing
+            draw();
+            
+            // Expose for global access
+            window.virtualControls = virtualControls;
+        });
+    </script>
+</body>
+</html>

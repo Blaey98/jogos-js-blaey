@@ -6,7 +6,6 @@
 
 class VirtualControls {
     constructor(canvas, options = {}) {
-        console.log('🎮 VirtualControls constructor called');
         this.canvas = canvas;
         this.options = {
             size: 80,
@@ -27,27 +26,22 @@ class VirtualControls {
         };
         
         this.isVisible = true;
-        console.log('🎮 VirtualControls options:', this.options);
         this.init();
     }
     
     init() {
-        console.log('🎮 VirtualControls init() called');
         this.createDPad();
         this.createActionButtons();
         this.setupEventListeners();
-        console.log('🎮 VirtualControls initialized');
     }
     
     createDPad() {
-        console.log('🎮 Creating D-pad');
         const size = this.options.size;
         const padding = this.options.padding;
         
-        // Posição do D-pad (canto inferior esquerdo) - 450px mais para baixo
+        // Posição do D-pad (canto inferior esquerdo)
         const x = padding + size;
-        const y = this.canvas.height - padding - size + 450;
-        console.log('🎮 D-pad position:', { x, y, size, padding });
+        const y = this.canvas.height - padding - size;
         
         this.controls.dPad = {
             center: { x, y },
@@ -86,14 +80,12 @@ class VirtualControls {
     }
     
     createActionButtons() {
-        console.log('🎮 Creating action buttons');
         const size = this.options.size;
         const padding = this.options.padding;
         
-        // Botão de ação (canto inferior direito) - 450px mais para baixo
+        // Botão de ação (canto inferior direito)
         const x = this.canvas.width - padding - size;
-        const y = this.canvas.height - padding - size + 450;
-        console.log('🎮 Action button position:', { x, y, size, padding });
+        const y = this.canvas.height - padding - size;
         
         this.controls.actionButtons = [
             {
@@ -211,18 +203,28 @@ class VirtualControls {
     
     // Método para desenhar os controles
     draw(context) {
-        // Virtual controls are completely disabled for clean screen
-        console.log('🎮 Virtual controls disabled for clean screen');
-        return;
+        // Verificar se estamos na tela de game over ou vitória
+        if (window.game && window.game.getCurrentStage) {
+            const currentStage = window.game.getCurrentStage();
+            if (currentStage !== 0) { // Só mostrar no jogo principal (stage 0)
+                return;
+            }
+        }
+        
+        if (!this.isVisible) return;
+        
+        context.save();
+        context.globalAlpha = this.options.opacity;
+        
+        this.drawDPad(context);
+        this.drawActionButtons(context);
+        
+        context.restore();
     }
     
     drawDPad(context) {
-        if (!this.controls.dPad) {
-            console.log('🎮 D-pad not initialized');
-            return;
-        }
+        if (!this.controls.dPad) return;
         
-        console.log('🎮 Drawing D-pad');
         const { center, size, buttons } = this.controls.dPad;
         
         // Desenhar círculo central
@@ -275,7 +277,6 @@ class VirtualControls {
     }
     
     drawActionButtons(context) {
-        console.log('🎮 Drawing action buttons');
         this.controls.actionButtons.forEach(button => {
             context.fillStyle = '#4CAF50';
             context.strokeStyle = '#45a049';

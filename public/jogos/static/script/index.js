@@ -1212,27 +1212,6 @@
 			}
 		});
 		
-		// Mensagem de instrução para tocar em qualquer lugar
-		stage.createItem({
-			x:game.width/3,
-			y:game.height/2 + 120,
-			draw:function(context){
-				// Sombra do texto
-				context.fillStyle = 'rgba(0, 0, 0, 0.8)';
-				context.font = 'bold 14px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillText('TOQUE EM QUALQUER LUGAR PARA REINICIAR', this.x + 2, this.y + 2);
-				
-				// Texto principal
-				context.fillStyle = '#FFFFFF';
-				context.font = 'bold 14px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillText('TOQUE EM QUALQUER LUGAR PARA REINICIAR', this.x, this.y);
-			}
-		});
-		
 		// Evento de clique para o botão
 		novamenteButton.bind('click', function(){
 			console.log('🎮 Botão Novamente clicado! Voltando ao nível 1...');
@@ -1373,7 +1352,6 @@
 		// Integrate virtual controls with game drawing
 		setTimeout(() => {
 			if (window.virtualControls) {
-				console.log('🎮 Integrating virtual controls with game drawing');
 				// Hook into the game's drawing cycle after initialization
 				const canvas = document.getElementById('canvas');
 				const context = canvas.getContext('2d');
@@ -1386,15 +1364,12 @@
 						
 						// Draw virtual controls on top of game
 						if (window.virtualControls && window.virtualControls.isVisible) {
-							console.log('🎮 Drawing virtual controls');
 							context.save();
 							window.virtualControls.draw(context);
 							context.restore();
 						}
 					});
 				};
-			} else {
-				console.log('🎮 Virtual controls not found');
 			}
 		}, 1000);
 	});

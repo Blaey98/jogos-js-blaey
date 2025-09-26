@@ -280,27 +280,12 @@
                     // Se estivermos no stage 1 (Game Over), reiniciar o jogo
                     if (currentStage === 1) {
                         console.log('🎮 Game Over detected - Restarting game on tap');
-                        
-                        // Resetar todas as variáveis globais do jogo
+                        // Resetar variáveis globais
                         if (typeof _SCORE !== 'undefined') _SCORE = 0;
                         if (typeof _LIFE !== 'undefined') _LIFE = 5;
-                        
-                        // Resetar nível atual
-                        if (typeof window.currentLevelIndex !== 'undefined') {
-                            window.currentLevelIndex = 0;
-                        }
-                        
-                        // Limpar qualquer estado de jogo
-                        if (window.game && window.game.reset) {
-                            window.game.reset();
-                        }
-                        
-                        // Voltar para o primeiro stage (jogo principal)
+                        // Voltar para o primeiro stage
                         window.game.setStage(0);
-                        console.log('🎮 Game restarted - Score:', _SCORE, 'Lives:', _LIFE, 'Level:', window.currentLevelIndex + 1);
-                        
-                        // Adicionar feedback visual
-                        addTouchFeedback();
+                        console.log('🎮 Game restarted - Score:', _SCORE, 'Lives:', _LIFE);
                         return;
                     }
                 }
@@ -359,118 +344,8 @@
                 e.preventDefault();
             });
             
-            // Adicionar listener direto para tap na tela de game over
-            canvas.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                console.log('🎮 Touch detected on canvas');
-                
-                // Verificar se estamos na tela de game over
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    console.log('🎮 Current stage on touch:', currentStage);
-                    
-                    if (currentStage === 1) {
-                        console.log('🎮 Game Over - Touch detected, restarting game');
-                        
-                        // Resetar todas as variáveis globais do jogo
-                        if (typeof _SCORE !== 'undefined') _SCORE = 0;
-                        if (typeof _LIFE !== 'undefined') _LIFE = 5;
-                        
-                        // Resetar nível atual
-                        if (typeof window.currentLevelIndex !== 'undefined') {
-                            window.currentLevelIndex = 0;
-                        }
-                        
-                        // Limpar qualquer estado de jogo
-                        if (window.game && window.game.reset) {
-                            window.game.reset();
-                        }
-                        
-                        // Voltar para o primeiro stage (jogo principal)
-                        window.game.setStage(0);
-                        console.log('🎮 Game restarted via touch - Score:', _SCORE, 'Lives:', _LIFE, 'Level:', window.currentLevelIndex + 1);
-                        
-                        // Adicionar feedback visual
-                        addTouchFeedback();
-                        return;
-                    }
-                } else {
-                    console.log('🎮 Game object not available or getCurrentStage not found');
-                }
-            }, { passive: false });
-            
-            // Também adicionar para mouse clicks (desktop)
-            canvas.addEventListener('click', function(e) {
-                console.log('🎮 Click detected on canvas');
-                
-                // Verificar se estamos na tela de game over
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    console.log('🎮 Current stage on click:', currentStage);
-                    
-                    if (currentStage === 1) {
-                        console.log('🎮 Game Over - Click detected, restarting game');
-                        
-                        // Resetar todas as variáveis globais do jogo
-                        if (typeof _SCORE !== 'undefined') _SCORE = 0;
-                        if (typeof _LIFE !== 'undefined') _LIFE = 5;
-                        
-                        // Resetar nível atual
-                        if (typeof window.currentLevelIndex !== 'undefined') {
-                            window.currentLevelIndex = 0;
-                        }
-                        
-                        // Limpar qualquer estado de jogo
-                        if (window.game && window.game.reset) {
-                            window.game.reset();
-                        }
-                        
-                        // Voltar para o primeiro stage (jogo principal)
-                        window.game.setStage(0);
-                        console.log('🎮 Game restarted via click - Score:', _SCORE, 'Lives:', _LIFE, 'Level:', window.currentLevelIndex + 1);
-                        
-                        // Adicionar feedback visual
-                        addTouchFeedback();
-                        return;
-                    }
-                } else {
-                    console.log('🎮 Game object not available or getCurrentStage not found');
-                }
-            });
-            
             // Keyboard support for desktop
             document.addEventListener('keydown', function(e) {
-                // Verificar se estamos na tela de game over
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    
-                    if (currentStage === 1) {
-                        // Qualquer tecla na tela de game over reinicia o jogo
-                        console.log('🎮 Game Over - Key pressed, restarting game');
-                        
-                        // Resetar todas as variáveis globais do jogo
-                        if (typeof _SCORE !== 'undefined') _SCORE = 0;
-                        if (typeof _LIFE !== 'undefined') _LIFE = 5;
-                        
-                        // Resetar nível atual
-                        if (typeof window.currentLevelIndex !== 'undefined') {
-                            window.currentLevelIndex = 0;
-                        }
-                        
-                        // Limpar qualquer estado de jogo
-                        if (window.game && window.game.reset) {
-                            window.game.reset();
-                        }
-                        
-                        // Voltar para o primeiro stage (jogo principal)
-                        window.game.setStage(0);
-                        console.log('🎮 Game restarted via keyboard - Score:', _SCORE, 'Lives:', _LIFE, 'Level:', window.currentLevelIndex + 1);
-                        
-                        e.preventDefault();
-                        return;
-                    }
-                }
-                
                 if (e.code === 'Space') {
                     e.preventDefault();
                     simulateKeyPress('space');
@@ -522,23 +397,16 @@
             
             // Enhanced mobile detection
             function isMobileDevice() {
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                                (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
-                                ('ontouchstart' in window) ||
-                                (window.innerWidth <= 768);
-                console.log('🎮 Mobile detection:', {
-                    userAgent: navigator.userAgent,
-                    maxTouchPoints: navigator.maxTouchPoints,
-                    ontouchstart: 'ontouchstart' in window,
-                    windowWidth: window.innerWidth,
-                    isMobile: isMobile
-                });
-                return isMobile;
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                       (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
             }
             
-            // Hide virtual controls completely for clean screen
-            virtualControls.hide();
-            console.log('🎮 Virtual controls hidden for clean screen');
+            // Show/hide virtual controls based on device
+            if (isMobileDevice()) {
+                virtualControls.show();
+            } else {
+                virtualControls.hide();
+            }
             
             // Orientation change handling
             window.addEventListener('orientationchange', function() {
@@ -610,113 +478,6 @@
             // Expose controls globally for game integration
             window.gestures = gestures;
             window.virtualControls = virtualControls;
-            
-            // Função para reiniciar o jogo
-            function restartGame() {
-                console.log('🎮 Restarting game...');
-                
-                // Resetar todas as variáveis globais do jogo
-                if (typeof _SCORE !== 'undefined') _SCORE = 0;
-                if (typeof _LIFE !== 'undefined') _LIFE = 5;
-                
-                // Resetar nível atual
-                if (typeof window.currentLevelIndex !== 'undefined') {
-                    window.currentLevelIndex = 0;
-                }
-                
-                // Limpar qualquer estado de jogo
-                if (window.game && window.game.reset) {
-                    window.game.reset();
-                }
-                
-                // Voltar para o primeiro stage (jogo principal)
-                window.game.setStage(0);
-                console.log('🎮 Game restarted - Score:', _SCORE, 'Lives:', _LIFE, 'Level:', window.currentLevelIndex + 1);
-                
-                // Adicionar feedback visual
-                addTouchFeedback();
-            }
-            
-            // Listener global para toda a tela na game over - TOUCH
-            document.addEventListener('touchstart', function(e) {
-                console.log('🎮 Global touchstart detected');
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    console.log('🎮 Current stage on global touch:', currentStage);
-                    if (currentStage === 1) {
-                        console.log('🎮 Game Over - Global touch detected, restarting game');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        restartGame();
-                        return false;
-                    }
-                }
-            }, { passive: false });
-            
-            // Listener global para mouse em toda a tela - CLICK
-            document.addEventListener('click', function(e) {
-                console.log('🎮 Global click detected');
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    console.log('🎮 Current stage on global click:', currentStage);
-                    if (currentStage === 1) {
-                        console.log('🎮 Game Over - Global click detected, restarting game');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        restartGame();
-                        return false;
-                    }
-                }
-            });
-            
-            // Listener adicional para touchend
-            document.addEventListener('touchend', function(e) {
-                console.log('🎮 Global touchend detected');
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    console.log('🎮 Current stage on global touchend:', currentStage);
-                    if (currentStage === 1) {
-                        console.log('🎮 Game Over - Global touchend detected, restarting game');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        restartGame();
-                        return false;
-                    }
-                }
-            }, { passive: false });
-            
-            // Listener específico para o body
-            document.body.addEventListener('touchstart', function(e) {
-                console.log('🎮 Body touchstart detected');
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    console.log('🎮 Current stage on body touch:', currentStage);
-                    if (currentStage === 1) {
-                        console.log('🎮 Game Over - Body touch detected, restarting game');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        restartGame();
-                        return false;
-                    }
-                }
-            }, { passive: false });
-            
-            document.body.addEventListener('click', function(e) {
-                console.log('🎮 Body click detected');
-                if (window.game && window.game.getCurrentStage) {
-                    const currentStage = window.game.getCurrentStage();
-                    console.log('🎮 Current stage on body click:', currentStage);
-                    if (currentStage === 1) {
-                        console.log('🎮 Game Over - Body click detected, restarting game');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        restartGame();
-                        return false;
-                    }
-                }
-            });
-            
-            // Virtual controls are completely hidden for clean screen
             
             // Monitoramento simplificado - os controles virtuais já verificam o stage no método draw
             

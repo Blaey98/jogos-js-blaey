@@ -184,34 +184,49 @@
     </div>
 
     <div class="games-container">
-        <div class="game-card" onclick="openGame('chess')">
-            <div class="game-icon">♔</div>
-            <div class="game-title">Xadrez</div>
-            <div class="game-description">
-                Jogue xadrez contra o poderoso Stockfish 16. 
-                Teste suas habilidades estratégicas contra uma das melhores engines de xadrez do mundo.
+        <div class="game-card" onclick="console.log('🎮 PACMAN CLICKED!'); window.location.href='jogos/index_mobile.html';">
+            <div style="text-decoration: none; color: inherit; display: block; width: 100%; height: 100%; cursor: pointer;">
+                <div class="game-icon">👻</div>
+                <div class="game-title">Pacman</div>
+                <div class="game-description">O clássico jogo do Pacman. Colete pontos e evite os fantasmas!</div>
+                <div class="play-button">Jogar Pacman</div>
             </div>
-            <a href="/games/chess/" class="play-button">Jogar Xadrez</a>
         </div>
 
-        <div class="game-card" onclick="openGame('checkers')">
-            <div class="game-icon">🔴</div>
-            <div class="game-title">Damas</div>
-            <div class="game-description">
-                Clássico jogo de damas com IA inteligente. 
-                Escolha entre 15 níveis de dificuldade e desafie-se!
-            </div>
-            <a href="/games/checkers/" class="play-button">Jogar Damas</a>
+        <div class="game-card">
+            <a href="jogos/space-exploration.html" style="text-decoration: none; color: inherit; display: block; width: 100%; height: 100%;">
+                <div class="game-icon">🚀</div>
+                <div class="game-title">Space Exploration</div>
+                <div class="game-description">Explore o espaço voando de planeta em planeta. Colete moedas e desbloqueie novas naves espaciais!</div>
+                <div class="play-button">Jogar Space Exploration</div>
+            </a>
         </div>
 
-        <div class="game-card" onclick="openGame('sinuca')">
-            <div class="game-icon">🎱</div>
-            <div class="game-title">Sinuca</div>
-            <div class="game-description">
-                Jogue sinuca 8-ball com física realista. 
-                Aproveite os efeitos sonoros e visuais incríveis!
-            </div>
-            <a href="/games/sinuca/" class="play-button">Jogar Sinuca</a>
+        <div class="game-card">
+            <a href="games/chess/" style="text-decoration: none; color: inherit; display: block; width: 100%; height: 100%;">
+                <div class="game-icon">♔</div>
+                <div class="game-title">Xadrez</div>
+                <div class="game-description">Jogue xadrez contra o poderoso Stockfish 16. Teste suas habilidades estratégicas!</div>
+                <div class="play-button">Jogar Xadrez</div>
+            </a>
+        </div>
+
+        <div class="game-card">
+            <a href="games/checkers/" style="text-decoration: none; color: inherit; display: block; width: 100%; height: 100%;">
+                <div class="game-icon">🔴</div>
+                <div class="game-title">Damas</div>
+                <div class="game-description">Clássico jogo de damas com IA inteligente. Escolha entre 15 níveis de dificuldade!</div>
+                <div class="play-button">Jogar Damas</div>
+            </a>
+        </div>
+
+        <div class="game-card">
+            <a href="games/sinuca/" style="text-decoration: none; color: inherit; display: block; width: 100%; height: 100%;">
+                <div class="game-icon">🎱</div>
+                <div class="game-title">Sinuca</div>
+                <div class="game-description">Jogue sinuca 8-ball com física realista. Aproveite os efeitos sonoros!</div>
+                <div class="play-button">Jogar Sinuca</div>
+            </a>
         </div>
     </div>
 
@@ -225,22 +240,11 @@
     </div>
 
     <script>
-        function openGame(gameType) {
-            const loading = document.getElementById('loading');
-            loading.classList.add('show');
-            
-            // Simula um pequeno delay para mostrar o loading
-            setTimeout(() => {
-                // Remove o loading quando a página carregar
-                window.addEventListener('load', () => {
-                    loading.classList.remove('show');
-                });
-            }, 500);
-        }
-
         // Adiciona efeitos visuais aos cards
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 DOMContentLoaded - Page loaded');
             const cards = document.querySelectorAll('.game-card');
+            console.log('🎮 Found cards:', cards.length);
             
             cards.forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.1}s`;

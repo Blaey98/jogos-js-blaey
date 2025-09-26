@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pacman Simple</title>
+    <style>
+        body { 
+            background: #000; 
+            color: #fff; 
+            margin: 0; 
+            padding: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #canvas { 
+            border: 2px solid #fff; 
+            background: #000; 
+        }
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <div>SCORE: <span id="score">0</span></div>
+        <div>LIVES: <span id="lives">5</span></div>
+    </div>
+    <canvas id="canvas" width="960" height="640"></canvas>
+    
+    <script>
+        console.log('Iniciando jogo simples...');
+        
+        // Variáveis do jogo
+        let score = 0;
+        let lives = 5;
+        let gameRunning = true;
+        
+        // Canvas
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Pacman
+        let pacman = {
+            x: 400,
+            y: 300,
+            radius: 20,
+            direction: 0, // 0=right, 1=down, 2=left, 3=up
+            speed: 3
+        };
+        
+        // Função para desenhar o Pacman
+        function drawPacman() {
+            ctx.fillStyle = '#FFE600';
+            ctx.beginPath();
+            ctx.arc(pacman.x, pacman.y, pacman.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Desenhar boca
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(pacman.x, pacman.y, pacman.radius * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Função para atualizar o jogo
+        function update() {
+            if (!gameRunning) return;
+            
+            // Mover Pacman
+            switch(pacman.direction) {
+                case 0: pacman.x += pacman.speed; break;
+                case 1: pacman.y += pacman.speed; break;
+                case 2: pacman.x -= pacman.speed; break;
+                case 3: pacman.y -= pacman.speed; break;
+            }
+            
+            // Limitar movimento
+            if (pacman.x < pacman.radius) pacman.x = pacman.radius;
+            if (pacman.x > canvas.width - pacman.radius) pacman.x = canvas.width - pacman.radius;
+            if (pacman.y < pacman.radius) pacman.y = pacman.radius;
+            if (pacman.y > canvas.height - pacman.radius) pacman.y = canvas.height - pacman.radius;
+        }
+        
+        // Função para desenhar
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawPacman();
+            
+            // Atualizar UI
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+        
+        // Loop do jogo
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Controles
+        document.addEventListener('keydown', function(e) {
+            switch(e.keyCode) {
+                case 37: // Left
+                    pacman.direction = 2;
+                    break;
+                case 38: // Up
+                    pacman.direction = 3;
+                    break;
+                case 39: // Right
+                    pacman.direction = 0;
+                    break;
+                case 40: // Down
+                    pacman.direction = 1;
+                    break;
+            }
+        });
+        
+        // Iniciar jogo
+        console.log('Jogo iniciado!');
+        gameLoop();
+    </script>
+</body>
+</html>

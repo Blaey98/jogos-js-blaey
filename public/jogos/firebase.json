@@ -1,22 +1,18 @@
 {
   "hosting": {
-    "public": ".",
+    "public": "../../public",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**",
       "**/*.md",
       "**/serve_*.py",
-      "firebase-debug.log",
-      "**/test_*.html",
-      "**/debug.html",
-      "**/simple*.html",
-      "**/teste*.txt"
+      "firebase-debug.log"
     ],
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index_mobile.html"
+        "destination": "/index.html"
       }
     ],
     "headers": [
