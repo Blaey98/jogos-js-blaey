@@ -723,7 +723,7 @@
 									context.fill();
 									context.closePath();
 								}else{
-									context.fillRect(pos.x-2,pos.y-2,4,4);
+									context.fillRect(pos.x-4,pos.y-4,8,8);
 								}
 							}
 						}
@@ -1168,49 +1168,7 @@
 			}
 		});
 		
-		// Botão Novamente na janela flutuante (posicionado à esquerda) - Maior verticalmente
-		var novamenteButton = stage.createItem({
-			x:game.width/3,
-			y:game.height/2 + 50,
-			width:260,
-			height:80,
-			draw:function(context){
-				// Sombra do botão
-				context.fillStyle = 'rgba(0, 0, 0, 0.4)';
-				context.fillRect(this.x-130, this.y-30, 260, 80);
-				
-				// Botão principal com efeito de vidro
-				context.fillStyle = 'rgba(255, 230, 0, 0.95)';
-				context.fillRect(this.x-130, this.y-40, 260, 80);
-				
-				// Borda do botão
-				context.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-				context.lineWidth = 3;
-				context.strokeRect(this.x-130, this.y-40, 260, 80);
-				
-				// Efeito de vidro no botão
-				var buttonGradient = context.createLinearGradient(this.x-130, this.y-40, this.x+130, this.y+40);
-				buttonGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-				buttonGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
-				buttonGradient.addColorStop(1, 'rgba(255, 255, 255, 0.4)');
-				context.fillStyle = buttonGradient;
-				context.fillRect(this.x-130, this.y-40, 260, 80);
-				
-				// Sombra do texto
-				context.fillStyle = 'rgba(0, 0, 0, 0.9)';
-				context.font = 'bold 24px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillText('NOVAMENTE', this.x + 2, this.y + 2);
-				
-				// Texto do botão
-				context.fillStyle = '#000000';
-				context.font = 'bold 24px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillText('NOVAMENTE', this.x, this.y);
-			}
-		});
+		// Botão removido - apenas tap na tela para reiniciar
 		
 		// Mensagem de instrução para tocar em qualquer lugar
 		stage.createItem({
@@ -1233,40 +1191,7 @@
 			}
 		});
 		
-		// Evento de clique para o botão
-		novamenteButton.bind('click', function(){
-			console.log('🎮 Botão Novamente clicado! Voltando ao nível 1...');
-			// Reiniciar jogo e voltar ao nível 1
-			_SCORE = 0;
-			_LIFE = 5;
-			// Voltar para o primeiro stage (nível 1)
-			game.setStage(0);
-			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
-		});
-		
-		// Evento de toque para mobile
-		novamenteButton.bind('touchstart', function(e){
-			e.preventDefault();
-			console.log('🎮 Botão Novamente tocado! Voltando ao nível 1...');
-			// Reiniciar jogo e voltar ao nível 1
-			_SCORE = 0;
-			_LIFE = 5;
-			// Voltar para o primeiro stage (nível 1)
-			game.setStage(0);
-			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
-		});
-		
-		// Evento adicional de toque para garantir funcionamento em mobile
-		novamenteButton.bind('touchend', function(e){
-			e.preventDefault();
-			console.log('🎮 Botão Novamente (touchend)! Voltando ao nível 1...');
-			// Reiniciar jogo e voltar ao nível 1
-			_SCORE = 0;
-			_LIFE = 5;
-			// Voltar para o primeiro stage (nível 1)
-			game.setStage(0);
-			console.log('🎮 Jogo reiniciado - Score:', _SCORE, 'Vidas:', _LIFE);
-		});
+		// Eventos do botão removidos - apenas tap na tela para reiniciar
 		
 		//事件绑定 - Removido suporte a teclado para Game Over
 		// Agora só é possível sair do Game Over clicando no botão "NOVAMENTE"
@@ -1384,13 +1309,7 @@
 					return originalRequestAnimationFrame(function(timestamp) {
 						callback(timestamp);
 						
-						// Draw virtual controls on top of game
-						if (window.virtualControls && window.virtualControls.isVisible) {
-							console.log('🎮 Drawing virtual controls');
-							context.save();
-							window.virtualControls.draw(context);
-							context.restore();
-						}
+						// Virtual controls are disabled for clean screen
 					});
 				};
 			} else {
