@@ -262,15 +262,16 @@
                 showLabels: true
             });
             
-            // Gesture callbacks
+            // Gesture callbacks with enhanced debugging
             gestures.onSwipe(function(data) {
-                console.log('Swipe detected:', data.direction);
+                console.log('🎮 SWIPE DETECTED:', data.direction, 'Distance:', Math.round(data.distance), 'Duration:', data.duration + 'ms');
+                console.log('🎮 Sending key press for direction:', data.direction);
                 simulateKeyPress(data.direction);
             });
             
             gestures.onTap(function(data) {
-                console.log('Tap detected at:', data.x, data.y);
-                // Pause/unpause on tap
+                console.log('🎮 TAP DETECTED at:', Math.round(data.x), Math.round(data.y));
+                console.log('🎮 Sending space key for pause/unpause');
                 simulateKeyPress('space');
             });
             
@@ -320,6 +321,7 @@
             });
             
             function simulateKeyPress(key) {
+                console.log('🎮 SIMULATING KEY PRESS:', key);
                 let keyCode;
                 switch(key) {
                     case 'up': keyCode = 38; break;
@@ -330,12 +332,32 @@
                 }
                 
                 if (keyCode) {
+                    console.log('🎮 Creating keyboard event with keyCode:', keyCode);
+                    
+                    // Criar evento de teclado com todas as propriedades necessárias
                     const event = new KeyboardEvent('keydown', {
                         keyCode: keyCode,
                         which: keyCode,
-                        key: key === 'space' ? ' ' : key
+                        key: key === 'space' ? ' ' : key,
+                        code: key === 'space' ? 'Space' : 'Arrow' + key.charAt(0).toUpperCase() + key.slice(1),
+                        bubbles: true,
+                        cancelable: true,
+                        charCode: 0,
+                        detail: 0,
+                        location: 0,
+                        repeat: false
                     });
+                    
+                    console.log('🎮 Dispatching keyboard event to window:', event);
+                    // Enviar para window (onde o jogo está escutando)
+                    window.dispatchEvent(event);
+                    
+                    // Também tentar enviar para document
                     document.dispatchEvent(event);
+                    
+                    console.log('🎮 Keyboard event dispatched successfully');
+                } else {
+                    console.log('🎮 No keyCode found for:', key);
                 }
             }
             

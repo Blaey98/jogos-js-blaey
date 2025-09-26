@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Gestos Mobile - Debug</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+        }
+        
+        #canvas {
+            border: 2px solid #00ff00;
+            background: #111;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        #debug {
+            background: #222;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .gesture-info {
+            margin: 5px 0;
+            padding: 5px;
+            background: #333;
+            border-radius: 3px;
+        }
+        
+        .swipe { color: #00ff00; }
+        .tap { color: #ffff00; }
+        .double-tap { color: #ff8800; }
+        .long-press { color: #ff0088; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Teste de Gestos Mobile - Debug</h1>
+    <p>Teste os gestos no canvas abaixo:</p>
+    
+    <canvas id="canvas" width="400" height="300"></canvas>
+    
+    <div id="debug">
+        <h3>Debug Log:</h3>
+        <div id="log"></div>
+    </div>
+    
+    <script src="./static/script/mobile-gestures.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const log = document.getElementById('log');
+        
+        // Inicializar gestos
+        const gestures = new MobileGestures(canvas, {
+            minSwipeDistance: 25,
+            maxSwipeTime: 400,
+            doubleTapDelay: 300,
+            longPressDelay: 600
+        });
+        
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `gesture-info ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Callbacks de gestos
+        gestures.onSwipe(function(data) {
+            addLog(`SWIPE: ${data.direction} (distância: ${Math.round(data.distance)}px, tempo: ${data.duration}ms)`, 'swipe');
+        });
+        
+        gestures.onTap(function(data) {
+            addLog(`TAP: (${Math.round(data.x)}, ${Math.round(data.y)})`, 'tap');
+        });
+        
+        gestures.onDoubleTap(function(data) {
+            addLog(`DOUBLE TAP: (${Math.round(data.x)}, ${Math.round(data.y)})`, 'double-tap');
+        });
+        
+        gestures.onLongPress(function(data) {
+            addLog(`LONG PRESS: (${Math.round(data.x)}, ${Math.round(data.y)}) - ${data.duration}ms`, 'long-press');
+        });
+        
+        // Desenhar no canvas
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#00ff00';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Teste os gestos aqui!', canvas.width/2, canvas.height/2);
+        ctx.fillText('Swipe, Tap, Double Tap, Long Press', canvas.width/2, canvas.height/2 + 30);
+        
+        addLog('Sistema de gestos inicializado!', 'info');
+        addLog('Teste: Swipe para cima/baixo/esquerda/direita', 'info');
+        addLog('Teste: Tap simples e duplo', 'info');
+        addLog('Teste: Long press (segure por 600ms)', 'info');
+    </script>
+</body>
+</html>

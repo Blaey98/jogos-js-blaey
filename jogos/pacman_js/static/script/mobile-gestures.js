@@ -56,6 +56,7 @@ class MobileGestures {
     handleTouchStart(e) {
         e.preventDefault();
         const touch = e.touches[0];
+        console.log('🎮 TOUCH START detected at:', touch.clientX, touch.clientY);
         this.touchStart = {
             x: touch.clientX,
             y: touch.clientY,
@@ -112,6 +113,8 @@ class MobileGestures {
         const deltaTime = this.touchEnd.time - this.touchStart.time;
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         
+        console.log('🎮 TOUCH END - DeltaX:', Math.round(deltaX), 'DeltaY:', Math.round(deltaY), 'Distance:', Math.round(distance), 'Time:', deltaTime + 'ms');
+        
         this.triggerCallbacks('touchEnd', {
             x: this.touchEnd.x,
             y: this.touchEnd.y,
@@ -143,6 +146,7 @@ class MobileGestures {
         } else if (distance > this.options.minSwipeDistance && deltaTime < this.options.maxSwipeTime) {
             // Swipe
             const direction = this.getSwipeDirection(deltaX, deltaY);
+            console.log('🎮 SWIPE DETECTED - Direction:', direction, 'Distance:', Math.round(distance), 'Time:', deltaTime + 'ms');
             this.triggerCallbacks('swipe', {
                 direction,
                 deltaX,
@@ -150,6 +154,8 @@ class MobileGestures {
                 distance,
                 duration: deltaTime
             });
+        } else {
+            console.log('🎮 NO GESTURE DETECTED - Distance:', Math.round(distance), 'Min required:', this.options.minSwipeDistance, 'Time:', deltaTime + 'ms', 'Max time:', this.options.maxSwipeTime);
         }
         
         this.touchStart = null;
