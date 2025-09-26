@@ -723,7 +723,7 @@
 									context.fill();
 									context.closePath();
 								}else{
-									context.fillRect(pos.x-4,pos.y-4,8,8);
+									context.fillRect(pos.x-2,pos.y-2,4,4);
 								}
 							}
 						}
@@ -1170,26 +1170,7 @@
 		
 		// Botão removido - apenas tap na tela para reiniciar
 		
-		// Mensagem de instrução para tocar em qualquer lugar
-		stage.createItem({
-			x:game.width/3,
-			y:game.height/2 + 120,
-			draw:function(context){
-				// Sombra do texto
-				context.fillStyle = 'rgba(0, 0, 0, 0.8)';
-				context.font = 'bold 14px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillText('TOQUE EM QUALQUER LUGAR PARA REINICIAR', this.x + 2, this.y + 2);
-				
-				// Texto principal
-				context.fillStyle = '#FFFFFF';
-				context.font = 'bold 14px PressStart2P';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillText('TOQUE EM QUALQUER LUGAR PARA REINICIAR', this.x, this.y);
-			}
-		});
+		// Mensagem de instrução removida
 		
 		// Eventos do botão removidos - apenas tap na tela para reiniciar
 		
