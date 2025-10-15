@@ -160,7 +160,7 @@
         }
 
         .video-title {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 500;
             line-height: 1.3;
             margin-bottom: 8px;
@@ -456,13 +456,14 @@
         }
 
         .pip-time-display {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 11px;
-            font-weight: 500;
-            font-family: 'Roboto', sans-serif;
-            min-width: 60px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            min-width: 70px;
             text-align: center;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.5px;
         }
 
         .pip-window:hover .pip-controls-bottom {
@@ -484,7 +485,7 @@
             background: #2d5a2d;
             border-radius: 4px;
             width: 0%;
-            transition: width 0.1s;
+            transition: width 0.02s ease-out;
         }
 
         .pip-progress-handle {
@@ -1321,31 +1322,20 @@
                 currentTime = seekTime;
                 videoStartTime = Date.now() - (seekTime * 1000);
                 
-                // Tentar múltiplas formas de controlar o vídeo
+                // Atualizar barra de progresso e tempo imediatamente (sem delay)
+                updateProgressBar(percentage);
+                updateTimeDisplay(seekTime);
+                
+                // Método mais eficiente: apenas recarregar iframe com novo tempo
                 try {
-                    // Método 1: Comando direto
-                    pipPlayer.contentWindow.postMessage(`{"event":"command","func":"seekTo","args":"${seekTime}"}`, '*');
-                    
-                    // Método 2: Comando com allowSeekAhead
-                    pipPlayer.contentWindow.postMessage(`{"event":"command","func":"seekTo","args":"${seekTime}","allowSeekAhead":true}`, '*');
-                    
-                    // Método 3: Comando com parâmetros adicionais
-                    pipPlayer.contentWindow.postMessage(`{"event":"command","func":"seekTo","args":"${seekTime}","allowSeekAhead":true,"allowSeekBackward":true}`, '*');
-                    
-                    // Método 4: Recarregar iframe com novo tempo
                     const currentSrc = pipPlayer.src;
                     const newSrc = currentSrc.replace(/start=\d+/, `start=${seekTime}`);
                     if (newSrc !== currentSrc) {
                         pipPlayer.src = newSrc;
                     }
-                    
                 } catch (error) {
                     console.log('❌ [YouTube] Erro ao navegar:', error);
                 }
-                
-                // Atualizar barra de progresso e tempo
-                updateProgressBar(percentage);
-                updateTimeDisplay(seekTime);
                 
                 console.log(`🎬 [YouTube] Navegando para: ${seekTime}s (${percentage.toFixed(1)}%) de ${duration}s (${formatTime(duration)})`);
             }
@@ -1367,24 +1357,12 @@
                     const duration = videoDuration > 0 ? videoDuration : 600; // 10 minutos padrão se não conhecida
                     const seekTime = Math.floor((percentage / 100) * duration);
                     
-                    // Atualizar barra de progresso e tempo
+                    // Atualizar barra de progresso e tempo imediatamente (sem delay)
                     updateProgressBar(percentage);
                     updateTimeDisplay(seekTime);
                     
-                    // Tentar múltiplas formas de controlar o vídeo
-                    try {
-                        // Método 1: Comando direto
-                        pipPlayer.contentWindow.postMessage(`{"event":"command","func":"seekTo","args":"${seekTime}"}`, '*');
-                        
-                        // Método 2: Comando com allowSeekAhead
-                        pipPlayer.contentWindow.postMessage(`{"event":"command","func":"seekTo","args":"${seekTime}","allowSeekAhead":true}`, '*');
-                        
-                        // Método 3: Comando com parâmetros adicionais
-                        pipPlayer.contentWindow.postMessage(`{"event":"command","func":"seekTo","args":"${seekTime}","allowSeekAhead":true,"allowSeekBackward":true}`, '*');
-                        
-                    } catch (error) {
-                        console.log('❌ [YouTube] Erro ao navegar:', error);
-                    }
+                    // Não enviar comandos durante o arrastar para evitar engasgo
+                    // Apenas atualizar visualmente
                 }
             }
             
@@ -1399,7 +1377,7 @@
                     currentTime = finalSeekTime;
                     videoStartTime = Date.now() - (finalSeekTime * 1000);
                     
-                    // Recarregar iframe com novo tempo
+                    // Recarregar iframe com novo tempo (método mais eficiente)
                     try {
                         const currentSrc = pipPlayer.src;
                         const newSrc = currentSrc.replace(/start=\d+/, `start=${finalSeekTime}`);
@@ -1425,16 +1403,20 @@
 
         function updateProgressBar(percentage) {
             if (pipProgressBar && pipProgressHandle) {
-                pipProgressBar.style.width = percentage + '%';
-                pipProgressHandle.style.left = percentage + '%';
+                // Usar requestAnimationFrame para atualização mais fluida
+                requestAnimationFrame(() => {
+                    pipProgressBar.style.width = percentage + '%';
+                    pipProgressHandle.style.left = percentage + '%';
+                });
             }
         }
 
         function updateTimeDisplay(timeInSeconds) {
             if (pipTimeDisplay) {
-                const minutes = Math.floor(timeInSeconds / 60);
-                const seconds = Math.floor(timeInSeconds % 60);
-                pipTimeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                // Usar requestAnimationFrame para atualização mais fluida
+                requestAnimationFrame(() => {
+                    pipTimeDisplay.textContent = formatTime(timeInSeconds);
+                });
             }
         }
 
@@ -1473,13 +1455,19 @@
                     const percentage = Math.min(100, (currentTime / duration) * 100);
                     updateProgressBar(percentage);
                 }
-            }, 1000);
+            }, 100); // Atualização mais frequente para fluidez
         }
 
         function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
             const remainingSeconds = Math.floor(seconds % 60);
-            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            
+            if (hours > 0) {
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            } else {
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
         }
 
         async function getVideoDuration(videoId) {
