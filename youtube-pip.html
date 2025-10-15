@@ -195,9 +195,9 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 280px;
-            height: 160px;
-            background-color: #000;
+            width: 320px;
+            height: 180px;
+            background-color: transparent;
             border-radius: 0;
             box-shadow: 
                 0 8px 32px rgba(0, 0, 0, 0.3),
@@ -236,7 +236,7 @@
             position: relative;
             width: 100%;
             height: 100%;
-            background: #000;
+            background: transparent;
             overflow: hidden;
         }
 
@@ -1249,7 +1249,7 @@
                 
                 // Criar iframe do YouTube
                 const iframe = document.createElement('iframe');
-                iframe.src = `https://www.youtube.com/embed/${video.videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&start=0&showinfo=0&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
+                iframe.src = `https://www.youtube.com/embed/${video.videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&start=0&showinfo=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&wmode=transparent`;
                 iframe.width = '100%';
                 iframe.height = '100%';
                 iframe.frameBorder = '0';
@@ -1260,6 +1260,10 @@
                 iframe.style.width = '100%';
                 iframe.style.height = '100%';
                 iframe.style.objectFit = 'cover';
+                iframe.style.background = 'transparent';
+                iframe.style.position = 'absolute';
+                iframe.style.top = '0';
+                iframe.style.left = '0';
                 
                 pipVideoContainer.innerHTML = '';
                 pipVideoContainer.appendChild(iframe);
@@ -1523,17 +1527,24 @@
             const currentWidth = pipWindow.offsetWidth;
             const currentHeight = pipWindow.offsetHeight;
             
-            // Reduzir para 75% do tamanho atual
-            const newWidth = Math.max(currentWidth * 0.75, 240);
-            const newHeight = Math.max(currentHeight * 0.75, 135);
+            // Calcular novo tamanho baseado no aspect ratio 16:9
+            const aspectRatio = 16 / 9;
+            let newWidth = Math.max(currentWidth * 0.75, 240);
+            let newHeight = newWidth / aspectRatio;
+            
+            // Se a altura for muito pequena, ajustar baseado na altura
+            if (newHeight < 135) {
+                newHeight = 135;
+                newWidth = newHeight * aspectRatio;
+            }
             
             pipWindow.style.width = newWidth + 'px';
             pipWindow.style.height = newHeight + 'px';
             
             // Ajustar o iframe para crescer com a PiP
             if (pipPlayer) {
-                pipPlayer.style.width = newWidth + 'px';
-                pipPlayer.style.height = newHeight + 'px';
+                pipPlayer.style.width = '100%';
+                pipPlayer.style.height = '100%';
             }
         }
 
@@ -1541,29 +1552,61 @@
             const currentWidth = pipWindow.offsetWidth;
             const currentHeight = pipWindow.offsetHeight;
             
-            // Aumentar para 125% do tamanho atual, mas limitar ao tamanho máximo
-            const newWidth = Math.min(currentWidth * 1.25, 480);
-            const newHeight = Math.min(currentHeight * 1.25, 270);
-            
-            pipWindow.style.width = newWidth + 'px';
-            pipWindow.style.height = newHeight + 'px';
-            
-            // Ajustar o iframe para crescer com a PiP
-            if (pipPlayer) {
-                pipPlayer.style.width = newWidth + 'px';
-                pipPlayer.style.height = newHeight + 'px';
+            // Verificar se já está no tamanho máximo (480x270)
+            if (currentWidth >= 480 && currentHeight >= 270) {
+                // Se já está no máximo, aumentar para ocupar toda a lateral da tela mobile
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                const aspectRatio = 16 / 9;
+                
+                // Calcular tamanho baseado na largura da tela
+                let maxWidth = Math.min(screenWidth - 20, 800);
+                let maxHeight = maxWidth / aspectRatio;
+                
+                // Se a altura for muito grande, ajustar baseado na altura
+                if (maxHeight > screenHeight - 100) {
+                    maxHeight = screenHeight - 100;
+                    maxWidth = maxHeight * aspectRatio;
+                }
+                
+                pipWindow.style.width = maxWidth + 'px';
+                pipWindow.style.height = maxHeight + 'px';
+                
+                // Ajustar o iframe para crescer com a PiP
+                if (pipPlayer) {
+                    pipPlayer.style.width = '100%';
+                    pipPlayer.style.height = '100%';
+                }
+            } else {
+                // Calcular novo tamanho baseado no aspect ratio 16:9
+                const aspectRatio = 16 / 9;
+                let newWidth = Math.min(currentWidth * 1.25, 480);
+                let newHeight = newWidth / aspectRatio;
+                
+                // Se a altura for muito grande, ajustar baseado na altura
+                if (newHeight > 270) {
+                    newHeight = 270;
+                    newWidth = newHeight * aspectRatio;
+                }
+                
+                pipWindow.style.width = newWidth + 'px';
+                pipWindow.style.height = newHeight + 'px';
+                
+                // Ajustar o iframe para crescer com a PiP
+                if (pipPlayer) {
+                    pipPlayer.style.width = '100%';
+                    pipPlayer.style.height = '100%';
+                }
             }
         }
 
         function adjustIframeSize() {
             if (pipPlayer && pipWindow) {
-                const pipWidth = pipWindow.offsetWidth;
-                const pipHeight = pipWindow.offsetHeight;
-                
-                pipPlayer.style.width = pipWidth + 'px';
-                pipPlayer.style.height = pipHeight + 'px';
+                pipPlayer.style.width = '100%';
+                pipPlayer.style.height = '100%';
             }
         }
+
 
 
         // Make PiP Draggable
