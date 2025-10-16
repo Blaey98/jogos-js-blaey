@@ -377,6 +377,55 @@
             border-color: rgba(255,0,0,1);
             color: white;
         }
+
+        /* Janela PIP integrada */
+        .pip-window {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            height: 200px;
+            background: #000;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            z-index: 5000;
+            overflow: hidden;
+            border: 2px solid #333;
+        }
+
+        .pip-window iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .pip-controls {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+            z-index: 5001;
+        }
+
+        .pip-btn {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pip-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
     </style>
 </head>
 <body>
@@ -453,6 +502,15 @@
         <button class="bottom-btn" onclick="addDebugLog('🔍 Botão Sair clicado (inferior)', 'info'); goBack();">
             🚪 Sair
         </button>
+    </div>
+
+    <!-- Janela PIP integrada (inicialmente oculta) -->
+    <div class="pip-window" id="pipWindow" style="display: none;">
+        <div class="pip-controls">
+            <button class="pip-btn" onclick="minimizePipWindow()" title="Minimizar">−</button>
+            <button class="pip-btn" onclick="closePipWindow()" title="Fechar">×</button>
+        </div>
+        <iframe id="pipIframe" src="" frameborder="0" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -797,6 +855,348 @@
                 addDebugLog('🔍 Diálogo YouTube PIP removido do DOM', 'success');
             } else {
                 addDebugLog('🔍 Diálogo YouTube PIP não encontrado para fechar', 'info');
+            }
+        }
+
+        // Função para ativar janela PIP integrada (chamada pelo iframe)
+        function activatePipWindow() {
+            addDebugLog('🔍 activatePipWindow() chamada', 'info');
+            
+            // Fecha o diálogo
+            closeYouTubePIP();
+            
+            // Transfere a janela PIP existente do iframe para a tela do jogo
+            transferPipWindow();
+        }
+
+        function transferPipWindow() {
+            addDebugLog('🔍 transferPipWindow() chamada', 'info');
+            
+            // Remove janela PIP existente se houver
+            const existingPip = document.getElementById('transferredPipWindow');
+            if (existingPip) {
+                existingPip.remove();
+            }
+            
+            // Cria a janela PIP transferida com as mesmas características da original
+            const pipWindow = document.createElement('div');
+            pipWindow.id = 'transferredPipWindow';
+            
+            // Usa as informações da janela PIP existente se disponível
+            const existingData = window.existingPipData || {};
+            const width = existingData.size?.width || '320px';
+            const height = existingData.size?.height || '180px';
+            const position = existingData.position || 'none';
+            
+            pipWindow.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: ${width};
+                height: ${height};
+                background: #000;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+                z-index: 5000;
+                overflow: hidden;
+                border: 2px solid #333;
+                cursor: move;
+                transform: ${position};
+            `;
+            
+            pipWindow.innerHTML = `
+                <div style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    display: flex;
+                    gap: 5px;
+                    z-index: 5001;
+                ">
+                    <button onclick="minimizeTransferredPip()" style="
+                        background: rgba(0,0,0,0.7);
+                        color: white;
+                        border: none;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    " title="Minimizar">−</button>
+                    <button onclick="closeTransferredPip()" style="
+                        background: rgba(0,0,0,0.7);
+                        color: white;
+                        border: none;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    " title="Fechar">×</button>
+                </div>
+                
+                <div id="transferredPipVideoContainer" style="
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+                    background: #000;
+                ">
+                    ${window.currentVideoData ? `
+                        <iframe 
+                            src="https://www.youtube.com/embed/${window.currentVideoData.id}?autoplay=1&controls=1&modestbranding=1&rel=0" 
+                            style="
+                                width: 100%;
+                                height: 100%;
+                                border: none;
+                                border-radius: 8px;
+                            "
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    ` : `
+                        <div style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            color: white;
+                            text-align: center;
+                            font-size: 14px;
+                        ">
+                            <div style="margin-bottom: 10px;">📺</div>
+                            <div>Janela PIP Transferida</div>
+                            <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                                Arraste para mover
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            // Adiciona funcionalidade de arrastar
+            makeDraggable(pipWindow);
+            
+            document.body.appendChild(pipWindow);
+            addDebugLog('🔍 Janela PIP transferida criada e adicionada ao body', 'success');
+        }
+
+        function createRealPipWindow() {
+            addDebugLog('🔍 createRealPipWindow() chamada', 'info');
+            
+            // Remove janela PIP existente se houver
+            const existingPip = document.getElementById('realPipWindow');
+            if (existingPip) {
+                existingPip.remove();
+            }
+            
+            // Cria a janela PIP real
+            const pipWindow = document.createElement('div');
+            pipWindow.id = 'realPipWindow';
+            pipWindow.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 320px;
+                height: 180px;
+                background: #000;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+                z-index: 5000;
+                overflow: hidden;
+                border: 2px solid #333;
+                cursor: move;
+            `;
+            
+            pipWindow.innerHTML = `
+                <div style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    display: flex;
+                    gap: 5px;
+                    z-index: 5001;
+                ">
+                    <button onclick="minimizeRealPip()" style="
+                        background: rgba(0,0,0,0.7);
+                        color: white;
+                        border: none;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    " title="Minimizar">−</button>
+                    <button onclick="closeRealPip()" style="
+                        background: rgba(0,0,0,0.7);
+                        color: white;
+                        border: none;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    " title="Fechar">×</button>
+                </div>
+                
+                <div id="pipVideoContainer" style="
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+                    background: #000;
+                ">
+                    ${window.currentVideoData ? `
+                        <iframe 
+                            src="https://www.youtube.com/embed/${window.currentVideoData.id}?autoplay=1&controls=1&modestbranding=1&rel=0" 
+                            style="
+                                width: 100%;
+                                height: 100%;
+                                border: none;
+                                border-radius: 8px;
+                            "
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    ` : `
+                        <div style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            color: white;
+                            text-align: center;
+                            font-size: 14px;
+                        ">
+                            <div style="margin-bottom: 10px;">📺</div>
+                            <div>Janela PIP Ativa</div>
+                            <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                                Arraste para mover
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            // Adiciona funcionalidade de arrastar
+            makeDraggable(pipWindow);
+            
+            document.body.appendChild(pipWindow);
+            addDebugLog('🔍 Janela PIP real criada e adicionada ao body', 'success');
+        }
+
+        function makeDraggable(element) {
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            element.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+
+            function dragStart(e) {
+                if (e.target.tagName === 'BUTTON') return; // Não arrastar se clicar em botão
+                
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+
+                if (e.target === element || element.contains(e.target)) {
+                    isDragging = true;
+                    element.style.cursor = 'grabbing';
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                element.style.cursor = 'move';
+            }
+        }
+
+        function minimizeTransferredPip() {
+            addDebugLog('🔍 minimizeTransferredPip() chamada', 'info');
+            const pipWindow = document.getElementById('transferredPipWindow');
+            if (pipWindow) {
+                pipWindow.style.display = 'none';
+                addDebugLog('🔍 Janela PIP transferida minimizada', 'success');
+            }
+        }
+
+        function closeTransferredPip() {
+            addDebugLog('🔍 closeTransferredPip() chamada', 'info');
+            const pipWindow = document.getElementById('transferredPipWindow');
+            if (pipWindow) {
+                pipWindow.remove();
+                addDebugLog('🔍 Janela PIP transferida fechada', 'success');
+            }
+        }
+
+        function minimizeRealPip() {
+            addDebugLog('🔍 minimizeRealPip() chamada', 'info');
+            const pipWindow = document.getElementById('realPipWindow');
+            if (pipWindow) {
+                pipWindow.style.display = 'none';
+                addDebugLog('🔍 Janela PIP real minimizada', 'success');
+            }
+        }
+
+        function closeRealPip() {
+            addDebugLog('🔍 closeRealPip() chamada', 'info');
+            const pipWindow = document.getElementById('realPipWindow');
+            if (pipWindow) {
+                pipWindow.remove();
+                addDebugLog('🔍 Janela PIP real fechada', 'success');
+            }
+        }
+
+        function minimizePipWindow() {
+            addDebugLog('🔍 minimizePipWindow() chamada', 'info');
+            const pipWindow = document.getElementById('pipWindow');
+            if (pipWindow) {
+                pipWindow.style.display = 'none';
+                addDebugLog('🔍 Janela PIP minimizada', 'success');
+            }
+        }
+
+        function closePipWindow() {
+            addDebugLog('🔍 closePipWindow() chamada', 'info');
+            const pipWindow = document.getElementById('pipWindow');
+            const pipIframe = document.getElementById('pipIframe');
+            
+            if (pipWindow && pipIframe) {
+                pipWindow.style.display = 'none';
+                pipIframe.src = '';
+                addDebugLog('🔍 Janela PIP fechada', 'success');
             }
         }
 

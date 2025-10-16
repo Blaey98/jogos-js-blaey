@@ -1304,7 +1304,34 @@
             applePipButton.addEventListener('click', () => {
                 if (currentVideo) {
                     closeModal();
-                    activatePiP(currentVideo);
+                    // Chama a função do pai para ativar a janela PIP integrada
+                    if (window.parent && window.parent.activatePipWindow) {
+                        // Passa as informações do vídeo para a janela PIP
+                        window.parent.currentVideoData = {
+                            id: currentVideo.id,
+                            title: currentVideo.title,
+                            thumbnail: currentVideo.thumbnail,
+                            url: currentVideo.url
+                        };
+                        
+                        // Passa informações sobre a janela PIP existente
+                        const existingPipWindow = document.getElementById('pipWindow');
+                        if (existingPipWindow) {
+                            window.parent.existingPipData = {
+                                isActive: existingPipWindow.classList.contains('active'),
+                                position: existingPipWindow.style.transform || 'none',
+                                size: {
+                                    width: existingPipWindow.style.width || '300px',
+                                    height: existingPipWindow.style.height || '169px'
+                                }
+                            };
+                        }
+                        
+                        window.parent.activatePipWindow();
+                    } else {
+                        // Fallback para o comportamento original
+                        activatePiP(currentVideo);
+                    }
                 }
             });
 
