@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NetMovies PiP - Player Personalizado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #0f0f0f;
+            color: #ffffff;
+            overflow-x: hidden;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        /* Header */
+        .header {
+            background-color: #212121;
+            padding: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #3f3f3f;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 8px;
+            max-width: 100%;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 14px 16px;
+            background-color: #3f3f3f;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .search-input::placeholder {
+            color: #aaaaaa;
+        }
+
+        .search-button {
+            padding: 14px 20px;
+            background-color: #e50914;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .search-button:hover {
+            background-color: #b8070f;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 100%;
+            margin: 0;
+            padding: 16px;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #3f3f3f;
+            border-top: 4px solid #e50914;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #aaaaaa;
+            font-size: 16px;
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .video-card {
+            background-color: #212121;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            background-color: #3f3f3f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .video-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            margin-left: 4px;
+        }
+
+        .video-info {
+            padding: 16px;
+        }
+
+        .video-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-description {
+            color: #aaaaaa;
+            font-size: 14px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* PiP Button */
+        .pip-button {
+            background: linear-gradient(135deg, #e50914 0%, #b8070f 100%);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-top: 12px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .pip-button:hover {
+            background: linear-gradient(135deg, #b8070f 0%, #8b0000 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+        }
+
+        .pip-icon {
+            font-size: 16px;
+        }
+
+        /* PiP Window */
+        .pip-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 225px;
+            background-color: #000;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pip-window.active {
+            display: block;
+            animation: pipSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pip-window:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.4),
+                0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes pipSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .pip-video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .pip-drag-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            cursor: grab;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .pip-drag-overlay:active {
+            cursor: grabbing;
+        }
+
+        .pip-drag-overlay.dragging {
+            pointer-events: auto;
+        }
+
+        .pip-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #e50914;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .pip-loading-text {
+            font-size: 12px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .pip-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* PiP Close Button */
+        .pip-close-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .pip-window:hover .pip-close-button {
+            opacity: 1;
+        }
+
+        .pip-close-button:hover {
+            background: rgba(255, 0, 0, 0.8);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(255, 0, 0, 0.4);
+        }
+
+        .pip-close-button:active {
+            transform: scale(0.95);
+            background: rgba(255, 0, 0, 0.9);
+        }
+
+        /* PiP Size Control Buttons */
+        .pip-size-controls {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+
+        .pip-window:hover .pip-size-controls {
+            opacity: 1;
+        }
+
+        .pip-size-button {
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #ffffff;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(20px);
+        }
+
+        .pip-size-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .pip-size-button:active {
+            transform: scale(0.95);
+        }
+
+        /* PiP Controls - Bottom */
+        .pip-controls-bottom {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+
+        .pip-time-display {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .pip-window:hover .pip-controls-bottom {
+            opacity: 1;
+        }
+
+        .pip-progress-container {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pip-progress-bar {
+            height: 100%;
+            background: #e50914;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.02s ease-out;
+        }
+
+        .pip-progress-handle {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            width: 12px;
+            height: 12px;
+            background: #e50914;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .pip-progress-container:hover .pip-progress-handle {
+            opacity: 1;
+        }
+
+        .pip-progress-handle:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .pip-play-button-bottom {
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(20px);
+            flex-shrink: 0;
+        }
+
+        .pip-play-button-bottom:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .pip-play-button-bottom:active {
+            transform: scale(0.95);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pip-window {
+                width: 300px;
+                height: 169px;
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .pip-header {
+                padding: 8px 12px;
+            }
+
+            .pip-title {
+                font-size: 12px;
+            }
+
+            .pip-button {
+                padding: 4px 6px;
+                font-size: 10px;
+            }
+
+            .pip-play-button {
+                width: 64px;
+                height: 64px;
+            }
+
+            .pip-play-button svg {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pip-window {
+                width: calc(100vw - 20px);
+                height: calc((100vw - 20px) * 0.5625);
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #e50914;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4caf50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div style="text-align: center; padding: 20px;">
+            <h1 style="color: #e50914; margin: 0; font-size: 24px;">NetMovies PIP</h1>
+            <p style="color: #aaaaaa; margin: 8px 0 0 0;">Assista em Picture-in-Picture</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div style="position: relative; width: 100%; height: calc(100vh - 100px);">
+            <iframe 
+                id="netmoviesFrame"
+                src="https://www.netmovies.com.br/" 
+                style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+                allow="autoplay; fullscreen; picture-in-picture; web-share; accelerometer; gyroscope; encrypted-media; clipboard-write"
+                allowfullscreen
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+            <div id="loadingOverlay" style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                transition: opacity 0.3s ease;
+            ">
+                <div class="spinner"></div>
+                <div class="loading-text" style="margin-top: 20px;">Carregando NetMovies...</div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="hideLoading()" style="
+                        background: #e50914;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    ">Pular carregamento</button>
+                    <button onclick="reloadIframe()" style="
+                        background: #4caf50;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    ">Recarregar página</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- PiP Window -->
+    <div class="pip-window" id="pipWindow">
+        <div class="pip-video-container">
+            <div class="pip-size-controls">
+                <button class="pip-size-button" id="pipMinimizeButton" title="Diminuir">−</button>
+                <button class="pip-size-button" id="pipMaximizeButton" title="Aumentar">+</button>
+            </div>
+            <button class="pip-close-button" id="pipCloseButton" title="Fechar">×</button>
+            <div class="pip-controls-bottom">
+                <div class="pip-time-display" id="pipTimeDisplay">0:00</div>
+                <div class="pip-progress-container" id="pipProgressContainer">
+                    <div class="pip-progress-bar" id="pipProgressBar"></div>
+                    <div class="pip-progress-handle" id="pipProgressHandle"></div>
+                </div>
+                <button class="pip-play-button-bottom" id="pipPlayButtonBottom">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="playIconBottom">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="pauseIconBottom" style="display: none;">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="pip-drag-overlay" id="pipDragOverlay"></div>
+            <div id="pipVideoContainer"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Global variables
+        let currentVideo = null;
+        let pipPlayer = null;
+        let pipWindow = null;
+        let isPiPActive = false;
+        let progressUpdateInterval = null;
+
+        // DOM elements
+        const pipCloseButton = document.getElementById('pipCloseButton');
+        const pipMinimizeButton = document.getElementById('pipMinimizeButton');
+        const pipMaximizeButton = document.getElementById('pipMaximizeButton');
+        const pipPlayButtonBottom = document.getElementById('pipPlayButtonBottom');
+        const pipProgressContainer = document.getElementById('pipProgressContainer');
+        const pipProgressHandle = document.getElementById('pipProgressHandle');
+        const pipTimeDisplay = document.getElementById('pipTimeDisplay');
+        const pipProgressBar = document.getElementById('pipProgressBar');
+        const playIconBottom = document.getElementById('playIconBottom');
+        const pauseIconBottom = document.getElementById('pauseIconBottom');
+        const pipDragOverlay = document.getElementById('pipDragOverlay');
+        const pipVideoContainer = document.getElementById('pipVideoContainer');
+        const notification = document.getElementById('notification');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            pipWindow = document.getElementById('pipWindow');
+            setupEventListeners();
+            makePiPDraggable();
+            
+            // Add PiP button to the page
+            addPiPButton();
+            
+            // Setup iframe loading
+            setupIframeLoading();
+        });
+
+        // Setup iframe loading
+        function setupIframeLoading() {
+            const iframe = document.getElementById('netmoviesFrame');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // Hide loading after 5 seconds automatically
+            setTimeout(() => {
+                hideLoading();
+            }, 5000);
+            
+            // Try to detect when iframe loads
+            iframe.addEventListener('load', function() {
+                setTimeout(() => {
+                    hideLoading();
+                }, 1000);
+            });
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // Reload iframe
+        function reloadIframe() {
+            const iframe = document.getElementById('netmoviesFrame');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // Show loading overlay
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.style.opacity = '1';
+            
+            // Reload iframe
+            iframe.src = iframe.src;
+            
+            // Hide loading after 3 seconds
+            setTimeout(() => {
+                hideLoading();
+            }, 3000);
+        }
+
+        // Add PiP button to the page
+        function addPiPButton() {
+            const pipButton = document.createElement('button');
+            pipButton.innerHTML = '<span class="pip-icon">📺</span> Ativar PiP';
+            pipButton.className = 'pip-button';
+            pipButton.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 999;
+                background: linear-gradient(135deg, #e50914 0%, #b8070f 100%);
+                border: none;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+                box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+            `;
+            
+            pipButton.addEventListener('click', function() {
+                openInPiP();
+            });
+            
+            document.body.appendChild(pipButton);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // PiP Controls
+            pipPlayButtonBottom.addEventListener('click', togglePiPPlayback);
+            pipCloseButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                closePiP();
+            });
+            pipMinimizeButton.addEventListener('click', minimizePiP);
+            pipMaximizeButton.addEventListener('click', maximizePiP);
+            pipProgressContainer.addEventListener('click', seekVideo);
+            pipProgressHandle.addEventListener('mousedown', startProgressDrag);
+
+            // Encerrar vídeo quando sair da página
+            window.addEventListener('beforeunload', function() {
+                if (pipPlayer && pipWindow.classList.contains('active')) {
+                    closePiP();
+                }
+            });
+        }
+
+        // PiP Functions
+        function openInPiP() {
+            currentVideo = {
+                id: 'netmovies-main',
+                title: 'NetMovies',
+                description: 'Plataforma de streaming de filmes e séries',
+                url: 'https://www.netmovies.com.br/'
+            };
+
+            activatePiP(currentVideo);
+        }
+
+        async function activatePiP(video) {
+            try {
+                console.log('🎬 [NetMovies] Iniciando PiP para:', video.title);
+                
+                pipWindow.classList.add('active');
+                
+                // Create iframe for NetMovies
+                const iframe = document.createElement('iframe');
+                iframe.src = video.url;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+                iframe.allowFullscreen = true;
+                
+                // Clear container and add iframe
+                pipVideoContainer.innerHTML = '';
+                pipVideoContainer.appendChild(iframe);
+                
+                pipPlayer = iframe;
+                isPiPActive = true;
+                
+                // Start progress tracking
+                startProgressTracking();
+                
+                showNotification(`🎬 ${video.title} iniciado em PiP`, 'success');
+                
+            } catch (error) {
+                console.error('❌ [NetMovies] Erro ao ativar PiP:', error);
+                showNotification('❌ Erro ao criar janela PiP. Tente novamente.', 'error');
+            }
+        }
+
+        function closePiP() {
+            console.log('🎬 Iniciando fechamento do PiP...');
+            
+            if (pipPlayer) {
+                try {
+                    pipPlayer.src = '';
+                    pipPlayer = null;
+                } catch (error) {
+                    console.error('Erro ao limpar iframe:', error);
+                }
+            }
+            
+            pipWindow.classList.remove('active');
+            isPiPActive = false;
+            currentVideo = null;
+            
+            // Stop progress tracking
+            if (progressUpdateInterval) {
+                clearInterval(progressUpdateInterval);
+                progressUpdateInterval = null;
+            }
+            
+            // Reset progress
+            pipProgressBar.style.width = '0%';
+            pipTimeDisplay.textContent = '0:00';
+            playIconBottom.style.display = 'block';
+            pauseIconBottom.style.display = 'none';
+            
+            console.log('🎬 PiP fechado e vídeo completamente encerrado');
+        }
+
+        function togglePiPPlayback() {
+            if (pipPlayer) {
+                const isPaused = playIconBottom.style.display === 'block';
+                
+                if (isPaused) {
+                    // Simulate play
+                    playIconBottom.style.display = 'none';
+                    pauseIconBottom.style.display = 'block';
+                    showNotification('▶️ Reproduzindo', 'success');
+                } else {
+                    // Simulate pause
+                    playIconBottom.style.display = 'block';
+                    pauseIconBottom.style.display = 'none';
+                    showNotification('⏸️ Pausado', 'success');
+                }
+            }
+        }
+
+        function minimizePiP() {
+            const currentWidth = pipWindow.offsetWidth;
+            const currentHeight = pipWindow.offsetHeight;
+            
+            const aspectRatio = 16 / 9;
+            const newWidth = Math.max(200, currentWidth * 0.8);
+            const newHeight = newWidth / aspectRatio;
+            
+            pipWindow.style.width = newWidth + 'px';
+            pipWindow.style.height = newHeight + 'px';
+            
+            if (pipPlayer) {
+                pipPlayer.style.width = '100%';
+                pipPlayer.style.height = '100%';
+            }
+        }
+
+        function maximizePiP() {
+            const currentWidth = pipWindow.offsetWidth;
+            const currentHeight = pipWindow.offsetHeight;
+            
+            if (currentWidth >= 480 && currentHeight >= 270) {
+                return; // Already at max size
+            }
+            
+            const aspectRatio = 16 / 9;
+            const newWidth = Math.min(480, currentWidth * 1.2);
+            const newHeight = newWidth / aspectRatio;
+            
+            pipWindow.style.width = newWidth + 'px';
+            pipWindow.style.height = newHeight + 'px';
+            
+            if (pipPlayer) {
+                pipPlayer.style.width = '100%';
+                pipPlayer.style.height = '100%';
+            }
+        }
+
+        function startProgressTracking() {
+            if (progressUpdateInterval) {
+                clearInterval(progressUpdateInterval);
+            }
+            
+            let currentTime = 0;
+            const duration = 3600; // 1 hour in seconds (simulated)
+            
+            progressUpdateInterval = setInterval(() => {
+                if (!isPiPActive) return;
+                
+                currentTime += 1;
+                const progress = (currentTime / duration) * 100;
+                
+                pipProgressBar.style.width = progress + '%';
+                pipTimeDisplay.textContent = formatTime(currentTime);
+                
+                if (currentTime >= duration) {
+                    clearInterval(progressUpdateInterval);
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function seekVideo(event) {
+            if (!pipPlayer || !isPiPActive) return;
+            
+            const rect = pipProgressContainer.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const progress = (clickX / rect.width) * 100;
+            
+            pipProgressBar.style.width = progress + '%';
+            
+            // Simulate seeking
+            const duration = 3600;
+            const newTime = (progress / 100) * duration;
+            pipTimeDisplay.textContent = formatTime(Math.floor(newTime));
+        }
+
+        function startProgressDrag(event) {
+            event.preventDefault();
+            
+            const handleProgressDrag = (e) => {
+                const rect = pipProgressContainer.getBoundingClientRect();
+                const newX = e.clientX - rect.left;
+                const progress = Math.max(0, Math.min(100, (newX / rect.width) * 100));
+                
+                pipProgressBar.style.width = progress + '%';
+                
+                const duration = 3600;
+                const newTime = (progress / 100) * duration;
+                pipTimeDisplay.textContent = formatTime(Math.floor(newTime));
+            };
+            
+            const stopProgressDrag = () => {
+                document.removeEventListener('mousemove', handleProgressDrag);
+                document.removeEventListener('mouseup', stopProgressDrag);
+            };
+            
+            document.addEventListener('mousemove', handleProgressDrag);
+            document.addEventListener('mouseup', stopProgressDrag);
+        }
+
+        // Make PiP Draggable
+        function makePiPDraggable() {
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            pipDragOverlay.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+
+            function dragStart(e) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+
+                if (e.target === pipDragOverlay) {
+                    isDragging = true;
+                    pipDragOverlay.classList.add('dragging');
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    pipWindow.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                pipDragOverlay.classList.remove('dragging');
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
