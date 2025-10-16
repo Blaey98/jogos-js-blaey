@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Jogos - Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+        }
+        .game-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .game-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .game-item:last-child {
+            border-bottom: none;
+        }
+        .orientation-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .vertical { background: #4ecdc4; color: white; }
+        .horizontal { background: #ff6b6b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificação de Jogos - Debug</h1>
+        
+        <div class="stat">
+            <h3>📊 Estatísticas dos Jogos</h3>
+            <p><strong>Total de jogos carregados:</strong> <span id="totalGames">0</span></p>
+            <p><strong>Jogos verticais:</strong> <span id="verticalGames">0</span></p>
+            <p><strong>Jogos horizontais:</strong> <span id="horizontalGames">0</span></p>
+            <p><strong>Jogos disponíveis:</strong> <span id="availableGames">0</span></p>
+            <p><strong>Jogos em breve:</strong> <span id="comingSoonGames">0</span></p>
+        </div>
+
+        <div class="stat">
+            <h3>🎮 Lista de Todos os Jogos</h3>
+            <div class="game-list" id="gameList">
+                Carregando jogos...
+            </div>
+        </div>
+
+        <div class="stat">
+            <h3>🔗 Links para Testar</h3>
+            <p><a href="lista-jogos.html" target="_blank">📋 Lista de Jogos Completa</a></p>
+            <p><a href="jogos-horizontais.html" target="_blank">🖥️ Jogos Horizontais</a></p>
+            <p><a href="jogos-verticais.html" target="_blank">📱 Jogos Verticais</a></p>
+        </div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        function updateStats() {
+            const totalGames = games.length;
+            const verticalGames = games.filter(game => game.orientation === 'vertical').length;
+            const horizontalGames = games.filter(game => game.orientation === 'horizontal').length;
+            const availableGames = games.filter(game => game.status === 'available').length;
+            const comingSoonGames = games.filter(game => game.status === 'coming-soon').length;
+            
+            document.getElementById('totalGames').textContent = totalGames;
+            document.getElementById('verticalGames').textContent = verticalGames;
+            document.getElementById('horizontalGames').textContent = horizontalGames;
+            document.getElementById('availableGames').textContent = availableGames;
+            document.getElementById('comingSoonGames').textContent = comingSoonGames;
+        }
+
+        function renderGameList() {
+            const gameList = document.getElementById('gameList');
+            gameList.innerHTML = '';
+            
+            games.forEach((game, index) => {
+                const gameItem = document.createElement('div');
+                gameItem.className = 'game-item';
+                gameItem.innerHTML = `
+                    <span class="orientation-badge ${game.orientation}">${game.orientation}</span>
+                    <strong>${game.title}</strong> - ${game.description}
+                    <br><small>ID: ${game.id} | Status: ${game.status} | Categoria: ${game.category}</small>
+                `;
+                gameList.appendChild(gameItem);
+            });
+        }
+
+        // Executar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 Jogos carregados:', games.length);
+            console.log('📋 Array de jogos:', games);
+            
+            updateStats();
+            renderGameList();
+        });
+    </script>
+</body>
+</html>

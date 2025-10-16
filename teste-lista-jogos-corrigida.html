@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Lista de Jogos Corrigida</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .success-box {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .fix-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 8px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .url-example {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Lista de Jogos Corrigida</h1>
+        
+        <div class="success-box">
+            <strong>🎯 Problema Resolvido!</strong><br>
+            Agora quando você clicar em "▶️ Jogar Agora" na lista de jogos, o jogo abre corretamente no template vertical personalizado com:
+            <ul>
+                <li>Banner "320x100" no topo</li>
+                <li>Jogo ocupando o resto da tela</li>
+                <li>Drawer lateral com opções: Assistir, Reiniciar, Sair</li>
+                <li>Funcionalidade YouTube PIP integrada</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🔗 Links para Testar</h3>
+            <p>Clique nos botões abaixo para testar a funcionalidade corrigida:</p>
+            
+            <button class="demo-button" onclick="window.open('lista-jogos.html', '_blank')">
+                📋 Lista Completa de Jogos
+            </button>
+            
+            <button class="demo-button" onclick="window.open('jogos-horizontais.html', '_blank')">
+                🖥️ Jogos Horizontais
+            </button>
+            
+            <button class="demo-button" onclick="window.open('jogos-verticais.html', '_blank')">
+                📱 Jogos Verticais
+            </button>
+        </div>
+
+        <div class="fix-box">
+            <h3>🔧 Correções Implementadas</h3>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>Removido referência ao <code>js/game-config.js</code> (arquivo inexistente)</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>Corrigido <code>lista-jogos.html</code> para usar apenas <code>js/games-config.js</code></div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>Corrigido <code>jogos-horizontais.html</code> para usar apenas <code>js/games-config.js</code></div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div>Corrigido <code>jogos-verticais.html</code> para usar apenas <code>js/games-config.js</code></div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div>Função <code>playGame()</code> agora usa diretamente a função global do <code>games-config.js</code></div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>🎮 Como Funciona Agora</h3>
+            <ol>
+                <li><strong>Usuário acessa:</strong> <code>http://localhost:3000/lista-jogos.html</code></li>
+                <li><strong>Clica em "▶️ Jogar Agora":</strong> Executa <code>playGame('game-id')</code></li>
+                <li><strong>Função playGame:</strong> Redireciona para <code>jogo-vertical-template-fixed.html</code></li>
+                <li><strong>URL gerada:</strong> <code>jogo-vertical-template-fixed.html?url=...&title=...&description=...&orientation=...&return=...</code></li>
+                <li><strong>Template carrega:</strong> Jogo no iframe com banner e drawer lateral</li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h3>📱 Exemplo de URL Gerada</h3>
+            <p>Quando você clicar em "Pacman", a URL será:</p>
+            <div class="url-example">
+                jogo-vertical-template-fixed.html?url=jogos%2Fpacman_js%2Findex_mobile.html&title=Pacman&description=O+cl%C3%A1ssico+jogo+do+Pacman.+Colete+pontos+e+evite+os+fantasmas%21&orientation=vertical&return=http%3A%2F%2Flocalhost%3A3000%2Flista-jogos.html
+            </div>
+        </div>
+
+        <div class="success-box">
+            <h3>🎯 Resultado Final</h3>
+            <ul>
+                <li><strong>✅ Lista de jogos:</strong> Funciona corretamente</li>
+                <li><strong>✅ Jogos horizontais:</strong> Funciona corretamente</li>
+                <li><strong>✅ Jogos verticais:</strong> Funciona corretamente</li>
+                <li><strong>✅ Template universal:</strong> Todos os jogos usam o mesmo template</li>
+                <li><strong>✅ Drawer lateral:</strong> Assistir, Reiniciar, Sair</li>
+                <li><strong>✅ YouTube PIP:</strong> Integrado no botão "Assistir"</li>
+                <li><strong>✅ Responsivo:</strong> Funciona em mobile e desktop</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🧪 Teste Rápido</h3>
+            <p>Teste diretamente alguns jogos:</p>
+            
+            <button class="demo-button" onclick="testPacman()">
+                👻 Testar Pacman
+            </button>
+            
+            <button class="demo-button" onclick="testChessPursuit()">
+                ♔ Testar Chess Pursuit
+            </button>
+            
+            <button class="demo-button" onclick="testChess()">
+                ♟️ Testar Xadrez
+            </button>
+        </div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        function testPacman() {
+            playGame('pacman');
+        }
+
+        function testChessPursuit() {
+            playGame('chess-pursuit');
+        }
+
+        function testChess() {
+            playGame('chess');
+        }
+    </script>
+</body>
+</html>

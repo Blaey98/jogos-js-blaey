@@ -263,6 +263,120 @@
             cursor: pointer;
             margin: 0 5px;
         }
+
+        /* Debug Logs Area */
+        .debug-logs {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 400px;
+            max-height: 300px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            z-index: 10000;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-logs.show {
+            display: block;
+        }
+
+        .debug-logs .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(0,255,0,0.2);
+        }
+
+        .debug-logs .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .debug-logs .log-time {
+            color: #888;
+            font-size: 10px;
+        }
+
+        .debug-logs .log-error {
+            color: #ff4444;
+        }
+
+        .debug-logs .log-success {
+            color: #44ff44;
+        }
+
+        .debug-logs .log-info {
+            color: #4444ff;
+        }
+
+        /* Toggle button for debug logs */
+        .debug-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 10001;
+        }
+
+        .debug-toggle:hover {
+            background: #00cc00;
+        }
+
+        /* Botões na parte inferior da tela */
+        .bottom-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .bottom-btn {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 100px;
+        }
+
+        .bottom-btn:hover {
+            background: rgba(255,255,255,0.9);
+            color: #000;
+            border-color: rgba(255,255,255,0.9);
+            transform: translateY(-2px);
+        }
+
+        .bottom-btn.assistir {
+            background: rgba(255,0,0,0.8);
+            border-color: rgba(255,0,0,0.8);
+        }
+
+        .bottom-btn.assistir:hover {
+            background: rgba(255,0,0,1);
+            border-color: rgba(255,0,0,1);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -293,17 +407,17 @@
     </div>
 
     <!-- Overlay para fechar o drawer -->
-    <div class="nav-overlay" id="navOverlay" onclick="closeNav()"></div>
+    <div class="nav-overlay" id="navOverlay" onclick="handleOverlayClick(event)"></div>
 
     <!-- Navigation Drawer lateral estilo Apple -->
     <div class="nav-drawer">
-        <button class="nav-toggle" id="navToggle" onclick="toggleNav()"></button>
+        <button class="nav-toggle" id="navToggle" onclick="addDebugLog('🔍 Botão toggle clicado', 'info'); toggleNav();"></button>
     </div>
 
     <!-- Menu lateral que desliza -->
     <div class="nav-menu" id="navMenu">
         <div class="nav-carousel">
-            <div class="nav-item" onclick="watchGame()">
+            <div class="nav-item" id="assistirBtn" onclick="showWatchDialog()">
                 <span class="nav-item-icon">👁️</span>
                 Assistir
             </div>
@@ -318,7 +432,75 @@
         </div>
     </div>
 
+    <!-- Debug Logs Area -->
+    <div class="debug-logs" id="debugLogs">
+        <div style="color: #00ff00; font-weight: bold; margin-bottom: 10px; text-align: center;">
+            🔍 DEBUG LOGS
+        </div>
+        <div id="logEntries"></div>
+    </div>
+
+    <!-- Debug Toggle Button -->
+    <button class="debug-toggle" id="debugToggle" onclick="toggleDebugLogs()">
+        DEBUG
+    </button>
+
+    <!-- Botões na parte inferior da tela -->
+    <div class="bottom-controls">
+        <button class="bottom-btn assistir" onclick="addDebugLog('🔍 Botão Assistir clicado (inferior)', 'success'); openYouTubePIP();">
+            📺 Assistir
+        </button>
+        <button class="bottom-btn" onclick="addDebugLog('🔍 Botão Sair clicado (inferior)', 'info'); goBack();">
+            🚪 Sair
+        </button>
+    </div>
+
     <script>
+        // Sistema de Logs Visuais
+        function addDebugLog(message, type = 'info') {
+            const logEntries = document.getElementById('logEntries');
+            const time = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `
+                <span class="log-time">[${time}]</span> ${message}
+            `;
+            
+            logEntries.appendChild(logEntry);
+            
+            // Auto-scroll para o último log
+            logEntries.scrollTop = logEntries.scrollHeight;
+            
+            // Limita a 50 logs para não sobrecarregar
+            const entries = logEntries.children;
+            if (entries.length > 50) {
+                entries[0].remove();
+            }
+            
+            // Também loga no console
+            console.log(message);
+        }
+
+        function toggleDebugLogs() {
+            const debugLogs = document.getElementById('debugLogs');
+            const debugToggle = document.getElementById('debugToggle');
+            
+            if (debugLogs.classList.contains('show')) {
+                debugLogs.classList.remove('show');
+                debugToggle.textContent = 'DEBUG';
+                debugToggle.style.background = '#00ff00';
+            } else {
+                debugLogs.classList.add('show');
+                debugToggle.textContent = 'HIDE';
+                debugToggle.style.background = '#ff0000';
+            }
+        }
+
+        function clearDebugLogs() {
+            document.getElementById('logEntries').innerHTML = '';
+        }
+
         // Função para obter parâmetros da URL
         function getUrlParameter(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -397,29 +579,236 @@
 
         // Funções do Navigation Drawer lateral
         function toggleNav() {
+            addDebugLog('🔍 toggleNav() chamada', 'info');
             const navToggle = document.getElementById('navToggle');
             const navMenu = document.getElementById('navMenu');
             const navOverlay = document.getElementById('navOverlay');
             
-            navToggle.classList.toggle('active');
-            navMenu.classList.toggle('active');
-            navOverlay.classList.toggle('active');
+            if (navToggle && navMenu && navOverlay) {
+                addDebugLog('🔍 Elementos do menu encontrados', 'success');
+                navToggle.classList.toggle('active');
+                navMenu.classList.toggle('active');
+                navOverlay.classList.toggle('active');
+                
+                const isActive = navMenu.classList.contains('active');
+                addDebugLog(`🔍 Menu ${isActive ? 'ABERTO' : 'FECHADO'}`, isActive ? 'success' : 'info');
+            } else {
+                addDebugLog('❌ ERRO: Elementos do menu não encontrados!', 'error');
+            }
+        }
+
+        function handleOverlayClick(event) {
+            addDebugLog('🔍 Overlay clicado', 'info');
+            
+            // Verifica se o clique foi no menu ou em um botão do menu
+            const navMenu = document.getElementById('navMenu');
+            if (navMenu && navMenu.contains(event.target)) {
+                addDebugLog('🔍 Clique foi no menu, não fechando', 'info');
+                return; // Não fecha o menu se o clique foi no menu
+            }
+            
+            addDebugLog('🔍 Clique foi no overlay, fechando menu', 'info');
+            closeNav();
         }
 
         function closeNav() {
+            addDebugLog('🔍 closeNav() chamada', 'info');
             const navToggle = document.getElementById('navToggle');
             const navMenu = document.getElementById('navMenu');
             const navOverlay = document.getElementById('navOverlay');
             
-            navToggle.classList.remove('active');
-            navMenu.classList.remove('active');
-            navOverlay.classList.remove('active');
+            if (navToggle && navMenu && navOverlay) {
+                navToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+                navOverlay.classList.remove('active');
+                addDebugLog('🔍 Menu fechado com sucesso', 'success');
+            } else {
+                addDebugLog('❌ ERRO: Elementos do menu não encontrados para fechar!', 'error');
+            }
         }
 
-        function watchGame() {
-            // Função para assistir o jogo (pode ser expandida futuramente)
-            alert('Funcionalidade "Assistir" será implementada em breve!');
-            closeNav(); // Fecha o drawer
+        function showWatchDialog() {
+            addDebugLog('🔍 showWatchDialog() chamada', 'info');
+            
+            // Fecha o menu primeiro
+            closeNav();
+            
+            // Cria o diálogo diretamente
+            const dialog = document.createElement('div');
+            dialog.id = 'watchDialog';
+            dialog.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            dialog.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 30px;
+                    max-width: 400px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    position: relative;
+                ">
+                    <button onclick="closeWatchDialog()" style="
+                        position: absolute;
+                        top: 10px;
+                        right: 15px;
+                        background: none;
+                        border: none;
+                        font-size: 24px;
+                        cursor: pointer;
+                        color: #666;
+                        width: 30px;
+                        height: 30px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">×</button>
+                    
+                    <h3 style="margin-bottom: 20px; color: #333; font-size: 1.5rem;">📺 Assistir Vídeo</h3>
+                    <p style="margin-bottom: 25px; color: #666; line-height: 1.5;">
+                        Abrir YouTube PIP para assistir vídeos enquanto joga?
+                    </p>
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="openYouTubePIP()" style="
+                            background: #ff0000;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-weight: bold;
+                            font-size: 1rem;
+                            min-width: 150px;
+                        ">
+                            📺 Abrir YouTube PIP
+                        </button>
+                        <button onclick="closeWatchDialog()" style="
+                            background: #666;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-weight: bold;
+                            font-size: 1rem;
+                            min-width: 100px;
+                        ">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            addDebugLog('🔍 Diálogo criado e adicionado ao body', 'success');
+        }
+
+        function openYouTubePIP() {
+            addDebugLog('🔍 openYouTubePIP() chamada', 'info');
+            
+            // Cria um diálogo com o YouTube PIP dentro da tela
+            const pipDialog = document.createElement('div');
+            pipDialog.id = 'youtubePipDialog';
+            pipDialog.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            pipDialog.innerHTML = `
+                <div style="
+                    background: #000;
+                    border-radius: 15px;
+                    width: 90%;
+                    max-width: 800px;
+                    height: 80%;
+                    max-height: 600px;
+                    position: relative;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                ">
+                    <button onclick="closeYouTubePIP()" style="
+                        position: absolute;
+                        top: 10px;
+                        right: 15px;
+                        background: rgba(255,255,255,0.2);
+                        border: none;
+                        color: white;
+                        font-size: 24px;
+                        cursor: pointer;
+                        width: 35px;
+                        height: 35px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10001;
+                    ">×</button>
+                    
+                    <iframe 
+                        src="youtube-pip.html" 
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            border: none;
+                            border-radius: 15px;
+                        "
+                        frameborder="0"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+            
+            // Adiciona event listener para fechar ao clicar no fundo
+            pipDialog.addEventListener('click', (e) => {
+                if (e.target === pipDialog) {
+                    addDebugLog('🔍 Clique no fundo do diálogo YouTube PIP', 'info');
+                    closeYouTubePIP();
+                }
+            });
+            
+            document.body.appendChild(pipDialog);
+            addDebugLog('🔍 Diálogo YouTube PIP criado e adicionado ao body', 'success');
+        }
+
+        function closeYouTubePIP() {
+            addDebugLog('🔍 closeYouTubePIP() chamada', 'info');
+            const dialog = document.getElementById('youtubePipDialog');
+            if (dialog) {
+                dialog.remove();
+                addDebugLog('🔍 Diálogo YouTube PIP removido do DOM', 'success');
+            } else {
+                addDebugLog('🔍 Diálogo YouTube PIP não encontrado para fechar', 'info');
+            }
+        }
+
+        function closeWatchDialog() {
+            addDebugLog('🔍 closeWatchDialog() chamada', 'info');
+            const dialog = document.getElementById('watchDialog');
+            if (dialog) {
+                dialog.remove();
+                addDebugLog('🔍 Dialog removido do DOM', 'success');
+            } else {
+                addDebugLog('🔍 Dialog não encontrado para fechar', 'info');
+            }
         }
 
         function restartGame() {
@@ -448,7 +837,35 @@
         });
 
         // Carrega o jogo quando a página é carregada
-        document.addEventListener('DOMContentLoaded', loadGame);
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('🚀 Página carregada - Sistema de debug ativo', 'success');
+            addDebugLog('💡 Clique no botão DEBUG (canto superior direito) para ver os logs', 'info');
+            
+            // Verifica se os botões inferiores existem
+            const bottomControls = document.querySelector('.bottom-controls');
+            if (bottomControls) {
+                addDebugLog('🔍 Botões inferiores encontrados', 'success');
+            } else {
+                addDebugLog('❌ ERRO: Botões inferiores não encontrados!', 'error');
+            }
+            
+            // Adiciona logs para outros elementos importantes
+            const navMenu = document.getElementById('navMenu');
+            if (navMenu) {
+                addDebugLog('🔍 Menu lateral encontrado', 'success');
+            } else {
+                addDebugLog('❌ ERRO: Menu lateral não encontrado!', 'error');
+            }
+            
+            const navToggle = document.getElementById('navToggle');
+            if (navToggle) {
+                addDebugLog('🔍 Botão toggle do menu encontrado', 'success');
+            } else {
+                addDebugLog('❌ ERRO: Botão toggle não encontrado!', 'error');
+            }
+            
+            loadGame();
+        });
     </script>
 </body>
 </html>

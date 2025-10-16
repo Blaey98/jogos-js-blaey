@@ -280,14 +280,13 @@
         </div>
     </div>
 
-    <script src="js/game-config.js"></script>
     <script src="js/games-config.js"></script>
     <script>
         let allGames = [];
         let filteredGames = [];
 
         function loadAllGames() {
-            allGames = GameConfig.getAllGames();
+            allGames = games; // Usa o array games do games-config.js
             filteredGames = [...allGames];
             
             updateStats();
@@ -296,8 +295,8 @@
         }
 
         function updateStats() {
-            const verticalGames = GameConfig.getVerticalGames();
-            const horizontalGames = GameConfig.getHorizontalGames();
+            const verticalGames = allGames.filter(game => game.orientation === 'vertical');
+            const horizontalGames = allGames.filter(game => game.orientation === 'horizontal');
             
             document.getElementById('totalGames').textContent = allGames.length;
             document.getElementById('verticalGames').textContent = verticalGames.length;
@@ -317,20 +316,16 @@
             noResults.style.display = 'none';
             gamesGrid.innerHTML = '';
             
-            filteredGames.forEach(gameName => {
-                const gameUrl = GameConfig.getGameUrl(gameName);
-                const gameDescription = GameConfig.getGameDescription(gameName);
-                const orientation = GameConfig.getGameOrientation(gameName);
-                
+            filteredGames.forEach(game => {
                 const gameCard = document.createElement('div');
                 gameCard.className = 'game-card';
                 gameCard.innerHTML = `
-                    <div class="orientation-badge ${orientation}">
-                        ${orientation === 'vertical' ? '📱 Vertical' : '🖥️ Horizontal'}
+                    <div class="orientation-badge ${game.orientation}">
+                        ${game.orientation === 'vertical' ? '📱 Vertical' : '🖥️ Horizontal'}
                     </div>
-                    <h3>${gameName}</h3>
-                    <p>${gameDescription}</p>
-                    <button class="play-button" onclick="playGame('${gameName}', '${gameUrl}')">
+                    <h3>${game.title}</h3>
+                    <p>${game.description}</p>
+                    <button class="play-button" onclick="playGame('${game.id}')">
                         ▶️ Jogar Agora
                     </button>
                 `;
@@ -344,17 +339,25 @@
             
             if (filter === 'all') {
                 filteredGames = allGames.filter(game => 
-                    game.toLowerCase().includes(searchTerm)
+                    game.title.toLowerCase().includes(searchTerm) ||
+                    game.description.toLowerCase().includes(searchTerm) ||
+                    game.tags.some(tag => tag.toLowerCase().includes(searchTerm))
                 );
             } else if (filter === 'vertical') {
-                const verticalGames = GameConfig.getVerticalGames();
-                filteredGames = verticalGames.filter(game => 
-                    game.toLowerCase().includes(searchTerm)
+                filteredGames = allGames.filter(game => 
+                    game.orientation === 'vertical' && (
+                        game.title.toLowerCase().includes(searchTerm) ||
+                        game.description.toLowerCase().includes(searchTerm) ||
+                        game.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+                    )
                 );
             } else if (filter === 'horizontal') {
-                const horizontalGames = GameConfig.getHorizontalGames();
-                filteredGames = horizontalGames.filter(game => 
-                    game.toLowerCase().includes(searchTerm)
+                filteredGames = allGames.filter(game => 
+                    game.orientation === 'horizontal' && (
+                        game.title.toLowerCase().includes(searchTerm) ||
+                        game.description.toLowerCase().includes(searchTerm) ||
+                        game.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+                    )
                 );
             }
             
@@ -378,17 +381,8 @@
             });
         }
 
-        function playGame(gameName, gameUrl) {
-            // Busca o jogo no games-config.js pelo nome
-            const game = games.find(g => g.title === gameName);
-            if (game) {
-                // Usa a nova função playGame do games-config.js
-                window.playGame(game.id);
-            } else {
-                // Fallback para o comportamento original
-                window.open(gameUrl, '_blank');
-            }
-        }
+        // A função playGame agora usa diretamente a função global do games-config.js
+        // Não precisa redefinir aqui, pois já está disponível globalmente
 
         function goBack() {
             window.location.href = 'index.html';

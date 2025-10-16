@@ -221,11 +221,10 @@
         </div>
     </div>
 
-    <script src="js/game-config.js"></script>
     <script src="js/games-config.js"></script>
     <script>
         function loadHorizontalGames() {
-            const horizontalGames = GameConfig.getHorizontalGames();
+            const horizontalGames = games.filter(game => game.orientation === 'horizontal');
             const gamesGrid = document.getElementById('gamesGrid');
             const totalGamesElement = document.getElementById('totalGames');
             
@@ -233,17 +232,14 @@
             
             gamesGrid.innerHTML = '';
             
-            horizontalGames.forEach(gameName => {
-                const gameUrl = GameConfig.getGameUrl(gameName);
-                const gameDescription = GameConfig.getGameDescription(gameName);
-                
+            horizontalGames.forEach(game => {
                 const gameCard = document.createElement('div');
                 gameCard.className = 'game-card';
                 gameCard.innerHTML = `
                     <div class="orientation-badge">🖥️ Horizontal</div>
-                    <h3>${gameName}</h3>
-                    <p>${gameDescription}</p>
-                    <button class="play-button" onclick="playGame('${gameName}', '${gameUrl}')">
+                    <h3>${game.title}</h3>
+                    <p>${game.description}</p>
+                    <button class="play-button" onclick="playGame('${game.id}')">
                         ▶️ Jogar Agora
                     </button>
                 `;
@@ -252,17 +248,8 @@
             });
         }
 
-        function playGame(gameName, gameUrl) {
-            // Busca o jogo no games-config.js pelo nome
-            const game = games.find(g => g.title === gameName);
-            if (game) {
-                // Usa a nova função playGame do games-config.js
-                window.playGame(game.id);
-            } else {
-                // Fallback para o comportamento original
-                window.open(gameUrl, '_blank');
-            }
-        }
+        // A função playGame agora usa diretamente a função global do games-config.js
+        // Não precisa redefinir aqui, pois já está disponível globalmente
 
         function goBack() {
             window.location.href = 'index.html';
