@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Banner 320x100</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        
+        .banner-ad {
+            width: 320px;
+            height: 100px;
+            background: #ffffff;
+            margin: 20px auto;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px dashed #ff6b6b;
+            position: relative;
+        }
+        
+        .banner-ad::before {
+            content: "ESPAÇO PARA BANNER 320x100";
+            color: #ff6b6b;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste do Banner 320x100</h1>
+    
+    <div class="banner-ad">
+        <!-- Espaço reservado para banner 320x100 -->
+    </div>
+    
+    <p>Este é um teste para verificar se o banner está funcionando corretamente.</p>
+</body>
+</html>

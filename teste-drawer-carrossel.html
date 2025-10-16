@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Drawer Lateral com Carrossel</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .preview-box {
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .banner-preview {
+            background: #000;
+            color: white;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .game-preview {
+            background: #333;
+            color: white;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border-radius: 4px;
+        }
+
+        .drawer-toggle-preview {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 40px;
+            height: 80px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px 0 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+        }
+
+        .drawer-toggle-preview::before {
+            content: '';
+            width: 20px;
+            height: 3px;
+            background: #000;
+            border-radius: 2px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .feature-list {
+            background: #f0f8ff;
+            border-left: 4px solid #4ecdc4;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .carousel-demo {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .carousel-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .carousel-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 15px;
+            min-width: 100px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .carousel-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎠 Drawer Lateral com Carrossel</h1>
+        
+        <div class="info-box">
+            <strong>✅ Drawer Lateral Atualizado!</strong><br>
+            Agora o drawer lateral tem as seguintes melhorias:
+            <ul>
+                <li>Botão posicionado mais para baixo (bottom: 80px)</li>
+                <li>Texto "MENU" substituído por uma barrinha arredondada</li>
+                <li>Carrossel vertical com ícones grandes em cima</li>
+                <li>Opções "Assistir" e "Sair" em cards separados</li>
+                <li>Animações suaves e efeitos hover</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎮 Teste com Jogos</h3>
+            <p>Clique nos botões abaixo para testar o drawer lateral com carrossel:</p>
+            
+            <button class="demo-button" onclick="testPacman()">
+                👻 Testar Pacman com Drawer Carrossel
+            </button>
+            
+            <button class="demo-button" onclick="testChessPursuit()">
+                ♔ Testar Chess Pursuit com Drawer Carrossel
+            </button>
+            
+            <button class="demo-button" onclick="testChess()">
+                ♟️ Testar Xadrez com Drawer Carrossel
+            </button>
+        </div>
+
+        <div class="demo-section">
+            <h3>📱 Preview da Interface</h3>
+            <div class="preview-box">
+                <div class="banner-preview">320x100</div>
+                <div class="game-preview">🎮 JOGO AQUI</div>
+                <div class="drawer-toggle-preview"></div>
+            </div>
+            <p><em>Layout: Banner preto + Jogo + Botão com barrinha na lateral direita (mais para baixo)</em></p>
+        </div>
+
+        <div class="carousel-demo">
+            <h3>🎠 Preview do Carrossel</h3>
+            <p>Quando o drawer abrir, você verá um carrossel vertical com:</p>
+            <div class="carousel-preview">
+                <div class="carousel-item">
+                    <div class="carousel-icon">👁️</div>
+                    <div>Assistir</div>
+                </div>
+                <div class="carousel-item">
+                    <div class="carousel-icon">🚪</div>
+                    <div>Sair</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-list">
+            <h3>🍎 Características do Drawer Atualizado</h3>
+            <ul>
+                <li><strong>Posição:</strong> Lateral direita, mais para baixo (bottom: 80px)</li>
+                <li><strong>Botão:</strong> Barrinha arredondada em vez de texto "MENU"</li>
+                <li><strong>Carrossel:</strong> Layout vertical centralizado</li>
+                <li><strong>Ícones:</strong> Grandes (32px) em cima de cada opção</li>
+                <li><strong>Cards:</strong> Cada opção em um card separado com bordas</li>
+                <li><strong>Animações:</strong> Scale e hover effects suaves</li>
+                <li><strong>Espaçamento:</strong> 40px entre os cards do carrossel</li>
+                <li><strong>Responsivo:</strong> Funciona perfeitamente em mobile</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🔧 Funcionalidades</h3>
+            <ul>
+                <li><strong>👁️ Assistir:</strong> Funcionalidade para assistir o jogo (em desenvolvimento)</li>
+                <li><strong>🚪 Sair:</strong> Volta para a página anterior</li>
+                <li><strong>Auto-fechar:</strong> Drawer fecha ao clicar no overlay</li>
+                <li><strong>Hover Effects:</strong> Cards crescem e ícones aumentam no hover</li>
+                <li><strong>Active States:</strong> Feedback visual ao clicar</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        function testPacman() {
+            playGame('pacman');
+        }
+
+        function testChessPursuit() {
+            playGame('chess-pursuit');
+        }
+
+        function testChess() {
+            playGame('chess');
+        }
+    </script>
+</body>
+</html>

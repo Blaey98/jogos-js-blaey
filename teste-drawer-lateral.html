@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Drawer Lateral Apple Style</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .preview-box {
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .banner-preview {
+            background: #000;
+            color: white;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .game-preview {
+            background: #333;
+            color: white;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border-radius: 4px;
+        }
+
+        .drawer-toggle-preview {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 80px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px 0 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #000;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .feature-list {
+            background: #f0f8ff;
+            border-left: 4px solid #4ecdc4;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .animation-demo {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Drawer Lateral - Estilo Apple</h1>
+        
+        <div class="info-box">
+            <strong>✅ Drawer Lateral Implementado!</strong><br>
+            Agora a tela vertical tem um drawer lateral que desliza da direita:
+            <ul>
+                <li>Botão "MENU" na lateral direita da tela</li>
+                <li>Drawer que desliza da direita para a esquerda</li>
+                <li>Overlay escuro quando aberto</li>
+                <li>Opções "Assistir" e "Sair"</li>
+                <li>Design minimalista estilo Apple</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎮 Teste com Jogos</h3>
+            <p>Clique nos botões abaixo para testar o drawer lateral em ação:</p>
+            
+            <button class="demo-button" onclick="testPacman()">
+                👻 Testar Pacman com Drawer Lateral
+            </button>
+            
+            <button class="demo-button" onclick="testChessPursuit()">
+                ♔ Testar Chess Pursuit com Drawer Lateral
+            </button>
+            
+            <button class="demo-button" onclick="testChess()">
+                ♟️ Testar Xadrez com Drawer Lateral
+            </button>
+        </div>
+
+        <div class="demo-section">
+            <h3>📱 Preview da Interface</h3>
+            <div class="preview-box">
+                <div class="banner-preview">320x100</div>
+                <div class="game-preview">🎮 JOGO AQUI</div>
+                <div class="drawer-toggle-preview">MENU</div>
+            </div>
+            <p><em>Layout: Banner preto + Jogo + Botão "MENU" na lateral direita</em></p>
+        </div>
+
+        <div class="feature-list">
+            <h3>🍎 Características do Drawer Lateral</h3>
+            <ul>
+                <li><strong>Posição:</strong> Lateral direita da tela</li>
+                <li><strong>Botão:</strong> Retangular com bordas arredondadas à esquerda</li>
+                <li><strong>Texto:</strong> "MENU" escrito verticalmente</li>
+                <li><strong>Animação:</strong> Desliza suavemente da direita</li>
+                <li><strong>Largura:</strong> 300px quando aberto</li>
+                <li><strong>Overlay:</strong> Fundo escuro semi-transparente</li>
+                <li><strong>Opções:</strong> 👁️ Assistir | 🚪 Sair</li>
+                <li><strong>Fechar:</strong> Clique no overlay ou no botão</li>
+            </ul>
+        </div>
+
+        <div class="animation-demo">
+            <h3>🎬 Como Funciona a Animação</h3>
+            <ol>
+                <li><strong>Estado Fechado:</strong> Drawer fica escondido fora da tela (right: -300px)</li>
+                <li><strong>Clique no Botão:</strong> Drawer desliza para dentro (right: 0)</li>
+                <li><strong>Overlay Aparece:</strong> Fundo escuro com blur effect</li>
+                <li><strong>Opções Visíveis:</strong> Menu com "Assistir" e "Sair"</li>
+                <li><strong>Fechar:</strong> Clique no overlay ou botão para deslizar de volta</li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h3>🔧 Funcionalidades</h3>
+            <ul>
+                <li><strong>👁️ Assistir:</strong> Funcionalidade para assistir o jogo (em desenvolvimento)</li>
+                <li><strong>🚪 Sair:</strong> Volta para a página anterior</li>
+                <li><strong>Auto-fechar:</strong> Drawer fecha ao clicar no overlay</li>
+                <li><strong>Responsivo:</strong> Funciona perfeitamente em mobile e desktop</li>
+                <li><strong>Suave:</strong> Transições de 0.3s para movimento fluido</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        function testPacman() {
+            playGame('pacman');
+        }
+
+        function testChessPursuit() {
+            playGame('chess-pursuit');
+        }
+
+        function testChess() {
+            playGame('chess');
+        }
+    </script>
+</body>
+</html>

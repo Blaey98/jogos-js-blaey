@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Navegação - Jogos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .game-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .game-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .game-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .game-description {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .orientation-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .orientation-vertical {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .orientation-horizontal {
+            background: #667eea;
+            color: white;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .play-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .test-results {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .test-results h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Teste de Navegação - Jogos</h1>
+        
+        <div class="games-grid" id="gamesGrid">
+            <!-- Jogos serão carregados aqui -->
+        </div>
+
+        <div class="test-results">
+            <h3>📊 Resultados dos Testes</h3>
+            <div id="testResults">
+                <!-- Resultados dos testes serão exibidos aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        function loadGames() {
+            const gamesGrid = document.getElementById('gamesGrid');
+            gamesGrid.innerHTML = '';
+
+            games.forEach(game => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                
+                const orientationClass = game.orientation === 'vertical' ? 'orientation-vertical' : 'orientation-horizontal';
+                const orientationText = game.orientation === 'vertical' ? '📱 Vertical' : '🖥️ Horizontal';
+                
+                gameCard.innerHTML = `
+                    <div class="game-title">${game.icon} ${game.title}</div>
+                    <div class="game-description">${game.description}</div>
+                    <div class="game-info">
+                        <span class="orientation-badge ${orientationClass}">${orientationText}</span>
+                        <span class="status ${game.status === 'available' ? 'success' : 'error'}">${game.status}</span>
+                    </div>
+                    <button class="play-button" onclick="testPlayGame('${game.id}')">
+                        ▶️ Testar Navegação
+                    </button>
+                `;
+                
+                gamesGrid.appendChild(gameCard);
+            });
+        }
+
+        function testPlayGame(gameId) {
+            const game = getGameById(gameId);
+            if (!game) {
+                alert('Jogo não encontrado!');
+                return;
+            }
+
+            console.log('Testando navegação para:', game.title);
+            console.log('Orientação:', game.orientation);
+            console.log('URL:', game.path);
+
+            // Executa a função playGame
+            playGame(gameId);
+        }
+
+        function runTests() {
+            const testResults = document.getElementById('testResults');
+            testResults.innerHTML = '';
+
+            const tests = [
+                {
+                    name: 'Jogos Verticais',
+                    test: () => {
+                        const verticalGames = games.filter(g => g.orientation === 'vertical');
+                        return verticalGames.length > 0;
+                    },
+                    expected: 'Deve redirecionar para jogo-vertical-template.html'
+                },
+                {
+                    name: 'Jogos Horizontais',
+                    test: () => {
+                        const horizontalGames = games.filter(g => g.orientation === 'horizontal');
+                        return horizontalGames.length > 0;
+                    },
+                    expected: 'Deve abrir em nova aba'
+                },
+                {
+                    name: 'Função playGame',
+                    test: () => {
+                        return typeof playGame === 'function';
+                    },
+                    expected: 'Função deve estar disponível'
+                },
+                {
+                    name: 'Função getGameById',
+                    test: () => {
+                        return typeof getGameById === 'function';
+                    },
+                    expected: 'Função deve estar disponível'
+                }
+            ];
+
+            tests.forEach(test => {
+                const testItem = document.createElement('div');
+                testItem.className = 'test-item';
+                
+                const passed = test.test();
+                testItem.innerHTML = `
+                    <div>
+                        <strong>${test.name}</strong><br>
+                        <small>${test.expected}</small>
+                    </div>
+                    <span class="status ${passed ? 'success' : 'error'}">
+                        ${passed ? '✅ PASSOU' : '❌ FALHOU'}
+                    </span>
+                `;
+                
+                testResults.appendChild(testItem);
+            });
+        }
+
+        // Carrega os jogos e executa os testes quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGames();
+            runTests();
+        });
+    </script>
+</body>
+</html>

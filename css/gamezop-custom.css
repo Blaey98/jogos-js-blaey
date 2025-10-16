@@ -1,0 +1,71 @@
+/* Customização da tela de carregamento do Gamezop */
+
+/* Remove a logo do Gamezop */
+.gamezop-logo,
+.gamezop-branding,
+[class*="gamezop-logo"],
+[class*="gamezop-branding"],
+img[src*="gamezop"],
+img[alt*="Gamezop"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Muda o fundo de azul para verde */
+body,
+html,
+.gamezop-container,
+.gamezop-loader,
+[class*="gamezop"],
+[class*="loader"] {
+    background: linear-gradient(135deg, #4ecdc4 0%, #45b7aa 50%, #2ecc71 100%) !important;
+    background-color: #4ecdc4 !important;
+}
+
+/* Personaliza a barra de carregamento para verde */
+.progress-bar,
+.loading-bar,
+[class*="progress"],
+[class*="loading"] {
+    background: linear-gradient(90deg, #2ecc71, #27ae60, #16a085) !important;
+    background-color: #2ecc71 !important;
+}
+
+/* Remove textos do Gamezop */
+.gamezop-text,
+[class*="gamezop-text"],
+p:contains("Gamezop"),
+div:contains("Gamezop") {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Estiliza o iframe do jogo */
+iframe[src*="gamezop"] {
+    border: none !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+}
+
+/* Remove elementos de branding */
+.branding,
+.copyright,
+[class*="brand"],
+[class*="copyright"] {
+    display: none !important;
+}
+
+/* Personaliza cores gerais */
+:root {
+    --gamezop-primary: #4ecdc4 !important;
+    --gamezop-secondary: #2ecc71 !important;
+    --gamezop-accent: #27ae60 !important;
+}
+
+/* Remove elementos específicos do Gamezop */
+div[style*="gamezop"],
+span[style*="gamezop"],
+a[href*="gamezop.com"]:not([href*="play.gamezop.com"]) {
+    display: none !important;
+}

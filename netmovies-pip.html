@@ -572,60 +572,39 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <div style="text-align: center; padding: 20px;">
-            <h1 style="color: #e50914; margin: 0; font-size: 24px;">NetMovies PIP</h1>
-            <p style="color: #aaaaaa; margin: 8px 0 0 0;">Assista em Picture-in-Picture</p>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <div style="position: relative; width: 100%; height: calc(100vh - 100px);">
-            <iframe 
-                id="netmoviesFrame"
-                src="https://www.netmovies.com.br/" 
-                style="width: 100%; height: 100%; border: none; border-radius: 8px;"
-                allow="autoplay; fullscreen; picture-in-picture; web-share; accelerometer; gyroscope; encrypted-media; clipboard-write"
-                allowfullscreen
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade">
-            </iframe>
-            <div id="loadingOverlay" style="
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.8);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                z-index: 10;
-                transition: opacity 0.3s ease;
-            ">
-                <div class="spinner"></div>
-                <div class="loading-text" style="margin-top: 20px;">Carregando NetMovies...</div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button onclick="hideLoading()" style="
-                        background: #e50914;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 5px;
-                        cursor: pointer;
-                    ">Pular carregamento</button>
-                    <button onclick="reloadIframe()" style="
-                        background: #4caf50;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 5px;
-                        cursor: pointer;
-                    ">Recarregar página</button>
-                </div>
-            </div>
-        </div>
+    <main class="main-content" style="padding: 0; margin: 0; height: 100vh;">
+        <iframe 
+            id="netmoviesFrame"
+            src="https://www.netmovies.com.br/" 
+            style="width: 100%; height: 100%; border: none;"
+            allow="autoplay; fullscreen; picture-in-picture; web-share; accelerometer; gyroscope; encrypted-media; clipboard-write"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+        
+        <!-- PiP Button - appears when video controls are visible -->
+        <button id="pipButton" style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #e50914 0%, #b8070f 100%);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.4);
+            z-index: 1000;
+        ">
+            🪟 PiP
+        </button>
     </main>
 
     <!-- PiP Window -->
@@ -688,90 +667,41 @@
             setupEventListeners();
             makePiPDraggable();
             
-            // Add PiP button to the page
-            addPiPButton();
-            
-            // Setup iframe loading
-            setupIframeLoading();
+            // Setup video controls detection
+            setupVideoControlsDetection();
         });
-
-        // Setup iframe loading
-        function setupIframeLoading() {
+        
+        // Setup video controls detection
+        function setupVideoControlsDetection() {
             const iframe = document.getElementById('netmoviesFrame');
-            const loadingOverlay = document.getElementById('loadingOverlay');
+            const pipButton = document.getElementById('pipButton');
             
-            // Hide loading after 5 seconds automatically
-            setTimeout(() => {
-                hideLoading();
-            }, 5000);
-            
-            // Try to detect when iframe loads
-            iframe.addEventListener('load', function() {
-                setTimeout(() => {
-                    hideLoading();
-                }, 1000);
-            });
-        }
-
-        // Hide loading overlay
-        function hideLoading() {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) {
-                loadingOverlay.style.opacity = '0';
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 300);
+            if (iframe && pipButton) {
+                // Connect the PiP button
+                pipButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openInPiP();
+                });
+                
+                // Show PiP button when hovering over iframe (simulating video controls)
+                iframe.addEventListener('mouseenter', function() {
+                    pipButton.style.display = 'flex';
+                });
+                
+                iframe.addEventListener('mouseleave', function() {
+                    pipButton.style.display = 'none';
+                });
+                
+                // Also show when clicking (user interacting with video)
+                iframe.addEventListener('click', function() {
+                    pipButton.style.display = 'flex';
+                    // Hide after 5 seconds
+                    setTimeout(() => {
+                        pipButton.style.display = 'none';
+                    }, 5000);
+                });
             }
-        }
-
-        // Reload iframe
-        function reloadIframe() {
-            const iframe = document.getElementById('netmoviesFrame');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            
-            // Show loading overlay
-            loadingOverlay.style.display = 'flex';
-            loadingOverlay.style.opacity = '1';
-            
-            // Reload iframe
-            iframe.src = iframe.src;
-            
-            // Hide loading after 3 seconds
-            setTimeout(() => {
-                hideLoading();
-            }, 3000);
-        }
-
-        // Add PiP button to the page
-        function addPiPButton() {
-            const pipButton = document.createElement('button');
-            pipButton.innerHTML = '<span class="pip-icon">📺</span> Ativar PiP';
-            pipButton.className = 'pip-button';
-            pipButton.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 999;
-                background: linear-gradient(135deg, #e50914 0%, #b8070f 100%);
-                border: none;
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: all 0.2s;
-                box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
-            `;
-            
-            pipButton.addEventListener('click', function() {
-                openInPiP();
-            });
-            
-            document.body.appendChild(pipButton);
         }
 
         // Setup event listeners
@@ -798,36 +728,48 @@
 
         // PiP Functions
         function openInPiP() {
-            currentVideo = {
-                id: 'netmovies-main',
-                title: 'NetMovies',
-                description: 'Plataforma de streaming de filmes e séries',
-                url: 'https://www.netmovies.com.br/'
-            };
+            try {
+                const iframe = document.getElementById('netmoviesFrame');
+                const currentUrl = iframe.src;
+                
+                console.log('🎬 Ativando PiP com URL:', currentUrl);
+                
+                currentVideo = {
+                    id: 'netmovies-video-' + Date.now(),
+                    title: 'NetMovies - Vídeo Atual',
+                    description: 'Reproduzindo em Picture-in-Picture',
+                    url: currentUrl
+                };
 
-            activatePiP(currentVideo);
+                activatePiP(currentVideo);
+                
+            } catch (error) {
+                console.error('Erro ao ativar PiP:', error);
+                showNotification('❌ Erro ao ativar PiP. Tente novamente.', 'error');
+            }
         }
 
         async function activatePiP(video) {
             try {
-                console.log('🎬 [NetMovies] Iniciando PiP para:', video.title);
+                console.log('🎬 Iniciando PiP para:', video.title);
                 
                 pipWindow.classList.add('active');
                 
-                // Create iframe for NetMovies
-                const iframe = document.createElement('iframe');
-                iframe.src = video.url;
-                iframe.style.width = '100%';
-                iframe.style.height = '100%';
-                iframe.style.border = 'none';
-                iframe.allow = 'autoplay; fullscreen; picture-in-picture';
-                iframe.allowFullscreen = true;
+                // Create iframe for PiP with the current URL
+                const pipIframe = document.createElement('iframe');
+                pipIframe.src = video.url;
+                pipIframe.style.width = '100%';
+                pipIframe.style.height = '100%';
+                pipIframe.style.border = 'none';
+                pipIframe.allow = 'autoplay; fullscreen; picture-in-picture; web-share; accelerometer; gyroscope; encrypted-media; clipboard-write';
+                pipIframe.allowFullscreen = true;
+                pipIframe.referrerPolicy = 'no-referrer-when-downgrade';
                 
                 // Clear container and add iframe
                 pipVideoContainer.innerHTML = '';
-                pipVideoContainer.appendChild(iframe);
+                pipVideoContainer.appendChild(pipIframe);
                 
-                pipPlayer = iframe;
+                pipPlayer = pipIframe;
                 isPiPActive = true;
                 
                 // Start progress tracking
@@ -836,7 +778,7 @@
                 showNotification(`🎬 ${video.title} iniciado em PiP`, 'success');
                 
             } catch (error) {
-                console.error('❌ [NetMovies] Erro ao ativar PiP:', error);
+                console.error('❌ Erro ao ativar PiP:', error);
                 showNotification('❌ Erro ao criar janela PiP. Tente novamente.', 'error');
             }
         }
@@ -1059,3 +1001,4 @@
     </script>
 </body>
 </html>
+

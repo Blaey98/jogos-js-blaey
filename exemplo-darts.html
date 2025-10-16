@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplo - Darts no Template Personalizado</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .code-example {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Exemplo: Darts no Template Personalizado</h1>
+        
+        <div class="info-box">
+            <strong>✅ Agora funcionando!</strong><br>
+            Quando você clicar no jogo Darts da lista, ele abrirá no template vertical personalizado 
+            em vez de ir diretamente para a URL do Gamezop.
+        </div>
+
+        <div class="demo-section">
+            <h3>🎮 Teste o Jogo Darts</h3>
+            <p>Clique no botão abaixo para ver o jogo Darts carregado no template personalizado:</p>
+            
+            <button class="demo-button" onclick="testDartsGame()">
+                🎯 Jogar Darts (Template Personalizado)
+            </button>
+            
+            <button class="demo-button" onclick="testOriginalDarts()">
+                🌐 Darts Original (Gamezop Direto)
+            </button>
+        </div>
+
+        <div class="demo-section">
+            <h3>📋 Como Funciona</h3>
+            <p>Antes: Clique no jogo → Abre URL do Gamezop diretamente</p>
+            <p>Agora: Clique no jogo → Abre template personalizado com:</p>
+            <ul>
+                <li>✅ Banner personalizado em cima</li>
+                <li>✅ Jogo embaixo em iframe</li>
+                <li>✅ Controles personalizados</li>
+                <li>✅ Interface editável</li>
+                <li>✅ Botão para abrir original se quiser</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🔧 Controles Disponíveis</h3>
+            <p>No template personalizado você terá:</p>
+            <ul>
+                <li><strong>🔍 Tela Cheia:</strong> Coloca o jogo em tela cheia</li>
+                <li><strong>🔄 Recarregar:</strong> Recarrega o jogo</li>
+                <li><strong>🌐 Abrir Original:</strong> Abre o jogo original do Gamezop</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>💻 Código da Implementação</h3>
+            <p>O que mudou no <code>games-config.js</code>:</p>
+            <div class="code-example">
+function playGame(gameId) {
+    const game = getGameById(gameId);
+    
+    // TODOS os jogos agora abrem no template vertical personalizado
+    const params = new URLSearchParams({
+        url: game.path,
+        title: game.title,
+        description: game.description,
+        orientation: game.orientation,
+        return: window.location.href
+    });
+    window.location.href = `jogo-vertical-template.html?${params.toString()}`;
+}
+            </div>
+        </div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        function testDartsGame() {
+            // Simula o clique no jogo Darts da lista
+            const dartsGame = games.find(g => g.title === 'Darts');
+            if (dartsGame) {
+                playGame(dartsGame.id);
+            } else {
+                // Fallback direto para o template
+                const params = new URLSearchParams({
+                    url: 'https://10944.play.gamezop.com/g/SkF7yhp7q0B',
+                    title: 'Darts',
+                    description: 'Jogue dardos e teste sua pontaria!',
+                    orientation: 'vertical',
+                    return: window.location.href
+                });
+                window.location.href = `jogo-vertical-template.html?${params.toString()}`;
+            }
+        }
+
+        function testOriginalDarts() {
+            // Abre o jogo original do Gamezop
+            window.open('https://10944.play.gamezop.com/g/SkF7yhp7q0B', '_blank');
+        }
+    </script>
+</body>
+</html>

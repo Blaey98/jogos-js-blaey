@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Tela Vertical Simples</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .preview-box {
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .banner-preview {
+            background: #000;
+            color: white;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .game-preview {
+            background: #333;
+            color: white;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Teste - Tela Vertical Simples</h1>
+        
+        <div class="info-box">
+            <strong>✅ Tela Simplificada!</strong><br>
+            Agora a tela vertical tem apenas:
+            <ul>
+                <li>Espaço preto simples com "320x100"</li>
+                <li>Jogo embaixo ocupando o resto da tela</li>
+                <li>Design minimalista e limpo</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎮 Teste com Jogos Locais</h3>
+            <p>Estes jogos funcionam perfeitamente na tela simplificada:</p>
+            
+            <button class="demo-button" onclick="testPacman()">
+                👻 Testar Pacman (Local)
+            </button>
+            
+            <button class="demo-button" onclick="testChessPursuit()">
+                ♔ Testar Chess Pursuit (Local)
+            </button>
+            
+            <button class="demo-button" onclick="testChess()">
+                ♟️ Testar Xadrez (Local)
+            </button>
+        </div>
+
+        <div class="demo-section">
+            <h3>📱 Preview da Tela Simplificada</h3>
+            <div class="preview-box">
+                <div class="banner-preview">320x100</div>
+                <div class="game-preview">🎮 JOGO AQUI</div>
+            </div>
+            <p><em>Layout: Banner preto simples + Jogo ocupando o resto da tela</em></p>
+        </div>
+
+        <div class="demo-section">
+            <h3>🔧 Características da Tela Simplificada</h3>
+            <ul>
+                <li><strong>Fundo preto:</strong> Tela completamente preta</li>
+                <li><strong>Banner simples:</strong> Apenas texto "320x100" em branco</li>
+                <li><strong>Jogo em tela cheia:</strong> Ocupa todo o espaço restante</li>
+                <li><strong>Botão voltar:</strong> Pequeno botão no canto superior esquerdo</li>
+                <li><strong>Sem elementos extras:</strong> Sem controles, sem gradientes, sem decorações</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        function testPacman() {
+            playGame('pacman');
+        }
+
+        function testChessPursuit() {
+            playGame('chess-pursuit');
+        }
+
+        function testChess() {
+            playGame('chess');
+        }
+    </script>
+</body>
+</html>

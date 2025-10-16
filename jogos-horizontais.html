@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogos Horizontais - Portal de Jogos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            min-height: 100vh;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+        }
+
+        .games-section {
+            flex: 1;
+        }
+
+        .banner-ad-vertical {
+            width: 100px;
+            height: 320px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            flex-shrink: 0;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .game-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .game-card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .play-button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .play-button:hover {
+            background: linear-gradient(45deg, #4ecdc4, #ff6b6b);
+            transform: scale(1.05);
+        }
+
+        .orientation-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: white;
+            text-align: center;
+        }
+
+        .stats h3 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .banner-ad-vertical {
+                width: 100%;
+                height: 100px;
+                writing-mode: horizontal-tb;
+                text-orientation: initial;
+                margin: 0 auto;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">← Voltar</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ Jogos Horizontais</h1>
+            <p>Jogos otimizados para desktop e paisagem</p>
+        </div>
+
+        <div class="stats">
+            <h3>📊 Estatísticas</h3>
+            <p>Total de jogos horizontais: <span id="totalGames">0</span></p>
+        </div>
+
+        <div class="main-content">
+            <div class="games-section">
+                <div class="games-grid" id="gamesGrid">
+                    <!-- Jogos serão carregados aqui via JavaScript -->
+                </div>
+            </div>
+            
+            <div class="banner-ad-vertical">
+                🖥️ BANNER 90°
+            </div>
+        </div>
+    </div>
+
+    <script src="js/game-config.js"></script>
+    <script src="js/games-config.js"></script>
+    <script>
+        function loadHorizontalGames() {
+            const horizontalGames = GameConfig.getHorizontalGames();
+            const gamesGrid = document.getElementById('gamesGrid');
+            const totalGamesElement = document.getElementById('totalGames');
+            
+            totalGamesElement.textContent = horizontalGames.length;
+            
+            gamesGrid.innerHTML = '';
+            
+            horizontalGames.forEach(gameName => {
+                const gameUrl = GameConfig.getGameUrl(gameName);
+                const gameDescription = GameConfig.getGameDescription(gameName);
+                
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                gameCard.innerHTML = `
+                    <div class="orientation-badge">🖥️ Horizontal</div>
+                    <h3>${gameName}</h3>
+                    <p>${gameDescription}</p>
+                    <button class="play-button" onclick="playGame('${gameName}', '${gameUrl}')">
+                        ▶️ Jogar Agora
+                    </button>
+                `;
+                
+                gamesGrid.appendChild(gameCard);
+            });
+        }
+
+        function playGame(gameName, gameUrl) {
+            // Busca o jogo no games-config.js pelo nome
+            const game = games.find(g => g.title === gameName);
+            if (game) {
+                // Usa a nova função playGame do games-config.js
+                window.playGame(game.id);
+            } else {
+                // Fallback para o comportamento original
+                window.open(gameUrl, '_blank');
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Carrega os jogos quando a página é carregada
+        document.addEventListener('DOMContentLoaded', loadHorizontalGames);
+    </script>
+</body>
+</html>

@@ -1,22 +1,26 @@
 #!/bin/bash
 
-# Script para iniciar o servidor de jogos Blaey
-# Uso: ./start_server.sh
-
-echo "🎮 Iniciando servidor Blaey Games..."
+echo "🚀 Iniciando servidor local para Portal de Jogos..."
 echo "📁 Diretório: $(pwd)"
-echo "🌐 Servidor será iniciado em: http://localhost:8000"
+echo ""
+
+# Verifica se a porta 3000 está em uso
+if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null ; then
+    echo "⚠️  Porta 3000 já está em uso. Tentando porta 3001..."
+    PORT=3001
+else
+    PORT=3000
+fi
+
+echo "🌐 Servidor iniciado em: http://localhost:$PORT"
+echo ""
+echo "📱 Páginas disponíveis:"
+echo "   • Jogos Verticais: http://localhost:$PORT/jogos-verticais.html"
+echo "   • Jogos Horizontais: http://localhost:$PORT/jogos-horizontais.html"
+echo "   • Lista Completa: http://localhost:$PORT/lista-jogos.html"
+echo ""
 echo "⏹️  Para parar o servidor, pressione Ctrl+C"
 echo ""
 
-# Verificar se a porta 8000 está em uso
-if lsof -Pi :8000 -sTCP:LISTEN -t >/dev/null ; then
-    echo "⚠️  Porta 8000 já está em uso!"
-    echo "🔄 Tentando parar processo existente..."
-    pkill -f "python3 -m http.server 8000" 2>/dev/null
-    sleep 2
-fi
-
-# Iniciar servidor
-echo "🚀 Iniciando servidor HTTP..."
-python3 -m http.server 8000
+# Inicia o servidor Python
+python3 -m http.server $PORT

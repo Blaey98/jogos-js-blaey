@@ -11,7 +11,8 @@ const games = [
         status: 'available',
         category: 'arcade',
         tags: ['mobile', 'classic', 'arcade'],
-        featured: true
+        featured: true,
+        orientation: 'vertical'
     },
     {
         id: 'space-goblins-mobile',
@@ -22,7 +23,8 @@ const games = [
         status: 'available',
         category: 'adventure',
         tags: ['mobile', 'adventure', 'space', 'touch', 'maze', 'complete'],
-        featured: true
+        featured: true,
+        orientation: 'vertical'
     },
     {
         id: 'space-exploration',
@@ -33,7 +35,8 @@ const games = [
         status: 'available',
         category: 'adventure',
         tags: ['space', 'exploration', 'adventure', 'coins'],
-        featured: true
+        featured: true,
+        orientation: 'horizontal'
     },
     {
         id: 'chess-pursuit',
@@ -44,7 +47,8 @@ const games = [
         status: 'available',
         category: 'strategy',
         tags: ['mobile', 'strategy', 'chess', 'touch', 'swipe'],
-        featured: true
+        featured: true,
+        orientation: 'vertical'
     },
     {
         id: 'chess',
@@ -55,7 +59,8 @@ const games = [
         status: 'available',
         category: 'strategy',
         tags: ['strategy', 'brain', 'classic'],
-        featured: true
+        featured: true,
+        orientation: 'horizontal'
     },
     {
         id: 'sinuca',
@@ -66,7 +71,8 @@ const games = [
         status: 'available',
         category: 'sports',
         tags: ['sports', 'physics', 'realistic'],
-        featured: false
+        featured: false,
+        orientation: 'horizontal'
     },
     {
         id: 'damas',
@@ -77,7 +83,8 @@ const games = [
         status: 'available',
         category: 'strategy',
         tags: ['strategy', 'classic', 'ai'],
-        featured: false
+        featured: false,
+        orientation: 'horizontal'
     },
     {
         id: 'tetris',
@@ -88,7 +95,8 @@ const games = [
         status: 'coming-soon',
         category: 'puzzle',
         tags: ['puzzle', 'classic', 'addictive'],
-        featured: false
+        featured: false,
+        orientation: 'vertical'
     },
     {
         id: 'snake',
@@ -99,7 +107,8 @@ const games = [
         status: 'coming-soon',
         category: 'arcade',
         tags: ['arcade', 'classic', 'simple'],
-        featured: false
+        featured: false,
+        orientation: 'vertical'
     },
     {
         id: 'pong',
@@ -110,7 +119,8 @@ const games = [
         status: 'coming-soon',
         category: 'arcade',
         tags: ['arcade', 'classic', 'retro'],
-        featured: false
+        featured: false,
+        orientation: 'horizontal'
     },
     {
         id: 'breakout',
@@ -121,7 +131,8 @@ const games = [
         status: 'coming-soon',
         category: 'arcade',
         tags: ['arcade', 'classic', 'action'],
-        featured: false
+        featured: false,
+        orientation: 'horizontal'
     }
 ];
 
@@ -155,6 +166,38 @@ function getGameById(id) {
     return games.find(game => game.id === id);
 }
 
+// Função para verificar se um jogo é vertical
+function isVerticalGame(gameId) {
+    const game = getGameById(gameId);
+    return game && game.orientation === 'vertical';
+}
+
+// Função para verificar se um jogo é horizontal
+function isHorizontalGame(gameId) {
+    const game = getGameById(gameId);
+    return game && game.orientation === 'horizontal';
+}
+
+// Função para jogar um jogo (redireciona baseado na orientação)
+function playGame(gameId) {
+    const game = getGameById(gameId);
+    if (!game) {
+        console.error('Jogo não encontrado:', gameId);
+        return;
+    }
+
+    // TODOS os jogos agora abrem no template vertical personalizado
+    // Isso permite personalizar a interface independente da orientação
+    const params = new URLSearchParams({
+        url: game.path,
+        title: game.title,
+        description: game.description,
+        orientation: game.orientation,
+        return: window.location.href
+    });
+    window.location.href = `jogo-vertical-template-fixed.html?${params.toString()}`;
+}
+
 // Exportar para uso em outros arquivos
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -164,6 +207,9 @@ if (typeof module !== 'undefined' && module.exports) {
         getComingSoonGames,
         getFeaturedGames,
         getGamesByTag,
-        getGameById
+        getGameById,
+        isVerticalGame,
+        isHorizontalGame,
+        playGame
     };
 }

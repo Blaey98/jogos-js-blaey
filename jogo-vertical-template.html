@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Jogo Vertical - Portal de Jogos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4ecdc4 0%, #2ecc71 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+            padding: 0 10px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* BANNER 320x100 - Banner real com link */
+        .banner-ad {
+            width: 100%;
+            max-width: 320px;
+            height: 100px;
+            margin: 10px auto 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            min-height: 100px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .banner-ad:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .banner-ad a {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+        }
+
+        .banner-ad img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        /* Container do jogo */
+        .game-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #2ecc71 100%);
+        }
+
+        /* Estilos específicos para jogos horizontais no template vertical */
+        .game-iframe.horizontal {
+            height: 400px;
+            max-width: 600px;
+        }
+
+        /* Container adaptável para orientação */
+        .game-container.horizontal {
+            max-width: 600px;
+        }
+
+        /* Controles personalizados */
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 600px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #2ecc71 100%);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Desktop styles */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            
+            .banner-ad {
+                max-width: 400px;
+            }
+            
+            .game-container {
+                max-width: 500px;
+            }
+            
+            .game-iframe {
+                height: 700px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .header p {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">← Voltar</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1 id="gameTitle">🎮 Jogo Vertical</h1>
+            <p id="gameDescription">Jogo otimizado para dispositivos móveis</p>
+        </div>
+
+        <div class="banner-ad">
+            <a id="bannerLink" href="#" target="_blank">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNGVjZGM0O3N0b3Atb3BhY2l0eToxIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM2NjdlZWE7c3RvcC1vcGFjaXR5OjEiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIgLz4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4cHgiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJBTk5FUiBWRVJUSUNBTDwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjY1JSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEycHgiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+MzIweDEwMDwvdGV4dD4KPC9zdmc+" alt="Banner Vertical 320x100" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">
+            </a>
+        </div>
+
+        <div class="game-container" id="gameContainer">
+            <div id="loadingScreen" class="loading-screen">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Carregando Jogo...</div>
+                <div class="loading-subtext" id="loadingSubtext">Aguarde um momento</div>
+            </div>
+            <iframe id="gameFrame" class="game-iframe" src="" style="display: none;"></iframe>
+            
+            <div class="game-controls" id="gameControls" style="display: none;">
+                <button class="control-btn" onclick="toggleFullscreen()">🔍 Tela Cheia</button>
+                <button class="control-btn" onclick="reloadGame()">🔄 Recarregar</button>
+                <button class="control-btn" onclick="openOriginal()">🌐 Abrir Original</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para obter parâmetros da URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Função para voltar
+        function goBack() {
+            const returnUrl = getUrlParameter('return') || 'index.html';
+            window.location.href = returnUrl;
+        }
+
+        // Variáveis globais para o jogo
+        let currentGameUrl = '';
+        let currentGameTitle = '';
+
+        // Carrega o jogo baseado nos parâmetros da URL
+        function loadGame() {
+            const gameUrl = getUrlParameter('url');
+            const gameTitle = getUrlParameter('title') || 'Jogo';
+            const gameDescription = getUrlParameter('description') || 'Jogo otimizado para dispositivos móveis';
+            const gameOrientation = getUrlParameter('orientation') || 'vertical';
+            
+            if (!gameUrl) {
+                alert('URL do jogo não encontrada!');
+                goBack();
+                return;
+            }
+
+            // Armazena informações do jogo
+            currentGameUrl = gameUrl;
+            currentGameTitle = gameTitle;
+
+            // Atualiza o título da página
+            document.getElementById('pageTitle').textContent = gameTitle + ' - Portal de Jogos';
+            document.getElementById('gameTitle').textContent = '🎮 ' + gameTitle;
+            document.getElementById('gameDescription').textContent = gameDescription;
+            document.getElementById('loadingSubtext').textContent = gameTitle;
+            
+            // Atualiza o banner para apontar para o jogo
+            document.getElementById('bannerLink').href = gameUrl;
+            
+            // Ajusta o container baseado na orientação
+            const gameContainer = document.getElementById('gameContainer');
+            const gameFrame = document.getElementById('gameFrame');
+            
+            if (gameOrientation === 'horizontal') {
+                gameContainer.classList.add('horizontal');
+                gameFrame.classList.add('horizontal');
+            }
+            
+            // Carrega o iframe do jogo
+            gameFrame.src = gameUrl;
+            
+            // Simula carregamento e remove tela de loading
+            setTimeout(function() {
+                document.getElementById('loadingScreen').style.display = 'none';
+                gameFrame.style.display = 'block';
+                document.getElementById('gameControls').style.display = 'flex';
+            }, 2000);
+        }
+
+        // Funções dos controles
+        function toggleFullscreen() {
+            const gameFrame = document.getElementById('gameFrame');
+            if (gameFrame.requestFullscreen) {
+                gameFrame.requestFullscreen();
+            } else if (gameFrame.webkitRequestFullscreen) {
+                gameFrame.webkitRequestFullscreen();
+            } else if (gameFrame.msRequestFullscreen) {
+                gameFrame.msRequestFullscreen();
+            }
+        }
+
+        function reloadGame() {
+            const gameFrame = document.getElementById('gameFrame');
+            gameFrame.src = gameFrame.src;
+        }
+
+        function openOriginal() {
+            if (currentGameUrl) {
+                window.open(currentGameUrl, '_blank');
+            }
+        }
+
+        // Carrega o jogo quando a página é carregada
+        document.addEventListener('DOMContentLoaded', loadGame);
+    </script>
+</body>
+</html>
