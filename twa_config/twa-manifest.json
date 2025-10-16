@@ -1,0 +1,54 @@
+{
+  "packageId": "com.yourapp.youtube_pip",
+  "host": "jogos-blaey.web.app",
+  "name": "YouTube PiP Player",
+  "launcherName": "YouTube PiP",
+  "display": "standalone",
+  "themeColor": "#FF0000",
+  "navigationColor": "#000000",
+  "backgroundColor": "#000000",
+  "enableNotifications": true,
+  "startUrl": "/youtube-pip.html",
+  "iconUrl": "https://jogos-blaey.web.app/icon-512.png",
+  "maskableIconUrl": "https://jogos-blaey.web.app/icon-512-maskable.png",
+  "monochromeIconUrl": "https://jogos-blaey.web.app/icon-512-monochrome.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "YouTube PiP",
+      "shortName": "PiP",
+      "url": "/youtube-pip.html",
+      "icons": [
+        {
+          "src": "https://jogos-blaey.web.app/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://jogos-blaey.web.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "playBilling": false,
+    "locationDelegation": false
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 21,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "1.0.0"
+}
