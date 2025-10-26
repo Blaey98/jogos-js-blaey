@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Incorporação Famobi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #000;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .banner {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .game-container {
+            flex: 1;
+            background: #000;
+            position: relative;
+        }
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .loading-subtext {
+            font-size: 14px;
+            color: #ccc;
+        }
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 2000;
+        }
+        .debug-toggle {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Banner -->
+        <div class="banner">
+            320x100
+        </div>
+        
+        <!-- Container do jogo -->
+        <div class="game-container">
+            <!-- Loading Screen -->
+            <div class="loading-screen" id="loadingScreen">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Carregando Jogo...</div>
+                <div class="loading-subtext" id="loadingSubtext">Aguarde um momento</div>
+            </div>
+            
+            <!-- Iframe do jogo -->
+            <iframe 
+                id="gameFrame" 
+                class="game-iframe" 
+                style="display: none;"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+
+    <!-- Debug Panel -->
+    <button class="debug-toggle" onclick="toggleDebug()">DEBUG</button>
+    <div class="debug-panel" id="debugPanel" style="display: none;">
+        <div id="debugLogs"></div>
+    </div>
+
+    <script>
+        let debugVisible = false;
+        let currentGameUrl = '';
+        let currentGameTitle = '';
+
+        // Função para adicionar logs de debug
+        function addDebugLog(message, type = 'info') {
+            const logs = document.getElementById('debugLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : (type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'info'));
+            logs.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        // Função para alternar debug
+        function toggleDebug() {
+            debugVisible = !debugVisible;
+            document.getElementById('debugPanel').style.display = debugVisible ? 'block' : 'none';
+        }
+
+        // Função para obter parâmetros da URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Função para tentar incorporar jogos externos
+        function tryEmbedExternalGame(gameUrl, gameFrame) {
+            addDebugLog('🔧 Iniciando tentativas de incorporação de jogo externo', 'info');
+            
+            const methods = [
+                {
+                    name: 'Método 1: Iframe Direto',
+                    setup: () => {
+                        gameFrame.src = gameUrl;
+                        gameFrame.removeAttribute('sandbox');
+                        gameFrame.removeAttribute('referrerpolicy');
+                    }
+                },
+                {
+                    name: 'Método 2: Iframe com Sandbox',
+                    setup: () => {
+                        gameFrame.src = gameUrl;
+                        gameFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation');
+                    }
+                },
+                {
+                    name: 'Método 3: Iframe com No-Referrer',
+                    setup: () => {
+                        gameFrame.src = gameUrl;
+                        gameFrame.setAttribute('referrerpolicy', 'no-referrer');
+                        gameFrame.removeAttribute('sandbox');
+                    }
+                },
+                {
+                    name: 'Método 4: Proxy Local via Data URI',
+                    setup: () => {
+                        const proxyHtml = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>Proxy Local</title>
+                                <style>
+                                    body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+                                    iframe { width: 100%; height: 100vh; border: none; }
+                                </style>
+                            </head>
+                            <body>
+                                <iframe src="${gameUrl}" allowfullscreen></iframe>
+                            </body>
+                            </html>
+                        `;
+                        const blob = new Blob([proxyHtml], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        gameFrame.src = url;
+                    }
+                },
+                {
+                    name: 'Método 5: Iframe com Headers Customizados',
+                    setup: () => {
+                        gameFrame.src = gameUrl + (gameUrl.includes('?') ? '&' : '?') + 'x-frame-options=allow&csp=bypass';
+                    }
+                }
+            ];
+            
+            let currentMethod = 0;
+            let success = false;
+            
+            function tryNextMethod() {
+                if (currentMethod >= methods.length) {
+                    addDebugLog('❌ Todos os métodos de incorporação falharam', 'error');
+                    addDebugLog('🌐 Abrindo jogo em nova aba como fallback', 'info');
+                    openGameInNewTab();
+                    return;
+                }
+                
+                const method = methods[currentMethod];
+                addDebugLog(`🔧 ${method.name}`, 'info');
+                document.getElementById('loadingSubtext').textContent = method.name;
+                
+                // Configura o iframe
+                method.setup();
+                
+                // Monitora o carregamento
+                const timeout = setTimeout(() => {
+                    if (!success) {
+                        addDebugLog(`⏰ Timeout no ${method.name}`, 'warning');
+                        currentMethod++;
+                        tryNextMethod();
+                    }
+                }, 3000);
+                
+                gameFrame.onload = function() {
+                    clearTimeout(timeout);
+                    success = true;
+                    addDebugLog(`✅ ${method.name} funcionou!`, 'success');
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    gameFrame.style.display = 'block';
+                };
+                
+                gameFrame.onerror = function() {
+                    clearTimeout(timeout);
+                    addDebugLog(`❌ ${method.name} falhou`, 'error');
+                    currentMethod++;
+                    tryNextMethod();
+                };
+            }
+            
+            // Inicia as tentativas
+            tryNextMethod();
+        }
+
+        // Função para abrir jogo em nova aba
+        function openGameInNewTab() {
+            addDebugLog('🌐 Abrindo jogo em nova aba', 'info');
+            if (currentGameUrl) {
+                window.open(currentGameUrl, '_blank');
+                
+                // Após abrir o jogo, volta para a lista de jogos automaticamente
+                setTimeout(() => {
+                    const returnUrl = getUrlParameter('return') || 'lista-jogos.html';
+                    addDebugLog('🔄 Voltando para: ' + returnUrl, 'info');
+                    window.location.href = returnUrl;
+                }, 2000);
+            }
+        }
+
+        // Função principal de carregamento
+        function loadGame() {
+            const gameUrl = getUrlParameter('url');
+            const gameTitle = getUrlParameter('title') || 'Jogo';
+            
+            if (!gameUrl) {
+                alert('URL do jogo não encontrada!');
+                return;
+            }
+
+            currentGameUrl = gameUrl;
+            currentGameTitle = gameTitle;
+
+            addDebugLog(`🎮 Carregando: ${gameTitle}`, 'info');
+            addDebugLog(`🔗 URL: ${gameUrl}`, 'info');
+
+            // Atualiza o título da página
+            document.title = gameTitle + ' - Teste Incorporação';
+
+            const gameFrame = document.getElementById('gameFrame');
+            
+            // Verifica se é um jogo externo
+            if (gameUrl.includes('gamezop.com') || gameUrl.includes('famobi.com')) {
+                addDebugLog('🎮 Jogo externo detectado - Tentando incorporação', 'info');
+                document.getElementById('loadingSubtext').textContent = 'Tentando incorporar jogo externo...';
+                tryEmbedExternalGame(gameUrl, gameFrame);
+            } else {
+                addDebugLog('🎮 Jogo local detectado - Carregando normalmente', 'info');
+                gameFrame.src = gameUrl;
+                gameFrame.onload = function() {
+                    addDebugLog('✅ Jogo local carregado com sucesso', 'success');
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    gameFrame.style.display = 'block';
+                };
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('🚀 Página carregada - Sistema de teste iniciado', 'success');
+            loadGame();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>YouTube Play - Reproduzir Vídeo</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Reproduza vídeos do YouTube com Picture-in-Picture">
+    <meta name="theme-color" content="#FF0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="YouTube Play">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="YouTube Play">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="youtube-shared.css">
+    
+    <style>
+        /* Estilos específicos para a página de reprodução */
+        .play-page-header {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .play-page-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .video-player-container {
+            background: #000;
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+        
+        .video-player-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .video-info-container {
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        
+        .video-title-large {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            line-height: 1.3;
+        }
+        
+        .video-stats-large {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .video-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .action-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .action-button.pip {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+        }
+        
+        .action-button.pip:hover {
+            background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+            transform: translateY(-2px);
+        }
+        
+        .action-button.youtube {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+        }
+        
+        .action-button.youtube:hover {
+            background: linear-gradient(135deg, #cc0000 0%, #aa0000 100%);
+            transform: translateY(-2px);
+        }
+        
+        .action-button.back {
+            background: linear-gradient(135deg, #666 0%, #444 100%);
+        }
+        
+        .action-button.back:hover {
+            background: linear-gradient(135deg, #444 0%, #222 100%);
+            transform: translateY(-2px);
+        }
+        
+        .channel-info-large {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+        
+        .channel-avatar-large img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        
+        .channel-details-large {
+            flex: 1;
+        }
+        
+        .channel-name-large {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+            color: #fff;
+        }
+        
+        .channel-subscribers-large {
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        .subscribe-btn-large {
+            background: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .subscribe-btn-large:hover {
+            background: #cc0000;
+        }
+        
+        .video-description-large {
+            color: #fff;
+            line-height: 1.6;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .recommendations-large {
+            padding: 20px;
+            background: #000;
+            border-top: 1px solid #333;
+        }
+        
+        .recommendations-large h2 {
+            color: #fff;
+            font-size: 18px;
+            margin: 0 0 20px 0;
+        }
+        
+        .recommendations-grid-large {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .recommendation-item-large {
+            display: flex;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .recommendation-item-large:hover {
+            background: #222;
+        }
+        
+        .recommendation-thumbnail-large {
+            width: 120px;
+            height: 68px;
+            border-radius: 4px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .recommendation-info-large {
+            flex: 1;
+        }
+        
+        .recommendation-title-large {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .recommendation-channel-large {
+            color: #aaa;
+            font-size: 12px;
+            margin: 0 0 3px 0;
+        }
+        
+        .recommendation-views-large {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .loading-video {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #fff;
+        }
+        
+        .loading-video .spinner {
+            margin-bottom: 16px;
+        }
+        
+        .error-video {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #ff4444;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error-video .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .play-page-header {
+                padding: 12px 16px;
+            }
+            
+            .play-page-title {
+                font-size: 16px;
+            }
+            
+            .video-info-container {
+                padding: 16px;
+            }
+            
+            .video-title-large {
+                font-size: 18px;
+            }
+            
+            .video-actions {
+                flex-direction: column;
+            }
+            
+            .action-button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .channel-info-large {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .recommendations-large {
+                padding: 16px;
+            }
+            
+            .recommendation-item-large {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .recommendation-thumbnail-large {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="play-page-header">
+        <button class="back-button" onclick="goBack()">
+            ← Voltar
+        </button>
+        <h1 class="play-page-title">YouTube Play</h1>
+        <div></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" style="padding: 0;">
+        <!-- Loading State -->
+        <div class="loading-video" id="loadingState" style="display: none;">
+            <div class="spinner"></div>
+            <p>Carregando vídeo...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-video" id="errorState" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h3>Erro ao carregar vídeo</h3>
+            <p id="errorMessage"></p>
+            <button class="action-button back" onclick="goBack()" style="margin-top: 16px;">
+                Voltar à Pesquisa
+            </button>
+        </div>
+
+        <!-- Video Player -->
+        <div class="video-player-container" id="videoPlayerContainer" style="display: none;">
+            <iframe 
+                id="youtubePlayer" 
+                src=""
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+
+        <!-- Video Info -->
+        <div class="video-info-container" id="videoInfoContainer" style="display: none;">
+            <h1 class="video-title-large" id="youtubeVideoTitle"></h1>
+            
+            <div class="video-stats-large">
+                <span class="youtube-views" id="youtubeViews"></span>
+                <span class="youtube-date" id="youtubeDate"></span>
+            </div>
+            
+            <div class="video-actions">
+                <button class="action-button pip" id="applePipButton">
+                    <span class="apple-pip-icon">⛶</span>
+                    <span class="apple-pip-text">Ativar Janela Flutuante</span>
+                </button>
+                <button class="action-button youtube" id="openYouTubeButton">
+                    <span class="apple-pip-icon">📺</span>
+                    <span class="apple-pip-text">Abrir no YouTube</span>
+                </button>
+                <a href="youtube-search.html" class="action-button back">
+                    <span class="apple-pip-icon">🔍</span>
+                    <span class="apple-pip-text">Nova Pesquisa</span>
+                </a>
+            </div>
+            
+            <div class="channel-info-large">
+                <div class="channel-avatar-large">
+                    <img id="youtubeChannelAvatar" src="" alt="">
+                </div>
+                <div class="channel-details-large">
+                    <h3 class="channel-name-large" id="youtubeChannelName"></h3>
+                    <span class="channel-subscribers-large">1.2M inscritos</span>
+                </div>
+                <button class="subscribe-btn-large">INSCREVER-SE</button>
+            </div>
+            
+            <div class="video-description-large">
+                <p id="youtubeDescription"></p>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations-large" id="recommendationsContainer" style="display: none;">
+            <h2>Vídeos Recomendados</h2>
+            <div class="recommendations-grid-large" id="recommendationsGrid">
+                <!-- Vídeos recomendados serão carregados aqui -->
+            </div>
+        </div>
+    </main>
+
+    <!-- PiP Window -->
+    <div class="pip-window" id="pipWindow">
+        <div class="pip-video-container">
+            <div class="pip-size-controls">
+                <button class="pip-size-button" id="pipMinimizeButton" title="Diminuir">−</button>
+                <button class="pip-size-button" id="pipMaximizeButton" title="Aumentar">+</button>
+            </div>
+            <button class="pip-close-button" id="pipCloseButton" title="Fechar">×</button>
+            <div class="pip-controls-bottom">
+                <div class="pip-time-display" id="pipTimeDisplay">0:00</div>
+                <div class="pip-progress-container" id="pipProgressContainer">
+                    <div class="pip-progress-bar" id="pipProgressBar"></div>
+                    <div class="pip-progress-handle" id="pipProgressHandle"></div>
+                </div>
+                <button class="pip-play-button-bottom" id="pipPlayButtonBottom">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="playIconBottom">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="pauseIconBottom" style="display: none;">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="pip-drag-overlay" id="pipDragOverlay"></div>
+            <div class="pip-video-overlay" id="pipVideoOverlay"></div>
+            <div id="pipVideoContainer"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Shared JavaScript -->
+    <script src="youtube-shared.js"></script>
+    
+    <script>
+        // Elementos DOM específicos da página de reprodução
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        const videoPlayerContainer = document.getElementById('videoPlayerContainer');
+        const videoInfoContainer = document.getElementById('videoInfoContainer');
+        const recommendationsContainer = document.getElementById('recommendationsContainer');
+        const youtubePlayer = document.getElementById('youtubePlayer');
+        const youtubeVideoTitle = document.getElementById('youtubeVideoTitle');
+        const youtubeViews = document.getElementById('youtubeViews');
+        const youtubeDate = document.getElementById('youtubeDate');
+        const youtubeChannelName = document.getElementById('youtubeChannelName');
+        const youtubeChannelAvatar = document.getElementById('youtubeChannelAvatar');
+        const youtubeDescription = document.getElementById('youtubeDescription');
+        const recommendationsGrid = document.getElementById('recommendationsGrid');
+        const applePipButton = document.getElementById('applePipButton');
+        const openYouTubeButton = document.getElementById('openYouTubeButton');
+
+        // Inicialização da página de reprodução
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoId = urlParams.get('id');
+            
+            if (videoId) {
+                loadVideo(videoId);
+            } else {
+                showError('ID do vídeo não fornecido');
+            }
+            
+            setupPlayEventListeners();
+        });
+
+        // Event Listeners específicos da página de reprodução
+        function setupPlayEventListeners() {
+            // Apple PiP Button
+            if (applePipButton) {
+                applePipButton.addEventListener('click', () => {
+                    if (currentVideo) {
+                        // Salva os dados do vídeo no localStorage para uso global
+                        const videoData = {
+                            id: currentVideo.id,
+                            title: currentVideo.title,
+                            thumbnail: currentVideo.thumbnail,
+                            url: currentVideo.url,
+                            embedUrl: `https://www.youtube.com/embed/${currentVideo.id}`,
+                            timestamp: Date.now()
+                        };
+                        
+                        localStorage.setItem('globalPipVideo', JSON.stringify(videoData));
+                        localStorage.setItem('globalPipActive', 'true');
+                        
+                        // Ativa a janela PIP local
+                        activatePiP(currentVideo);
+                        
+                        showNotification('🎬 Janela flutuante ativada!', 'success');
+                    }
+                });
+            }
+
+            // Open YouTube Button
+            if (openYouTubeButton) {
+                openYouTubeButton.addEventListener('click', () => {
+                    if (currentVideo) {
+                        // Abrir vídeo diretamente no YouTube
+                        const youtubeUrl = `https://www.youtube.com/watch?v=${currentVideo.id}`;
+                        window.open(youtubeUrl, '_blank');
+                        
+                        showNotification('📺 Abrindo vídeo no YouTube...', 'success');
+                    }
+                });
+            }
+        }
+
+        // Função para carregar vídeo
+        async function loadVideo(videoId) {
+            showLoading();
+            
+            try {
+                // Buscar informações do vídeo
+                const url = `${YOUTUBE_BASE_URL}/videos?part=snippet,contentDetails,statistics&id=${videoId}&key=${YOUTUBE_API_KEY}`;
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const videoData = data.items[0];
+                    
+                    if (videoData) {
+                        currentVideo = new YouTubeVideo(videoData);
+                        displayVideo(currentVideo);
+                        loadRecommendedVideos();
+                    } else {
+                        showError('Vídeo não encontrado');
+                    }
+                } else {
+                    showError('Erro ao carregar vídeo');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar vídeo:', error);
+                showError('Erro de conexão');
+            }
+        }
+
+        // Função para exibir vídeo
+        function displayVideo(video) {
+            hideLoading();
+            
+            // Configurar player
+            if (youtubePlayer) {
+                youtubePlayer.src = video.embedUrl + '?autoplay=1&enablejsapi=1';
+            }
+            
+            // Configurar informações do vídeo
+            if (youtubeVideoTitle) {
+                youtubeVideoTitle.textContent = video.title;
+            }
+            
+            if (youtubeViews) {
+                youtubeViews.textContent = formatViewCount(video.viewCount);
+            }
+            
+            if (youtubeDate) {
+                youtubeDate.textContent = formatDate(video.publishedAt);
+            }
+            
+            if (youtubeChannelName) {
+                youtubeChannelName.textContent = video.channelTitle;
+            }
+            
+            if (youtubeChannelAvatar) {
+                youtubeChannelAvatar.src = video.thumbnail;
+                youtubeChannelAvatar.alt = video.channelTitle;
+            }
+            
+            if (youtubeDescription) {
+                youtubeDescription.textContent = video.description || 'Descrição não disponível';
+            }
+            
+            // Mostrar containers
+            if (videoPlayerContainer) {
+                videoPlayerContainer.style.display = 'block';
+            }
+            
+            if (videoInfoContainer) {
+                videoInfoContainer.style.display = 'block';
+            }
+            
+            if (recommendationsContainer) {
+                recommendationsContainer.style.display = 'block';
+            }
+        }
+
+        // Função para carregar vídeos recomendados
+        async function loadRecommendedVideos() {
+            try {
+                // Buscar vídeos relacionados
+                const url = `${YOUTUBE_BASE_URL}/search?part=snippet&relatedToVideoId=${currentVideo.id}&type=video&maxResults=10&key=${YOUTUBE_API_KEY}`;
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const videos = data.items.map(item => new YouTubeVideo(item));
+                    displayRecommendedVideos(videos);
+                } else {
+                    // Fallback: buscar vídeos populares
+                    loadPopularVideos();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar vídeos recomendados:', error);
+                loadPopularVideos();
+            }
+        }
+
+        // Função para carregar vídeos populares como fallback
+        async function loadPopularVideos() {
+            try {
+                const url = `${YOUTUBE_BASE_URL}/videos?part=snippet,contentDetails,statistics&chart=mostPopular&maxResults=10&key=${YOUTUBE_API_KEY}`;
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const videos = data.items.map(item => new YouTubeVideo(item));
+                    displayRecommendedVideos(videos);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar vídeos populares:', error);
+            }
+        }
+
+        // Função para exibir vídeos recomendados
+        function displayRecommendedVideos(videos) {
+            if (!recommendationsGrid || !videos || videos.length === 0) return;
+            
+            recommendationsGrid.innerHTML = videos.map(video => `
+                <div class="recommendation-item-large" onclick="openRecommendedVideo('${video.id}')">
+                    <img src="${video.thumbnail}" alt="${video.title}" class="recommendation-thumbnail-large">
+                    <div class="recommendation-info-large">
+                        <h4 class="recommendation-title-large">${video.title}</h4>
+                        <p class="recommendation-channel-large">${video.channelTitle}</p>
+                        <p class="recommendation-views-large">${formatViewCount(video.viewCount)} • ${formatDate(video.publishedAt)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Função para abrir vídeo recomendado
+        function openRecommendedVideo(videoId) {
+            window.location.href = `youtube-play.html?id=${videoId}`;
+        }
+
+        // Função para voltar
+        function goBack() {
+            // Verificar se veio da página de pesquisa
+            if (document.referrer.includes('youtube-search.html')) {
+                window.history.back();
+            } else {
+                window.location.href = 'youtube-search.html';
+            }
+        }
+
+        // Função para mostrar loading
+        function showLoading() {
+            if (loadingState) loadingState.style.display = 'flex';
+            if (errorState) errorState.style.display = 'none';
+            if (videoPlayerContainer) videoPlayerContainer.style.display = 'none';
+            if (videoInfoContainer) videoInfoContainer.style.display = 'none';
+            if (recommendationsContainer) recommendationsContainer.style.display = 'none';
+        }
+
+        // Função para esconder loading
+        function hideLoading() {
+            if (loadingState) loadingState.style.display = 'none';
+        }
+
+        // Função para mostrar erro
+        function showError(message) {
+            if (loadingState) loadingState.style.display = 'none';
+            if (errorState) errorState.style.display = 'flex';
+            if (errorMessage) errorMessage.textContent = message;
+            if (videoPlayerContainer) videoPlayerContainer.style.display = 'none';
+            if (videoInfoContainer) videoInfoContainer.style.display = 'none';
+            if (recommendationsContainer) recommendationsContainer.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

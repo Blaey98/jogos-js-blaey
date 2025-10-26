@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Lista Simples</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .game-card { 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .stats { 
+            background: #e3f2fd; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Teste Lista de Jogos</h1>
+    
+    <div class="stats">
+        <h3>📊 Estatísticas</h3>
+        <p>Total de jogos: <span id="total">0</span></p>
+        <p>Jogos verticais: <span id="vertical">0</span></p>
+        <p>Jogos horizontais: <span id="horizontal">0</span></p>
+    </div>
+
+    <div id="gamesList">
+        Carregando jogos...
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script>
+        console.log('🎮 Iniciando carregamento...');
+        console.log('📋 Array games:', typeof games, games ? games.length : 'undefined');
+        
+        if (typeof games !== 'undefined' && games.length > 0) {
+            console.log('✅ Jogos carregados com sucesso!');
+            
+            // Atualizar estatísticas
+            document.getElementById('total').textContent = games.length;
+            document.getElementById('vertical').textContent = games.filter(g => g.orientation === 'vertical').length;
+            document.getElementById('horizontal').textContent = games.filter(g => g.orientation === 'horizontal').length;
+            
+            // Renderizar jogos
+            const gamesList = document.getElementById('gamesList');
+            gamesList.innerHTML = '';
+            
+            games.forEach((game, index) => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                gameCard.innerHTML = `
+                    <h3>${game.title}</h3>
+                    <p>${game.description}</p>
+                    <p><strong>Orientação:</strong> ${game.orientation}</p>
+                    <p><strong>Status:</strong> ${game.status}</p>
+                    <p><strong>Categoria:</strong> ${game.category}</p>
+                    <button onclick="playGame('${game.id}')">Jogar Agora</button>
+                `;
+                gamesList.appendChild(gameCard);
+            });
+        } else {
+            console.error('❌ Erro: Array games não foi carregado!');
+            document.getElementById('gamesList').innerHTML = '<p style="color: red;">❌ Erro: Não foi possível carregar os jogos!</p>';
+        }
+    </script>
+</body>
+</html>

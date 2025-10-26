@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>YouTube PiP - Player Personalizado</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Player de vídeos do YouTube com Picture-in-Picture nativo">
+    <meta name="theme-color" content="#FF0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="YouTube PiP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="YouTube PiP">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <link rel="stylesheet" href="css/global-pip.css">
     <style>
         * {
             margin: 0;
@@ -175,6 +197,7 @@
             margin-bottom: 8px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -197,15 +220,81 @@
             right: 20px;
             width: 320px;
             height: 180px;
-            background-color: transparent;
-            border-radius: 0;
+            background-color: #000;
+            border-radius: 12px;
             box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                0 4px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 2147483647; /* Máximo z-index para ficar sobre tudo */
             display: none;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Garantir que fique sobre todas as aplicações */
+            -webkit-app-region: no-drag;
+            pointer-events: auto;
+            /* Melhorar movimento */
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            /* Garantir visibilidade no mobile */
+            visibility: visible;
+            opacity: 1;
+            /* Forçar renderização no mobile */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            /* Evitar que o mobile esconda o elemento */
+            -webkit-perspective: 1000;
+            perspective: 1000;
+        }
+        
+        /* PiP Global - funciona em todas as telas */
+        .pip-window.pip-global {
+            z-index: 2147483647 !important;
+            position: fixed !important;
+            pointer-events: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+            background-color: #000 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            -webkit-app-region: no-drag !important;
+            -webkit-transform: translateZ(0) !important;
+            transform: translateZ(0) !important;
+            -webkit-backface-visibility: hidden !important;
+            backface-visibility: hidden !important;
+            -webkit-perspective: 1000 !important;
+            perspective: 1000 !important;
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.6),
+                0 6px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        /* PiP Global - controles sempre visíveis */
+        .pip-window.pip-global .pip-close-button,
+        .pip-window.pip-global .pip-size-button,
+        .pip-window.pip-global .pip-play-button-bottom,
+        .pip-window.pip-global .pip-size-controls,
+        .pip-window.pip-global .pip-controls-bottom {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            z-index: 20 !important;
+        }
+        
+        /* PiP Global - botão fechar sempre visível */
+        .pip-window.pip-global .pip-close-button {
+            z-index: 30 !important;
+            background: rgba(255, 0, 0, 0.9) !important;
+            border: 2px solid #fff !important;
+            width: 40px !important;
+            height: 40px !important;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.5) !important;
         }
 
         .pip-window.active {
@@ -246,9 +335,18 @@
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 1;
+            z-index: 2;
             cursor: grab;
-            pointer-events: none; /* Desabilitar por padrão */
+            pointer-events: auto; /* Habilitar para capturar eventos de arrastar */
+            background: transparent;
+            /* Melhorar responsividade do toque */
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .pip-drag-overlay:active {
@@ -256,7 +354,8 @@
         }
 
         .pip-drag-overlay.dragging {
-            pointer-events: auto; /* Habilitar apenas quando arrastando */
+            pointer-events: auto; /* Manter habilitado quando arrastando */
+            cursor: grabbing;
         }
 
         .pip-loading-spinner {
@@ -284,6 +383,30 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        /* Ocultar controles nativos do YouTube */
+        .pip-video-container iframe {
+            pointer-events: none !important;
+        }
+
+        /* Garantir que os controles customizados fiquem sempre visíveis */
+        .pip-window:hover .pip-close-button,
+        .pip-window:hover .pip-size-controls,
+        .pip-window:hover .pip-controls-bottom {
+            opacity: 1 !important;
+        }
+
+        /* Overlay para interceptar cliques no iframe */
+        .pip-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            background: transparent;
+            pointer-events: auto;
         }
 
 
@@ -521,6 +644,7 @@
             line-height: 1.3;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -702,24 +826,34 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            background: rgba(0, 0, 0, 0.7);
-            border: none;
+            background: rgba(255, 0, 0, 0.8);
+            border: 2px solid #fff;
             color: #ffffff;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            font-weight: 300;
-            opacity: 0;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 1;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 30;
+            pointer-events: auto;
+            /* Melhorar touch no mobile */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            /* Garantir que seja clicável */
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3);
+            outline: none;
         }
 
         .pip-window:hover .pip-close-button {
@@ -746,7 +880,8 @@
             gap: 4px;
             opacity: 0;
             transition: all 0.3s ease;
-            z-index: 10;
+            z-index: 15;
+            pointer-events: auto;
         }
 
         .pip-window:hover .pip-size-controls {
@@ -768,6 +903,19 @@
             font-weight: 300;
             transition: all 0.3s ease;
             backdrop-filter: blur(20px);
+            pointer-events: auto;
+            z-index: 20;
+            /* Melhorar touch no mobile */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            /* Garantir que seja clicável */
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         .pip-size-button:hover {
@@ -790,7 +938,8 @@
             gap: 8px;
             opacity: 0;
             transition: all 0.3s ease;
-            z-index: 10;
+            z-index: 15;
+            pointer-events: auto;
         }
 
         .pip-time-display {
@@ -816,6 +965,8 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            pointer-events: auto;
+            z-index: 16;
         }
 
         .pip-progress-bar {
@@ -840,6 +991,8 @@
             cursor: grab;
             border: 2px solid #ffffff;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            pointer-events: auto;
+            z-index: 17;
         }
 
         .pip-progress-container:hover .pip-progress-handle {
@@ -868,6 +1021,19 @@
             transition: all 0.3s ease;
             backdrop-filter: blur(20px);
             flex-shrink: 0;
+            pointer-events: auto;
+            z-index: 20;
+            /* Melhorar touch no mobile */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            /* Garantir que seja clicável */
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         .pip-play-button-bottom:hover {
@@ -926,6 +1092,85 @@
                 height: calc((100vw - 20px) * 0.5625);
                 right: 10px;
                 left: 10px;
+                /* Garantir que não desapareça no mobile */
+                position: fixed !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                z-index: 2147483647 !important;
+                /* Forçar renderização */
+                -webkit-transform: translateZ(0) !important;
+                transform: translateZ(0) !important;
+                -webkit-backface-visibility: hidden !important;
+                backface-visibility: hidden !important;
+                /* Evitar que o mobile esconda */
+                -webkit-perspective: 1000 !important;
+                perspective: 1000 !important;
+                /* Melhorar touch */
+                touch-action: manipulation;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                /* Garantir opacidade total no mobile */
+                background-color: #000 !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            
+            .pip-window.active {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            /* Botões sempre visíveis no mobile */
+            .pip-close-button,
+            .pip-size-button,
+            .pip-play-button-bottom {
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                z-index: 25 !important;
+                /* Melhorar área de toque */
+                min-width: 44px !important;
+                min-height: 44px !important;
+                /* Garantir que seja clicável */
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3) !important;
+                touch-action: manipulation !important;
+            }
+            
+            .pip-close-button {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 24px !important;
+                background: rgba(255, 0, 0, 0.9) !important;
+                border: 3px solid #fff !important;
+                opacity: 1 !important;
+                z-index: 35 !important;
+                /* Garantir que seja sempre clicável */
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.5) !important;
+            }
+            
+            .pip-size-button {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 16px !important;
+            }
+            
+            .pip-play-button-bottom {
+                width: 48px !important;
+                height: 48px !important;
+            }
+            
+            /* Controles sempre visíveis no mobile */
+            .pip-size-controls,
+            .pip-controls-bottom {
+                opacity: 1 !important;
+                pointer-events: auto !important;
             }
         }
 
@@ -1026,6 +1271,7 @@
                 </button>
             </div>
             <div class="pip-drag-overlay" id="pipDragOverlay"></div>
+            <div class="pip-video-overlay" id="pipVideoOverlay"></div>
             <div id="pipVideoContainer"></div>
         </div>
     </div>
@@ -1054,6 +1300,10 @@
                         <button class="apple-pip-button" id="applePipButton">
                             <span class="apple-pip-icon">⛶</span>
                             <span class="apple-pip-text">Ativar Janela Flutuante</span>
+                        </button>
+                        <button class="apple-pip-button" id="openYouTubeButton" style="background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%); margin-left: 10px;">
+                            <span class="apple-pip-icon">📺</span>
+                            <span class="apple-pip-text">Abrir no YouTube</span>
                         </button>
                     </div>
                     <div class="youtube-video-stats">
@@ -1196,6 +1446,7 @@
         const playIconBottom = document.getElementById('playIconBottom');
         const pauseIconBottom = document.getElementById('pauseIconBottom');
         const pipDragOverlay = document.getElementById('pipDragOverlay');
+        const pipVideoOverlay = document.getElementById('pipVideoOverlay');
         const pipProgressContainer = document.getElementById('pipProgressContainer');
         const pipProgressBar = document.getElementById('pipProgressBar');
         const pipProgressHandle = document.getElementById('pipProgressHandle');
@@ -1291,8 +1542,17 @@
                 console.log('🎬 Botão X do PiP clicado');
                 closePiP();
             });
+            
+            // Adicionar listener específico para touch no mobile
+            pipCloseButton.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🎬 Botão X do PiP tocado (mobile)');
+                closePiP();
+            });
             pipMinimizeButton.addEventListener('click', minimizePiP);
             pipMaximizeButton.addEventListener('click', maximizePiP);
+            
             pipProgressContainer.addEventListener('click', seekVideo);
             pipProgressHandle.addEventListener('mousedown', startProgressDrag);
 
@@ -1303,35 +1563,55 @@
             const applePipButton = document.getElementById('applePipButton');
             applePipButton.addEventListener('click', () => {
                 if (currentVideo) {
+                    // Fecha o modal imediatamente
                     closeModal();
-                    // Chama a função do pai para ativar a janela PIP integrada
-                    if (window.parent && window.parent.activatePipWindow) {
-                        // Passa as informações do vídeo para a janela PIP
-                        window.parent.currentVideoData = {
-                            id: currentVideo.id,
-                            title: currentVideo.title,
-                            thumbnail: currentVideo.thumbnail,
-                            url: currentVideo.url
-                        };
+                    
+                    // Salva os dados do vídeo no localStorage para uso global
+                    const videoData = {
+                        id: currentVideo.id,
+                        title: currentVideo.title,
+                        thumbnail: currentVideo.thumbnail,
+                        url: currentVideo.url,
+                        embedUrl: `https://www.youtube.com/embed/${currentVideo.id}`,
+                        timestamp: Date.now()
+                    };
+                    
+                    localStorage.setItem('globalPipVideo', JSON.stringify(videoData));
+                    localStorage.setItem('globalPipActive', 'true');
+                    
+                    // Ativa a janela PIP local
+                    activatePiP(currentVideo);
+                    
+                    // Notifica o pai que a PIP global foi ativada e fecha o diálogo
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'GLOBAL_PIP_ACTIVATED',
+                            videoData: videoData
+                        }, '*');
                         
-                        // Passa informações sobre a janela PIP existente
-                        const existingPipWindow = document.getElementById('pipWindow');
-                        if (existingPipWindow) {
-                            window.parent.existingPipData = {
-                                isActive: existingPipWindow.classList.contains('active'),
-                                position: existingPipWindow.style.transform || 'none',
-                                size: {
-                                    width: existingPipWindow.style.width || '300px',
-                                    height: existingPipWindow.style.height || '169px'
-                                }
-                            };
+                        // Chama a função do pai para fechar o diálogo
+                        if (window.parent.activatePipWindow) {
+                            window.parent.activatePipWindow();
                         }
-                        
-                        window.parent.activatePipWindow();
-                    } else {
-                        // Fallback para o comportamento original
-                        activatePiP(currentVideo);
                     }
+                    
+                    // Notifica todas as outras janelas/abas
+                    window.postMessage({
+                        type: 'GLOBAL_PIP_ACTIVATED',
+                        videoData: videoData
+                    }, '*');
+                }
+            });
+
+            // Open YouTube Button
+            const openYouTubeButton = document.getElementById('openYouTubeButton');
+            openYouTubeButton.addEventListener('click', () => {
+                if (currentVideo) {
+                    // Abrir vídeo diretamente no YouTube
+                    const youtubeUrl = `https://www.youtube.com/watch?v=${currentVideo.videoId}`;
+                    window.open(youtubeUrl, '_blank');
+                    
+                    showNotification('📺 Abrindo vídeo no YouTube...', 'success');
                 }
             });
 
@@ -1339,6 +1619,44 @@
             videoModal.addEventListener('click', function(e) {
                 if (e.target === videoModal) {
                     closeModal();
+                }
+            });
+
+            // Listener para mensagens globais do sistema PIP
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'GLOBAL_PIP_ACTIVATED') {
+                // Se outra página ativou a PIP global, ativa localmente também
+                if (event.data.videoData) {
+                    activatePiP(event.data.videoData);
+                }
+            } else if (event.data.type === 'GLOBAL_PIP_DEACTIVATED') {
+                // Se outra página desativou a PIP global, desativa localmente também
+                const pipWindow = document.getElementById('pipWindow');
+                if (pipWindow) {
+                    pipWindow.classList.remove('active');
+                }
+            } else if (event.data.type === 'TOGGLE_PLAY_PAUSE') {
+                // Comando da janela PIP principal para play/pause
+                console.log('🎬 [YouTube] Comando de play/pause recebido da janela PIP principal');
+                togglePiPPlayback();
+            }
+        });
+
+            // Verifica se há uma PIP ativa no localStorage ao carregar
+            window.addEventListener('load', function() {
+                const isPipActive = localStorage.getItem('globalPipActive');
+                const pipVideoData = localStorage.getItem('globalPipVideo');
+                
+                if (isPipActive === 'true' && pipVideoData) {
+                    try {
+                        const videoData = JSON.parse(pipVideoData);
+                        // Verifica se os dados não são muito antigos (5 minutos)
+                        if (Date.now() - videoData.timestamp < 300000) {
+                            activatePiP(videoData);
+                        }
+                    } catch (e) {
+                        console.error('Erro ao carregar dados da PIP:', e);
+                    }
                 }
             });
         }
@@ -1865,7 +2183,7 @@
                 // Carregar vídeo no iframe com sistema de fallback
                 const youtubePlayer = document.getElementById('youtubePlayer');
                 
-                // URLs de fallback para evitar erros de playback
+                // URLs com controles do YouTube habilitados para o modal
                 const modalEmbedUrls = [
                     `https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&showinfo=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&origin=${window.location.origin}&widget_referrer=${window.location.origin}`,
                     `https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&showinfo=0&iv_load_policy=3&cc_load_policy=0&playsinline=1`,
@@ -2110,26 +2428,185 @@
             try {
                 console.log('🎬 [YouTube] Iniciando PiP para:', video.title);
                 
-                // Check if native PiP is supported and we're on Android
-                if (document.pictureInPictureEnabled && isAndroid()) {
-                    try {
-                        showNotification('📱 Tentando ativar PiP nativo do Android...', 'info');
-                        await activateNativePiP(video);
-                        return;
-                    } catch (error) {
-                        console.log('Native PiP failed, falling back to custom PiP:', error);
-                        showNotification('📱 PiP nativo falhou, usando PiP customizado', 'warning');
+                // Verificar se estamos em um ambiente TWA/Android
+                if (window.Android && window.Android.isNativePipSupported && window.Android.isNativePipSupported()) {
+                    console.log('📱 [PiP] Ambiente Android detectado, ativando permissões nativas');
+                    
+                    // Ativar permissões nativas para PiP global
+                    if (window.Android.requestOverlayPermission) {
+                        const hasPermission = await window.Android.requestOverlayPermission();
+                        if (hasPermission) {
+                            console.log('✅ [PiP] Permissões nativas ativadas');
+                            // Ativar PiP customizado com permissões nativas
+                            await activateCustomPiPWithNativePermissions(video);
+                            return;
+                        }
                     }
-                } else if (isAndroid()) {
-                    showNotification('📱 PiP nativo não suportado, usando PiP customizado', 'info');
                 }
                 
-                // Fallback to custom PiP
-                activateCustomPiP(video);
+                // Fallback: PiP customizado normal
+                console.log('🌐 [PiP] Ativando PiP customizado');
+                await activateCustomPiP(video);
                 
             } catch (error) {
-                console.log('❌ [YouTube] Erro ao ativar PiP:', error);
-                showNotification('❌ Erro ao criar janela PiP. Tente novamente.', 'error');
+                console.error('❌ [PiP] Erro ao ativar PiP:', error);
+                showNotification('❌ Erro ao ativar PiP: ' + error.message, 'error');
+            }
+        }
+        
+        // Nova função: PiP customizado com permissões nativas
+        async function activateCustomPiPWithNativePermissions(video) {
+            console.log('🎬 [PiP] Ativando PiP customizado com permissões nativas');
+            
+            try {
+                // Criar janela PiP customizada
+                await createCustomPiPWindow(video);
+                
+                // Configurar para funcionar em todas as telas
+                setupGlobalPiP();
+                
+                // Ativar permissões de sobreposição
+                await requestOverlayPermissions();
+                
+                showNotification('🎬 PiP Global ativado! Funciona em todas as telas do dispositivo.', 'success');
+                
+            } catch (error) {
+                console.error('❌ [PiP] Erro ao ativar PiP com permissões nativas:', error);
+                throw error;
+            }
+        }
+        
+        // Função para configurar PiP global
+        function setupGlobalPiP() {
+            console.log('🌐 [PiP] Configurando PiP global');
+            
+            // Configurar z-index máximo
+            if (pipWindow) {
+                pipWindow.style.zIndex = '2147483647';
+                pipWindow.style.position = 'fixed';
+                pipWindow.style.pointerEvents = 'auto';
+                
+                // Forçar visibilidade em todas as situações
+                pipWindow.style.visibility = 'visible';
+                pipWindow.style.opacity = '1';
+                pipWindow.style.display = 'block';
+                
+                // Adicionar classe para PiP global
+                pipWindow.classList.add('pip-global');
+            }
+            
+            // Configurar eventos para manter PiP visível
+            setupGlobalPiPEvents();
+        }
+        
+        // Função para configurar eventos globais do PiP
+        function setupGlobalPiPEvents() {
+            console.log('🌐 [PiP] Configurando eventos globais');
+            
+            // Evento de mudança de visibilidade da página
+            document.addEventListener('visibilitychange', () => {
+                if (pipWindow && pipWindow.style.display !== 'none') {
+                    console.log('👁️ [PiP] Página mudou visibilidade, mantendo PiP ativo');
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                    pipWindow.style.zIndex = '2147483647';
+                }
+            });
+            
+            // Evento de foco/blur da janela
+            window.addEventListener('blur', () => {
+                if (pipWindow && pipWindow.style.display !== 'none') {
+                    console.log('👁️ [PiP] Janela perdeu foco, mantendo PiP ativo');
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                    pipWindow.style.zIndex = '2147483647';
+                }
+            });
+            
+            window.addEventListener('focus', () => {
+                if (pipWindow && pipWindow.style.display !== 'none') {
+                    console.log('👁️ [PiP] Janela ganhou foco, mantendo PiP ativo');
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                    pipWindow.style.zIndex = '2147483647';
+                }
+            });
+            
+            // Evento de mudança de orientação
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    if (pipWindow && pipWindow.style.display !== 'none') {
+                        console.log('📱 [PiP] Orientação mudou, ajustando posição');
+                        adjustPipPosition();
+                        pipWindow.style.visibility = 'visible';
+                        pipWindow.style.opacity = '1';
+                        pipWindow.style.zIndex = '2147483647';
+                    }
+                }, 100);
+            });
+            
+            // Evento de redimensionamento
+            window.addEventListener('resize', () => {
+                if (pipWindow && pipWindow.style.display !== 'none') {
+                    console.log('📱 [PiP] Tela redimensionada, ajustando posição');
+                    adjustPipPosition();
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                    pipWindow.style.zIndex = '2147483647';
+                }
+            });
+            
+            // Verificação periódica de visibilidade
+            setInterval(() => {
+                if (pipWindow && pipWindow.style.display !== 'none') {
+                    // Verificar se o PiP ainda está visível
+                    const rect = pipWindow.getBoundingClientRect();
+                    if (rect.width === 0 || rect.height === 0) {
+                        console.log('🔄 [PiP] PiP não visível, restaurando');
+                        pipWindow.style.visibility = 'visible';
+                        pipWindow.style.opacity = '1';
+                        pipWindow.style.zIndex = '2147483647';
+                        pipWindow.style.display = 'block';
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Função para solicitar permissões de sobreposição
+        async function requestOverlayPermissions() {
+            console.log('🔐 [PiP] Solicitando permissões de sobreposição');
+            
+            try {
+                // Verificar se estamos em ambiente Android
+                if (window.Android && window.Android.requestOverlayPermission) {
+                    const hasPermission = await window.Android.requestOverlayPermission();
+                    if (hasPermission) {
+                        console.log('✅ [PiP] Permissões de sobreposição concedidas');
+                        return true;
+                    } else {
+                        console.log('❌ [PiP] Permissões de sobreposição negadas');
+                        return false;
+                    }
+                }
+                
+                // Fallback: tentar usar API nativa do navegador
+                if (navigator.permissions) {
+                    try {
+                        const permission = await navigator.permissions.query({ name: 'overlay' });
+                        if (permission.state === 'granted') {
+                            console.log('✅ [PiP] Permissões de sobreposição concedidas via navegador');
+                            return true;
+                        }
+                    } catch (e) {
+                        console.log('⚠️ [PiP] API de permissões não suportada');
+                    }
+                }
+                
+                return false;
+                
+            } catch (error) {
+                console.error('❌ [PiP] Erro ao solicitar permissões:', error);
+                return false;
             }
         }
         
@@ -2138,83 +2615,148 @@
             return /Android/i.test(navigator.userAgent);
         }
         
-        // Activate native Picture-in-Picture
+        // Activate native Picture-in-Picture via Android
         async function activateNativePiP(video) {
-            const videoElement = document.getElementById('nativeVideoPlayer');
-            
-            // Create video element if it doesn't exist
-            if (!videoElement) {
-                const video = document.createElement('video');
-                video.id = 'nativeVideoPlayer';
-                video.style.display = 'none';
-                video.controls = true;
-                video.muted = false;
-                video.playsInline = true;
-                video.crossOrigin = 'anonymous';
-                document.body.appendChild(video);
-            }
-            
-            // Try multiple methods to get video URL
-            let videoUrl = null;
-            
-            // Method 1: Try to get direct video URL
-            videoUrl = await getYouTubeVideoUrl(video.videoId);
-            
-            // Method 2: Try using a third-party service (like yt-dlp or similar)
-            if (!videoUrl) {
-                videoUrl = await getVideoUrlFromService(video.videoId);
-            }
-            
-            // Method 3: Use a proxy service
-            if (!videoUrl) {
-                videoUrl = await getVideoUrlFromProxy(video.videoId);
-            }
-            
-            if (videoUrl && videoUrl.startsWith('http')) {
-                videoElement.src = videoUrl;
-                videoElement.load();
+            try {
+                console.log('🎬 [Android PiP] Tentando ativar PiP nativo Android...');
                 
-                // Wait for video to be ready
+                // Verificar se estamos em um app Android nativo
+                if (window.Android && window.Android.isNativePipSupported && window.Android.isNativePipSupported()) {
+                    console.log('🎬 [Android PiP] Suporte nativo detectado, iniciando PiP fora do navegador...');
+                    
+                    // Verificar permissão de overlay
+                    if (window.Android.hasOverlayPermission && !window.Android.hasOverlayPermission()) {
+                        console.log('🎬 [Android PiP] Solicitando permissão de overlay...');
+                        showNotification('📱 Solicitando permissão para PiP funcionar fora do navegador...', 'info');
+                        window.Android.requestOverlayPermission();
+                        return false;
+                    }
+                    
+                    // Obter URL direta do vídeo
+                    const videoUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+                    
+                    // Obter tempo atual do vídeo
+                    const currentTime = getCurrentVideoTime();
+                    const isCurrentlyPlaying = isVideoCurrentlyPlaying();
+                    
+                    // Chamar método nativo Android
+                    window.Android.startNativePip(
+                        video.videoId,
+                        video.title,
+                        videoUrl,
+                        Math.floor(currentTime * 1000), // Converter para milliseconds
+                        isCurrentlyPlaying
+                    );
+                    
+                    showNotification('🎬 PiP nativo ativado! Funciona em QUALQUER tela do Android!', 'success');
+                    
+                    // Fechar PiP customizado se estiver ativo
+                    if (pipWindow.classList.contains('active')) {
+                        closePiP();
+                    }
+                    
+                    return true;
+                } else {
+                    console.log('🎬 [Android PiP] Suporte nativo não disponível, usando fallback...');
+                    throw new Error('Native PiP not supported');
+                }
+            } catch (error) {
+                console.log('🎬 [Android PiP] Erro:', error);
+                throw error;
+            }
+        }
+        
+        // Activate web native Picture-in-Picture
+        async function activateWebNativePiP(video) {
+            try {
+                console.log('🌐 [Web PiP] Tentando ativar PiP web nativo...');
+                
+                // Verificar se PiP é suportado
+                if (!document.pictureInPictureEnabled) {
+                    throw new Error('Picture-in-Picture não suportado neste navegador');
+                }
+                
+                // Criar elemento de vídeo
+                const videoElement = document.createElement('video');
+                videoElement.id = 'nativeVideoPlayer';
+                videoElement.style.display = 'none';
+                videoElement.controls = true;
+                videoElement.muted = false;
+                videoElement.playsInline = true;
+                videoElement.crossOrigin = 'anonymous';
+                videoElement.allowFullscreen = true;
+                
+                // Adicionar ao DOM
+                document.body.appendChild(videoElement);
+                
+                // Usar URL direta do YouTube (mais confiável)
+                const videoUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+                
+                // Tentar usar iframe com vídeo
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://www.youtube.com/embed/${video.videoId}?autoplay=1&controls=1&enablejsapi=1&modestbranding=1&rel=0`;
+                iframe.style.display = 'none';
+                iframe.width = '100%';
+                iframe.height = '100%';
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+                
+                document.body.appendChild(iframe);
+                
+                // Aguardar iframe carregar
                 await new Promise((resolve, reject) => {
                     const timeout = setTimeout(() => {
-                        reject(new Error('Video load timeout'));
-                    }, 10000);
+                        reject(new Error('Iframe load timeout'));
+                    }, 8000);
                     
-                    videoElement.addEventListener('loadeddata', () => {
+                    iframe.addEventListener('load', () => {
                         clearTimeout(timeout);
                         resolve();
                     }, { once: true });
                     
-                    videoElement.addEventListener('error', () => {
+                    iframe.addEventListener('error', () => {
                         clearTimeout(timeout);
-                        reject(new Error('Video load error'));
+                        reject(new Error('Iframe load error'));
                     }, { once: true });
                 });
                 
-                // Request Picture-in-Picture
-                await videoElement.requestPictureInPicture();
-                
-                // Handle PiP events
-                videoElement.addEventListener('enterpictureinpicture', () => {
-                    console.log('Entered native PiP');
-                    showNotification('📱 Entrou no modo Picture-in-Picture nativo', 'success');
-                });
-                
-                videoElement.addEventListener('leavepictureinpicture', () => {
-                    console.log('Left native PiP');
-                    showNotification('📱 Saiu do modo Picture-in-Picture', 'info');
-                    
-                    // Encerrar vídeo quando sair do PiP nativo
-                    if (videoElement) {
-                        videoElement.pause();
-                        videoElement.src = '';
-                        videoElement.load();
+                // Tentar ativar PiP no iframe
+                try {
+                    // Método 1: Tentar PiP no iframe (pode não funcionar)
+                    if (iframe.requestPictureInPicture) {
+                        await iframe.requestPictureInPicture();
+                        showNotification('🌐 PiP web ativado com sucesso!', 'success');
+                        return;
                     }
-                });
+                } catch (e) {
+                    console.log('PiP no iframe falhou:', e);
+                }
                 
-            } else {
-                // Fallback: use iframe in PiP (limited functionality)
-                throw new Error('Could not get video URL for native PiP');
+                // Método 2: Abrir em nova janela com PiP
+                const newWindow = window.open(
+                    `https://www.youtube.com/watch?v=${video.videoId}`,
+                    '_blank',
+                    'width=800,height=600,scrollbars=yes,resizable=yes'
+                );
+                
+                if (newWindow) {
+                    showNotification('🌐 Vídeo aberto em nova janela', 'success');
+                    
+                    // Tentar ativar PiP na nova janela após carregar
+                    setTimeout(() => {
+                        try {
+                            newWindow.document.querySelector('video')?.requestPictureInPicture?.();
+                        } catch (e) {
+                            console.log('PiP na nova janela falhou:', e);
+                        }
+                    }, 3000);
+                } else {
+                    throw new Error('Não foi possível abrir nova janela');
+                }
+                
+            } catch (error) {
+                console.log('❌ [Web PiP] Erro:', error);
+                throw error;
             }
         }
         
@@ -2491,6 +3033,12 @@
                 pipTimeDisplay.textContent = formatTime(currentVideoTime);
                 currentTime = currentVideoTime;
                 
+                // Configurar PiP para ficar sempre visível
+                setupAlwaysVisiblePip();
+                
+                // Mostrar notificação de sucesso
+                showNotification('🎬 PiP ativado! Funciona em todas as telas do dispositivo. Arraste para mover.', 'success');
+                
                 // Criar iframe do YouTube com configurações otimizadas e fallbacks
                 const iframe = document.createElement('iframe');
                 
@@ -2499,11 +3047,25 @@
                 const startTime = Math.floor(currentVideoTime);
                 const autoplayParam = isCurrentlyPlaying ? '1' : '0';
                 
+                // URLs otimizadas para PiP com diferentes estratégias
                 const embedUrls = [
-                    `https://www.youtube.com/embed/${video.videoId}?autoplay=${autoplayParam}&controls=1&modestbranding=1&rel=0&enablejsapi=1&disablekb=0&fs=0&start=${startTime}&showinfo=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&wmode=transparent&origin=${window.location.origin}&widget_referrer=${window.location.origin}`,
-                    `https://www.youtube.com/embed/${video.videoId}?autoplay=${autoplayParam}&controls=1&modestbranding=1&rel=0&enablejsapi=1&disablekb=0&fs=0&start=${startTime}&showinfo=0&iv_load_policy=3&cc_load_policy=0&playsinline=1`,
-                    `https://www.youtube.com/embed/${video.videoId}?autoplay=${autoplayParam}&controls=1&rel=0&enablejsapi=1&fs=0&start=${startTime}&playsinline=1`,
-                    `https://www.youtube.com/embed/${video.videoId}?autoplay=${autoplayParam}&controls=1&rel=0&fs=0&start=${startTime}`
+                    // URL 1: Configuração completa com todos os parâmetros
+                    `https://www.youtube.com/embed/${video.videoId}?autoplay=${autoplayParam}&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&start=${startTime}&showinfo=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&wmode=transparent&origin=${window.location.origin}&widget_referrer=${window.location.origin}&autohide=1&mute=0&loop=0&playlist=${video.videoId}&html5=1&version=3`,
+                    
+                    // URL 2: Configuração simplificada
+                    `https://www.youtube.com/embed/${video.videoId}?autoplay=${autoplayParam}&controls=0&rel=0&enablejsapi=1&start=${startTime}&playsinline=1&html5=1`,
+                    
+                    // URL 3: Configuração mínima
+                    `https://www.youtube.com/embed/${video.videoId}?autoplay=${autoplayParam}&controls=0&rel=0&start=${startTime}&playsinline=1`,
+                    
+                    // URL 4: Sem autoplay (fallback)
+                    `https://www.youtube.com/embed/${video.videoId}?controls=0&rel=0&start=${startTime}&playsinline=1`,
+                    
+                    // URL 5: Configuração alternativa
+                    `https://www.youtube.com/embed/${video.videoId}?controls=0&rel=0&playsinline=1&html5=1&version=3`,
+                    
+                    // URL 6: Último recurso - URL básica
+                    `https://www.youtube.com/embed/${video.videoId}?controls=0&rel=0`
                 ];
                 
                 let currentUrlIndex = 0;
@@ -2515,7 +3077,7 @@
                 iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
                 iframe.allowFullscreen = false;
                 iframe.style.borderRadius = '0';
-                iframe.style.pointerEvents = 'auto';
+                iframe.style.pointerEvents = 'none'; // Desabilitar interações diretas com o iframe
                 iframe.style.width = '100%';
                 iframe.style.height = '100%';
                 iframe.style.objectFit = 'cover';
@@ -2568,26 +3130,43 @@
                         if (loadingText) {
                             loadingText.textContent = `Tentativa ${currentUrlIndex + 1}/${embedUrls.length}...`;
                         }
-                    } else {
-                        console.log('🎬 Todas as URLs falharam, tentando player nativo...');
                         
-                        // Último recurso: usar player nativo do YouTube
-                        const nativePlayer = document.createElement('div');
-                        nativePlayer.innerHTML = `
-                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #000; color: white; text-align: center; padding: 20px;">
-                                <div style="font-size: 24px; margin-bottom: 15px;">🎬</div>
-                                <div style="font-size: 16px; margin-bottom: 10px;">Vídeo não disponível no PiP</div>
-                                <div style="font-size: 14px; margin-bottom: 20px; opacity: 0.8;">Abra o vídeo no YouTube</div>
-                                <a href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank" style="padding: 10px 20px; background: #ff0000; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                                    Abrir no YouTube
-                                </a>
+                        // Aguardar um pouco antes de tentar próxima URL
+                        setTimeout(() => {
+                            if (currentUrlIndex < embedUrls.length - 1) {
+                                // Se ainda não é a última URL, aguardar mais
+                                return;
+                            }
+                        }, 3000);
+                        
+                    } else {
+                        console.log('🎬 Todas as URLs falharam, criando player alternativo...');
+                        
+                        // Criar player alternativo com thumbnail e botão
+                        const alternativePlayer = document.createElement('div');
+                        alternativePlayer.innerHTML = `
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; text-align: center; padding: 20px; position: relative;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('${video.thumbnailUrl || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}') center/cover; opacity: 0.3; z-index: 1;"></div>
+                                <div style="position: relative; z-index: 2;">
+                                    <div style="font-size: 48px; margin-bottom: 15px;">🎬</div>
+                                    <div style="font-size: 16px; margin-bottom: 10px; font-weight: 600;">${video.title}</div>
+                                    <div style="font-size: 14px; margin-bottom: 20px; opacity: 0.8;">Vídeo não disponível no PiP</div>
+                                    <div style="display: flex; gap: 10px; justify-content: center;">
+                                        <a href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank" style="padding: 12px 20px; background: #ff0000; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; transition: background 0.3s;">
+                                            📺 Abrir no YouTube
+                                        </a>
+                                        <button onclick="closePiP()" style="padding: 12px 20px; background: #333; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;">
+                                            ❌ Fechar PiP
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         
                         pipVideoContainer.innerHTML = '';
-                        pipVideoContainer.appendChild(nativePlayer);
+                        pipVideoContainer.appendChild(alternativePlayer);
                         
-                        showNotification('⚠️ Vídeo não disponível no PiP. Abra no YouTube.', 'warning');
+                        showNotification('⚠️ Vídeo não disponível no PiP. Use o botão para abrir no YouTube.', 'warning');
                     }
                 }
 
@@ -2669,6 +3248,9 @@
                 // Adicionar funcionalidade de arrastar
                 makePiPDraggable();
                 
+                // Configurar overlay para interceptar cliques no iframe
+                setupVideoOverlay();
+                
                 // Adicionar listener para redimensionamento
                 const resizeObserver = new ResizeObserver(() => {
                     adjustIframeSize();
@@ -2684,6 +3266,26 @@
 
         function closePiP() {
             console.log('🎬 Iniciando fechamento do PiP...');
+            
+            // Desativa o sistema PIP global
+            localStorage.removeItem('globalPipActive');
+            localStorage.removeItem('globalPipVideo');
+            
+            // Limpar dados de persistência do PiP sempre visível
+            localStorage.removeItem('pipAlwaysVisible');
+            localStorage.removeItem('pipVideoData');
+            
+            // Notifica todas as outras janelas/abas que a PIP global foi desativada
+            window.postMessage({
+                type: 'GLOBAL_PIP_DEACTIVATED'
+            }, '*');
+            
+            // Notifica o pai se estiver em iframe
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'GLOBAL_PIP_DEACTIVATED'
+                }, '*');
+            }
             
             // Pausar o vídeo antes de fechar
             if (pipPlayer) {
@@ -2707,9 +3309,13 @@
                 console.log('🎬 Intervalo de tempo limpo');
             }
             
-            // Remover classe ativa
+            // Remover classe ativa e esconder completamente
             pipWindow.classList.remove('active');
-            console.log('🎬 Classe active removida do PiP');
+            pipWindow.style.display = 'none';
+            pipWindow.style.visibility = 'hidden';
+            pipWindow.style.opacity = '0';
+            pipWindow.style.zIndex = '-1';
+            console.log('🎬 PiP completamente escondido');
             
             // Limpar container de vídeo
             pipVideoContainer.innerHTML = '';
@@ -2738,6 +3344,12 @@
             if (pipProgressBar) {
                 pipProgressBar.style.width = '0%';
             }
+            
+            // Limpar estilos de arrasto
+            pipWindow.style.transform = '';
+            pipWindow.style.boxShadow = '';
+            pipWindow.style.cursor = '';
+            pipWindow.style.transition = '';
             
             console.log('🎬 PiP fechado e vídeo completamente encerrado');
         }
@@ -3056,17 +3668,264 @@
             }
         }
 
+        // Configurar overlay para interceptar cliques no iframe
+        function setupVideoOverlay() {
+            if (!pipVideoOverlay) return;
+            
+            // Interceptar cliques no overlay para controlar play/pause
+            pipVideoOverlay.addEventListener('click', function(e) {
+                // Não interceptar se clicar nos controles customizados
+                if (e.target.closest('.pip-close-button') ||
+                    e.target.closest('.pip-size-button') ||
+                    e.target.closest('.pip-size-controls') ||
+                    e.target.closest('.pip-play-button-bottom') ||
+                    e.target.closest('.pip-controls-bottom') ||
+                    e.target.closest('.pip-progress-container') ||
+                    e.target.closest('.pip-progress-handle')) {
+                    return;
+                }
+                
+                // Toggle play/pause quando clicar no vídeo
+                console.log('🎬 Clique no vídeo detectado, alternando play/pause');
+                togglePiPPlayback();
+            });
+            
+            // Interceptar duplo clique para maximizar/minimizar
+            pipVideoOverlay.addEventListener('dblclick', function(e) {
+                // Não interceptar se clicar nos controles customizados
+                if (e.target.closest('.pip-close-button') ||
+                    e.target.closest('.pip-size-button') ||
+                    e.target.closest('.pip-size-controls') ||
+                    e.target.closest('.pip-play-button-bottom') ||
+                    e.target.closest('.pip-controls-bottom') ||
+                    e.target.closest('.pip-progress-container') ||
+                    e.target.closest('.pip-progress-handle')) {
+                    return;
+                }
+                
+                // Alternar entre tamanhos
+                const currentWidth = pipWindow.offsetWidth;
+                if (currentWidth >= 480) {
+                    minimizePiP();
+                } else {
+                    maximizePiP();
+                }
+            });
+        }
+
+        // Configurar PiP para ficar sempre visível em todas as telas
+        function setupAlwaysVisiblePip() {
+            console.log('🎬 [Always Visible] Configurando PiP para funcionar em todas as telas...');
+            
+            // 1. Garantir que o PiP tenha o maior z-index possível
+            pipWindow.style.zIndex = '2147483647';
+            
+            // 2. Configurar para funcionar mesmo quando a página perde foco
+            document.addEventListener('visibilitychange', function() {
+                if (pipWindow.classList.contains('active')) {
+                    console.log('🎬 [Always Visible] Página perdeu foco, mantendo PiP ativo');
+                    // Manter PiP ativo mesmo quando a página perde foco
+                    pipWindow.style.display = 'block';
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                }
+            });
+            
+            // 3. Configurar para funcionar quando a janela é minimizada
+            window.addEventListener('blur', function() {
+                if (pipWindow.classList.contains('active')) {
+                    console.log('🎬 [Always Visible] Janela perdeu foco, mantendo PiP ativo');
+                    pipWindow.style.display = 'block';
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                }
+            });
+            
+            // 4. Configurar para funcionar quando a página é recarregada
+            window.addEventListener('beforeunload', function() {
+                if (pipWindow.classList.contains('active')) {
+                    console.log('🎬 [Always Visible] Página será recarregada, salvando estado do PiP');
+                    // Salvar estado do PiP no localStorage
+                    localStorage.setItem('pipAlwaysVisible', 'true');
+                    localStorage.setItem('pipVideoData', JSON.stringify({
+                        videoId: currentVideo?.videoId,
+                        title: currentVideo?.title,
+                        currentTime: currentTime,
+                        isPlaying: isVideoPlaying
+                    }));
+                }
+            });
+            
+            // 5. Restaurar PiP se a página foi recarregada
+            window.addEventListener('load', function() {
+                const isPipAlwaysVisible = localStorage.getItem('pipAlwaysVisible');
+                if (isPipAlwaysVisible === 'true') {
+                    console.log('🎬 [Always Visible] Restaurando PiP após recarregamento');
+                    const pipVideoData = localStorage.getItem('pipVideoData');
+                    if (pipVideoData) {
+                        try {
+                            const data = JSON.parse(pipVideoData);
+                            // Restaurar PiP com dados salvos
+                            restorePipFromData(data);
+                        } catch (e) {
+                            console.log('Erro ao restaurar dados do PiP:', e);
+                        }
+                    }
+                }
+            });
+            
+            // 6. Configurar para funcionar em diferentes orientações
+            window.addEventListener('orientationchange', function() {
+                if (pipWindow.classList.contains('active')) {
+                    console.log('🎬 [Always Visible] Orientação mudou, ajustando PiP');
+                    // Ajustar posição do PiP após mudança de orientação
+                    setTimeout(() => {
+                        adjustPipPosition();
+                        // Garantir que o PiP continue visível
+                        pipWindow.style.display = 'block';
+                        pipWindow.style.visibility = 'visible';
+                        pipWindow.style.opacity = '1';
+                    }, 500);
+                }
+            });
+            
+            // 7. Configurar para funcionar quando a tela é redimensionada
+            window.addEventListener('resize', function() {
+                if (pipWindow.classList.contains('active')) {
+                    console.log('🎬 [Always Visible] Tela redimensionada, ajustando PiP');
+                    adjustPipPosition();
+                    // Garantir que o PiP continue visível
+                    pipWindow.style.display = 'block';
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                }
+            });
+            
+            // 8. Configurar para funcionar mesmo quando outras abas estão ativas
+            document.addEventListener('focus', function() {
+                if (pipWindow.classList.contains('active')) {
+                    console.log('🎬 [Always Visible] Página ganhou foco, mantendo PiP ativo');
+                    pipWindow.style.display = 'block';
+                    pipWindow.style.visibility = 'visible';
+                    pipWindow.style.opacity = '1';
+                }
+            });
+            
+            // 9. Configurar para mobile - evitar que o PiP desapareça
+            if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                console.log('🎬 [Mobile] Configurando PiP para mobile...');
+                
+                // Adicionar listener para scroll que pode esconder o PiP
+                window.addEventListener('scroll', function() {
+                    if (pipWindow.classList.contains('active')) {
+                        pipWindow.style.display = 'block';
+                        pipWindow.style.visibility = 'visible';
+                        pipWindow.style.opacity = '1';
+                    }
+                });
+                
+                // Adicionar listener para touch que pode afetar o PiP
+                document.addEventListener('touchstart', function() {
+                    if (pipWindow.classList.contains('active')) {
+                        pipWindow.style.display = 'block';
+                        pipWindow.style.visibility = 'visible';
+                        pipWindow.style.opacity = '1';
+                    }
+                });
+                
+                // Verificar periodicamente se o PiP ainda está visível
+                setInterval(function() {
+                    if (pipWindow.classList.contains('active')) {
+                        const rect = pipWindow.getBoundingClientRect();
+                        if (rect.width === 0 || rect.height === 0 || 
+                            pipWindow.style.display === 'none' || 
+                            pipWindow.style.visibility === 'hidden' ||
+                            pipWindow.style.opacity === '0') {
+                            console.log('🎬 [Mobile] PiP desapareceu, restaurando...');
+                            pipWindow.style.display = 'block';
+                            pipWindow.style.visibility = 'visible';
+                            pipWindow.style.opacity = '1';
+                            pipWindow.style.zIndex = '2147483647';
+                        }
+                    }
+                }, 1000);
+            }
+            
+            console.log('✅ [Always Visible] PiP configurado para funcionar em todas as telas!');
+        }
+
+        // Ajustar posição do PiP
+        function adjustPipPosition() {
+            if (!pipWindow.classList.contains('active')) return;
+            
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const pipWidth = pipWindow.offsetWidth;
+            const pipHeight = pipWindow.offsetHeight;
+            
+            // Garantir que o PiP não saia da tela
+            let left = pipWindow.offsetLeft;
+            let top = pipWindow.offsetTop;
+            
+            if (left + pipWidth > windowWidth) {
+                left = windowWidth - pipWidth - 20;
+            }
+            if (top + pipHeight > windowHeight) {
+                top = windowHeight - pipHeight - 20;
+            }
+            if (left < 0) left = 20;
+            if (top < 0) top = 20;
+            
+            pipWindow.style.left = left + 'px';
+            pipWindow.style.top = top + 'px';
+        }
+
+        // Restaurar PiP a partir de dados salvos
+        function restorePipFromData(data) {
+            if (!data || !data.videoId) return;
+            
+            console.log('🎬 [Restore] Restaurando PiP para:', data.title);
+            
+            // Criar objeto de vídeo a partir dos dados salvos
+            const restoredVideo = {
+                videoId: data.videoId,
+                title: data.title
+            };
+            
+            // Ativar PiP
+            pipWindow.classList.add('active');
+            
+            // Restaurar estado
+            currentTime = data.currentTime || 0;
+            isVideoPlaying = data.isPlaying || false;
+            
+            // Atualizar controles
+            if (isVideoPlaying) {
+                playIconBottom.style.display = 'none';
+                pauseIconBottom.style.display = 'block';
+            } else {
+                playIconBottom.style.display = 'block';
+                pauseIconBottom.style.display = 'none';
+            }
+            
+            // Atualizar tempo
+            pipTimeDisplay.textContent = formatTime(currentTime);
+            
+            // Configurar novamente
+            setupAlwaysVisiblePip();
+            
+            showNotification('🎬 PiP restaurado! Funciona em todas as telas.', 'success');
+        }
+
 
 
         // Make PiP Draggable and Pinchable
         function makePiPDraggable() {
             let isDragging = false;
-            let currentX;
-            let currentY;
-            let initialX;
-            let initialY;
-            let xOffset = 0;
-            let yOffset = 0;
+            let startX = 0;
+            let startY = 0;
+            let initialX = 0;
+            let initialY = 0;
             
             // Pinch-to-zoom variables
             let isPinching = false;
@@ -3090,7 +3949,7 @@
                 };
             }
 
-            // Usar o overlay para capturar eventos de arrastar
+            // Mouse events
             pipDragOverlay.addEventListener('mousedown', dragStart);
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', dragEnd);
@@ -3101,71 +3960,113 @@
             document.addEventListener('touchend', touchEnd, { passive: false });
 
             function dragStart(e) {
-                // Não arrastar se clicar nos botões ou controles
-                if (e.target.closest('.pip-close-button') ||
-                    e.target.closest('.pip-size-button') ||
-                    e.target.closest('.pip-size-controls') ||
-                    e.target.closest('.pip-play-button-bottom') ||
-                    e.target.closest('.pip-controls-bottom') ||
-                    e.target.closest('.pip-progress-container') ||
-                    e.target.closest('.pip-progress-handle')) {
+                // Verificar se o clique foi em um botão ou controle
+                const target = e.target;
+                const isButton = target.closest('.pip-close-button') ||
+                                target.closest('.pip-size-button') ||
+                                target.closest('.pip-size-controls') ||
+                                target.closest('.pip-play-button-bottom') ||
+                                target.closest('.pip-controls-bottom') ||
+                                target.closest('.pip-progress-container') ||
+                                target.closest('.pip-progress-handle');
+                
+                if (isButton) {
+                    console.log('🎬 [Touch] Clique em botão detectado, não iniciando arrasto');
                     return;
                 }
                 
-                // Habilitar overlay para arrastar
-                pipDragOverlay.classList.add('dragging');
-                pipDragOverlay.style.pointerEvents = 'auto';
+                e.preventDefault();
+                e.stopPropagation();
                 
-                initialX = e.clientX - xOffset;
-                initialY = e.clientY - yOffset;
+                // Obter posição atual do PiP
+                const rect = pipWindow.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+                
+                // Posição do mouse/touch
+                startX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                startY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                
                 isDragging = true;
                 
                 pipWindow.style.cursor = 'grabbing';
                 pipWindow.style.transition = 'none';
-                pipWindow.style.zIndex = '1001';
+                pipWindow.style.zIndex = '2147483647';
                 
                 // Adicionar efeito visual de arrastar
                 pipWindow.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.5)';
+                pipWindow.style.transform = 'scale(1.02)';
+                
+                console.log('🎬 [Touch] Iniciando arrasto do PiP');
             }
 
             function drag(e) {
-                if (isDragging) {
-                    e.preventDefault();
-                    currentX = e.clientX - initialX;
-                    currentY = e.clientY - initialY;
-
-                    xOffset = currentX;
-                    yOffset = currentY;
-
-                    pipWindow.style.transform = `translate(${currentX}px, ${currentY}px)`;
-                }
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const currentX = e.clientX || e.touches[0].clientX;
+                const currentY = e.clientY || e.touches[0].clientY;
+                
+                const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+                
+                let newX = initialX + deltaX;
+                let newY = initialY + deltaY;
+                
+                // Limitar movimento dentro da tela
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                const pipWidth = pipWindow.offsetWidth;
+                const pipHeight = pipWindow.offsetHeight;
+                
+                newX = Math.max(0, Math.min(newX, windowWidth - pipWidth));
+                newY = Math.max(0, Math.min(newY, windowHeight - pipHeight));
+                
+                pipWindow.style.left = newX + 'px';
+                pipWindow.style.top = newY + 'px';
+                pipWindow.style.right = 'auto';
+                pipWindow.style.bottom = 'auto';
             }
 
             function dragEnd(e) {
-                if (isDragging) {
-                    initialX = currentX;
-                    initialY = currentY;
-                    isDragging = false;
-                    
-                    // Desabilitar overlay
-                    pipDragOverlay.classList.remove('dragging');
-                    pipDragOverlay.style.pointerEvents = 'none';
-                    
-                    pipWindow.style.cursor = 'grab';
-                    pipWindow.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                    pipWindow.style.zIndex = '1000';
-                    
-                    // Restaurar sombra original
-                    pipWindow.style.boxShadow = `
-                        0 8px 32px rgba(0, 0, 0, 0.3),
-                        0 4px 16px rgba(0, 0, 0, 0.2)
-                    `;
-                }
+                if (!isDragging) return;
+                
+                isDragging = false;
+                
+                pipWindow.style.cursor = 'grab';
+                pipWindow.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                pipWindow.style.zIndex = '2147483647';
+                pipWindow.style.transform = 'scale(1)';
+                
+                // Restaurar sombra original
+                pipWindow.style.boxShadow = `
+                    0 8px 32px rgba(0, 0, 0, 0.3),
+                    0 4px 16px rgba(0, 0, 0, 0.2)
+                `;
             }
 
             // Touch event handlers
             function touchStart(e) {
+                // Verificar se o toque foi em um botão ou controle
+                const target = e.target;
+                const isButton = target.closest('.pip-close-button') ||
+                                target.closest('.pip-size-button') ||
+                                target.closest('.pip-size-controls') ||
+                                target.closest('.pip-play-button-bottom') ||
+                                target.closest('.pip-controls-bottom') ||
+                                target.closest('.pip-progress-container') ||
+                                target.closest('.pip-progress-handle');
+                
+                if (isButton) {
+                    console.log('🎬 [Touch] Toque em botão detectado, permitindo clique');
+                    // Não prevenir o comportamento padrão para botões
+                    return;
+                }
+                
                 e.preventDefault();
+                e.stopPropagation();
                 
                 if (e.touches.length === 2) {
                     // Pinch gesture
@@ -3185,27 +4086,33 @@
                     // Single touch - start dragging
                     const touch = e.touches[0];
                     
-                    // Não arrastar se tocar nos botões ou controles
-                    if (touch.target.closest('.pip-close-button') ||
-                        touch.target.closest('.pip-size-button') ||
-                        touch.target.closest('.pip-size-controls') ||
-                        touch.target.closest('.pip-play-button-bottom') ||
-                        touch.target.closest('.pip-controls-bottom') ||
-                        touch.target.closest('.pip-progress-container') ||
-                        touch.target.closest('.pip-progress-handle')) {
-                        return;
-                    }
+                    // Obter posição atual do PiP
+                    const rect = pipWindow.getBoundingClientRect();
+                    initialX = rect.left;
+                    initialY = rect.top;
+                    
+                    // Posição do touch
+                    startX = touch.clientX;
+                    startY = touch.clientY;
                     
                     isDragging = true;
                     isPinching = false;
                     
-                    initialX = touch.clientX - xOffset;
-                    initialY = touch.clientY - yOffset;
+                    pipWindow.style.cursor = 'grabbing';
+                    pipWindow.style.transition = 'none';
+                    pipWindow.style.zIndex = '2147483647';
+                    
+                    // Adicionar efeito visual de arrastar
+                    pipWindow.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.5)';
+                    pipWindow.style.transform = 'scale(1.02)';
+                    
+                    console.log('🎬 [Touch] Iniciando arrasto via touch');
                 }
             }
 
             function touchMove(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 
                 if (e.touches.length === 2 && isPinching) {
                     // Pinch gesture
@@ -3241,20 +4148,28 @@
                     // Single touch - continue dragging
                     const touch = e.touches[0];
                     
-                    currentX = touch.clientX - initialX;
-                    currentY = touch.clientY - initialY;
+                    const currentX = touch.clientX;
+                    const currentY = touch.clientY;
                     
-                    xOffset = currentX;
-                    yOffset = currentY;
+                    const deltaX = currentX - startX;
+                    const deltaY = currentY - startY;
+                    
+                    let newX = initialX + deltaX;
+                    let newY = initialY + deltaY;
                     
                     // Limitar movimento dentro da tela
-                    const maxX = window.innerWidth - pipWindow.offsetWidth;
-                    const maxY = window.innerHeight - pipWindow.offsetHeight;
+                    const windowWidth = window.innerWidth;
+                    const windowHeight = window.innerHeight;
+                    const pipWidth = pipWindow.offsetWidth;
+                    const pipHeight = pipWindow.offsetHeight;
                     
-                    xOffset = Math.max(0, Math.min(xOffset, maxX));
-                    yOffset = Math.max(0, Math.min(yOffset, maxY));
+                    newX = Math.max(0, Math.min(newX, windowWidth - pipWidth));
+                    newY = Math.max(0, Math.min(newY, windowHeight - pipHeight));
                     
-                    pipWindow.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0)`;
+                    pipWindow.style.left = newX + 'px';
+                    pipWindow.style.top = newY + 'px';
+                    pipWindow.style.right = 'auto';
+                    pipWindow.style.bottom = 'auto';
                     
                     // Adicionar sombra durante o arrasto
                     pipWindow.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3)';
@@ -3263,13 +4178,27 @@
 
             function touchEnd(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 
                 if (e.touches.length === 0) {
-                    isDragging = false;
-                    isPinching = false;
+                    if (isDragging) {
+                        isDragging = false;
+                        
+                        pipWindow.style.cursor = 'grab';
+                        pipWindow.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        pipWindow.style.zIndex = '2147483647';
+                        pipWindow.style.transform = 'scale(1)';
+                        
+                        // Restaurar sombra
+                        pipWindow.style.boxShadow = `
+                            0 8px 32px rgba(0, 0, 0, 0.3),
+                            0 4px 16px rgba(0, 0, 0, 0.2)
+                        `;
+                    }
                     
-                    // Restaurar sombra
-                    pipWindow.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)';
+                    if (isPinching) {
+                        isPinching = false;
+                    }
                 }
             }
         }

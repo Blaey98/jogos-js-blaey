@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Jogos - Página Principal</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7154773731438541"
+     crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/global-pip.css">
+    <link rel="stylesheet" href="css/gdpr-consent.css">
     <style>
         * {
             margin: 0;
@@ -193,6 +197,210 @@
             .catch(error => {
                 console.error('❌ Erro ao conectar com o servidor:', error);
             });
+
+        // Sistema PIP Global
+        function createGlobalPipWindow(videoData) {
+            console.log('🔍 createGlobalPipWindow() chamada no index.html', videoData);
+            
+            // Remove PIP global existente se houver
+            const existingPip = document.getElementById('globalPipWindow');
+            if (existingPip) {
+                existingPip.remove();
+                console.log('🔍 PIP global existente removida');
+            }
+            
+            // Cria a janela PIP global
+            const pipWindow = document.createElement('div');
+            pipWindow.id = 'globalPipWindow';
+            pipWindow.className = 'global-pip-window';
+            pipWindow.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 320px;
+                height: 180px;
+                background: #000;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                z-index: 99999;
+                overflow: hidden;
+                cursor: move;
+                border: 2px solid rgba(255,255,255,0.2);
+                transition: all 0.3s ease;
+            `;
+            
+            pipWindow.innerHTML = `
+                <div class="pip-header" style="
+                    background: rgba(0,0,0,0.8);
+                    padding: 8px 12px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                ">
+                    <span style="color: white; font-size: 12px; font-weight: bold; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${videoData.title}</span>
+                    <button onclick="closeGlobalPip()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 16px;
+                        cursor: pointer;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                <div class="pip-content" style="
+                    width: 100%;
+                    height: calc(100% - 40px);
+                    position: relative;
+                ">
+                    <iframe 
+                        src="${videoData.embedUrl || videoData.url}" 
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            border: none;
+                        "
+                        frameborder="0"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+            
+            // Adiciona funcionalidade de arrastar
+            makeGlobalPipDraggable(pipWindow);
+            
+            // Adiciona à página
+            document.body.appendChild(pipWindow);
+            console.log('🔍 PIP global criada e adicionada ao index.html');
+        }
+
+        // Função para fechar a PIP global
+        function closeGlobalPip() {
+            console.log('🔍 closeGlobalPip() chamada no index.html');
+            
+            const pipWindow = document.getElementById('globalPipWindow');
+            if (pipWindow) {
+                pipWindow.remove();
+                console.log('🔍 PIP global removida do index.html');
+            }
+            
+            // Remove dados do localStorage
+            localStorage.removeItem('globalPipActive');
+            localStorage.removeItem('globalPipVideo');
+            
+            // Notifica outras páginas
+            window.postMessage({
+                type: 'GLOBAL_PIP_DEACTIVATED'
+            }, '*');
+        }
+
+        // Função para tornar a PIP global arrastável
+        function makeGlobalPipDraggable(element) {
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            element.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+
+            function dragStart(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'IFRAME') {
+                    return;
+                }
+                
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+
+                if (e.target === element || element.contains(e.target)) {
+                    isDragging = true;
+                    element.style.cursor = 'grabbing';
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                element.style.cursor = 'move';
+            }
+        }
+
+        // Listener para mensagens do sistema PIP global
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'GLOBAL_PIP_ACTIVATED') {
+                console.log('🔍 PIP global ativada no index.html - vídeo: ' + event.data.videoData.title);
+                // Cria a PIP global nesta página também
+                createGlobalPipWindow(event.data.videoData);
+            } else if (event.data.type === 'GLOBAL_PIP_DEACTIVATED') {
+                console.log('🔍 PIP global desativada no index.html');
+                // Remove a PIP global desta página
+                const pipWindow = document.getElementById('globalPipWindow');
+                if (pipWindow) {
+                    pipWindow.remove();
+                }
+            }
+        });
+
+        // Verifica se há uma PIP ativa no localStorage ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Index.html carregado - Sistema PIP global ativo');
+            
+            const isPipActive = localStorage.getItem('globalPipActive');
+            const pipVideoData = localStorage.getItem('globalPipVideo');
+            
+            if (isPipActive === 'true' && pipVideoData) {
+                try {
+                    const videoData = JSON.parse(pipVideoData);
+                    // Verifica se os dados não são muito antigos (5 minutos)
+                    if (Date.now() - videoData.timestamp < 300000) {
+                        console.log('🔍 Sistema PIP global detectado como ativo no index.html: ' + videoData.title);
+                        createGlobalPipWindow(videoData);
+                    } else {
+                        console.log('🔍 Dados da PIP muito antigos, removendo');
+                        localStorage.removeItem('globalPipActive');
+                        localStorage.removeItem('globalPipVideo');
+                    }
+                } catch (e) {
+                    console.log('🔍 Erro ao carregar dados da PIP no index.html: ' + e.message);
+                }
+            }
+        });
+    </script>
+    <script src="js/google-cmp.js"></script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registrado:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker falhou:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>

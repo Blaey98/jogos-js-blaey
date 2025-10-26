@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pac Social - Mobile</title>
+    <link rel="shortcut icon" href="favicon.png">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7154773731438541"
+     crossorigin="anonymous"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .banner-container {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            flex-shrink: 0;
+        }
+        
+        .banner-ad {
+            width: 320px;
+            height: 100px;
+            display: block;
+        }
+        
+        .game-container {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto !important;
+            height: auto !important;
+        }
+        
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            #canvas {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="banner-container">
+        <div class="banner-ad">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-7154773731438541"
+                 data-ad-slot="8720222025"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </div>
+    
+    <div class="game-container">
+        <canvas id="canvas" width="960" height="640">Jogo não suportado</canvas>
+    </div>
+
+    <script src="./static/script/game.js"></script>
+    <script src="./static/script/index.js"></script>
+    <script src="./static/script/mobile-gestures.js"></script>
+    <script src="./static/script/virtual-controls.js"></script>
+    
+    <script>
+        // Canvas fit with banner
+        function adjustCanvasForMobile() {
+            const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+            
+            const screenWidth = window.innerWidth;
+            const bannerHeight = 100;
+            const availableHeight = window.innerHeight - bannerHeight;
+            
+            const originalWidth = 960;
+            const originalHeight = 640;
+            
+            const scale = Math.min(screenWidth / originalWidth, availableHeight / originalHeight) * 0.95;
+            
+            canvas.width = originalWidth * scale;
+            canvas.height = originalHeight * scale;
+        }
+        
+        // Mobile controls
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('canvas');
+            
+            // Adjust canvas
+            adjustCanvasForMobile();
+            
+            // Re-adjust after game initializes
+            setTimeout(function() {
+                adjustCanvasForMobile();
+            }, 200);
+            
+            setTimeout(function() {
+                adjustCanvasForMobile();
+            }, 500);
+            
+            // Re-adjust on resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(adjustCanvasForMobile, 100);
+            });
+            
+            // Re-adjust on orientation change
+            window.addEventListener('orientationchange', function() {
+                setTimeout(adjustCanvasForMobile, 200);
+            });
+            
+            // Watch for canvas size changes
+            const observer = new MutationObserver(function(mutations) {
+                adjustCanvasForMobile();
+            });
+            
+            observer.observe(canvas, { 
+                attributes: true, 
+                attributeFilter: ['width', 'height', 'style']
+            });
+            
+            // Periodically check
+            setInterval(function() {
+                const currentWidth = canvas.getAttribute('width');
+                const currentHeight = canvas.getAttribute('height');
+                if (currentWidth == 960 || currentHeight == 640) {
+                    adjustCanvasForMobile();
+                }
+            }, 500);
+            
+            // Initialize mobile gestures
+            const gestures = new MobileGestures(canvas, {
+                minSwipeDistance: 25,
+                maxSwipeTime: 400,
+                doubleTapDelay: 300,
+                longPressDelay: 600
+            });
+            
+            // Virtual controls
+            function getResponsiveControlSize() {
+                const screenWidth = window.innerWidth;
+                const isLandscape = screenWidth > window.innerHeight;
+                
+                let baseSize = 60;
+                let basePadding = 15;
+                
+                if (screenWidth <= 375) {
+                    baseSize = 50;
+                    basePadding = 12;
+                } else if (screenWidth <= 480) {
+                    baseSize = 60;
+                    basePadding = 15;
+                } else if (screenWidth <= 768) {
+                    baseSize = 70;
+                    basePadding = 18;
+                } else if (screenWidth <= 1024) {
+                    baseSize = 80;
+                    basePadding = 20;
+                } else {
+                    baseSize = 90;
+                    basePadding = 25;
+                }
+                
+                if (isLandscape) {
+                    baseSize *= 0.8;
+                    basePadding *= 0.8;
+                }
+                
+                return { size: baseSize, padding: basePadding };
+            }
+            
+            const controlConfig = getResponsiveControlSize();
+            const virtualControls = new VirtualControls(canvas, {
+                size: controlConfig.size,
+                padding: controlConfig.padding,
+                opacity: 0.8,
+                showLabels: true
+            });
+            
+            // Gesture callbacks
+            gestures.onSwipe(function(data) {
+                console.log('🎮 SWIPE:', data.direction);
+                simulateKeyPress(data.direction);
+            });
+            
+            gestures.onTap(function(data) {
+                if (window.game && window.game.getCurrentStage) {
+                    const currentStage = window.game.getCurrentStage();
+                    if (currentStage === 1) {
+                        restartGame();
+                        return;
+                    }
+                }
+                simulateKeyPress('space');
+            });
+            
+            // Virtual controls callbacks
+            virtualControls.onDirection(function(direction) {
+                simulateKeyPress(direction);
+            });
+            
+            virtualControls.onAction(function(action) {
+                simulateKeyPress(action);
+            });
+            
+            // Hide virtual controls
+            virtualControls.hide();
+            
+            // Prevent scrolling
+            document.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            // Simulate key press
+            function simulateKeyPress(key) {
+                let keyCode;
+                switch(key) {
+                    case 'up': keyCode = 38; break;
+                    case 'down': keyCode = 40; break;
+                    case 'left': keyCode = 37; break;
+                    case 'right': keyCode = 39; break;
+                    case 'space': keyCode = 32; break;
+                }
+                
+                if (keyCode) {
+                    const event = new KeyboardEvent('keydown', {
+                        keyCode: keyCode,
+                        which: keyCode,
+                        key: key === 'space' ? ' ' : key,
+                        code: key === 'space' ? 'Space' : 'Arrow' + key.charAt(0).toUpperCase() + key.slice(1),
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    
+                    window.dispatchEvent(event);
+                    document.dispatchEvent(event);
+                }
+            }
+            
+            // Restart game function
+            function restartGame() {
+                console.log('🎮 Restarting game...');
+                
+                if (typeof _SCORE !== 'undefined') _SCORE = 0;
+                if (typeof _LIFE !== 'undefined') _LIFE = 5;
+                
+                if (typeof window.currentLevelIndex !== 'undefined') {
+                    window.currentLevelIndex = 0;
+                }
+                
+                if (window.game && window.game.reset) {
+                    window.game.reset();
+                }
+                
+                window.game.setStage(0);
+                console.log('🎮 Game restarted');
+            }
+            
+            // Global restart listeners
+            document.addEventListener('touchstart', function(e) {
+                if (window.game && window.game.getCurrentStage) {
+                    const currentStage = window.game.getCurrentStage();
+                    if (currentStage === 1) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        restartGame();
+                        return false;
+                    }
+                }
+            }, { passive: false });
+            
+            document.addEventListener('click', function(e) {
+                if (window.game && window.game.getCurrentStage) {
+                    const currentStage = window.game.getCurrentStage();
+                    if (currentStage === 1) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        restartGame();
+                        return false;
+                    }
+                }
+            });
+            
+            // Expose globally
+            window.gestures = gestures;
+            window.virtualControls = virtualControls;
+        });
+    </script>
+</body>
+</html>
+
+

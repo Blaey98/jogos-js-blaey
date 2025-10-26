@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Among Us Online - Y8</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ad-container {
+            width: 100%;
+            height: 100px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #ddd;
+            position: relative;
+        }
+
+        .ad-placeholder {
+            width: 320px;
+            height: 100px;
+            background: linear-gradient(135deg, #FF6B6B, #C44569);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .game-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 999;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .game-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 999;
+            background: rgba(0,0,0,0.8);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .game-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .game-title-main {
+            font-size: 28px;
+            font-weight: 700;
+            color: #FF6B6B;
+            margin-bottom: 15px;
+        }
+
+        .game-description {
+            font-size: 16px;
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #FF6B6B, #C44569);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(255,107,107,0.3);
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .play-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255,107,107,0.4);
+        }
+
+        .play-button:active {
+            transform: translateY(-1px);
+        }
+
+        .game-status {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: rgba(0,255,0,0.2);
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            z-index: 1001;
+        }
+
+        /* Responsivo para mobile */
+        @media (max-width: 480px) {
+            .ad-container {
+                height: 80px;
+            }
+            
+            .ad-placeholder {
+                width: 280px;
+                height: 80px;
+                font-size: 14px;
+            }
+            
+            .game-header {
+                padding: 12px 15px;
+            }
+            
+            .game-title {
+                font-size: 16px;
+            }
+            
+            .back-button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            
+            .game-content {
+                padding: 30px 20px;
+            }
+            
+            .game-icon {
+                font-size: 60px;
+            }
+            
+            .game-title-main {
+                font-size: 24px;
+            }
+            
+            .play-button {
+                padding: 15px 30px;
+                font-size: 16px;
+            }
+        }
+
+        /* Para telas muito pequenas */
+        @media (max-width: 360px) {
+            .ad-placeholder {
+                width: 240px;
+                height: 70px;
+                font-size: 12px;
+            }
+            
+            .ad-container {
+                height: 70px;
+            }
+            
+            .game-content {
+                padding: 25px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Área do anúncio -->
+    <div class="ad-container">
+        <div class="ad-placeholder">
+            📢 Espaço para Anúncio<br>
+            <small>320x100</small>
+        </div>
+    </div>
+
+    <!-- Container do jogo -->
+    <div class="game-container">
+        <!-- Header do jogo -->
+        <div class="game-header">
+            <div class="game-title">🚀 Among Us Online - Y8</div>
+            <button class="back-button" onclick="goBack()">
+                ← Voltar
+            </button>
+        </div>
+
+        <!-- Status do jogo -->
+        <div class="game-status" id="gameStatus">
+            ✅ Y8 Disponível
+        </div>
+
+        <!-- Conteúdo do jogo -->
+        <div class="game-content">
+            <div class="game-icon">🚀</div>
+            <h1 class="game-title-main">Among Us Online</h1>
+            <p class="game-description">
+                Descubra o impostor entre os tripulantes! 
+                Complete tarefas ou elimine todos para vencer.
+                <br><br>
+                <strong>Jogo oficial do Y8.com</strong>
+            </p>
+            
+            <button class="play-button" onclick="playGame()">
+                🎮 Jogar no Y8
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'lista-jogos-vertical.html';
+            }
+        }
+
+        function playGame() {
+            // Abre o jogo do Y8 em nova aba
+            window.open('https://pt.y8.com/games/among_us_single_player', '_blank');
+        }
+
+        // Adiciona suporte para teclas de navegação
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                goBack();
+            }
+            if (e.key === 'Enter' || e.key === ' ') {
+                playGame();
+            }
+        });
+
+        // Previne zoom em dispositivos móveis
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        // Otimizações para mobile
+        if (window.innerWidth <= 768) {
+            document.body.style.touchAction = 'manipulation';
+        }
+
+        // Adiciona efeito de hover no botão
+        const playButton = document.querySelector('.play-button');
+        playButton.addEventListener('mouseenter', function() {
+            this.style.background = 'linear-gradient(135deg, #C44569, #FF6B6B)';
+        });
+        
+        playButton.addEventListener('mouseleave', function() {
+            this.style.background = 'linear-gradient(135deg, #FF6B6B, #C44569)';
+        });
+
+        // Log de debug
+        console.log('Among Us Y8 Working carregado');
+        console.log('Link do jogo: https://pt.y8.com/games/among_us_single_player');
+    </script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PIP Arrastar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste PIP Arrastar</h1>
+        
+        <div class="instructions">
+            <h3>📝 Instruções</h3>
+            <ol>
+                <li><strong>Clique em "Criar PIP de Teste"</strong> para criar uma janela PIP</li>
+                <li><strong>Arraste pelo header</strong> (área com "📺 YouTube PIP")</li>
+                <li><strong>Teste se a PIP se move</strong> pela tela</li>
+            </ol>
+        </div>
+
+        <button class="test-button" onclick="createTestPip()">
+            🎯 Criar PIP de Teste
+        </button>
+
+        <button class="test-button" onclick="testGamePip()">
+            🎮 Testar PIP do Jogo
+        </button>
+    </div>
+
+    <script>
+        function createTestPip() {
+            // Remove PIP existente se houver
+            const existingPip = document.getElementById('testPipWindow');
+            if (existingPip) {
+                existingPip.remove();
+            }
+            
+            // Cria a janela PIP de teste
+            const pipWindow = document.createElement('div');
+            pipWindow.id = 'testPipWindow';
+            pipWindow.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 320px;
+                height: 180px;
+                background: #000;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                z-index: 99999;
+                overflow: hidden;
+                border: 2px solid #333;
+                user-select: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+            `;
+            
+            pipWindow.innerHTML = `
+                <div style="
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    background: #000;
+                ">
+                    <!-- Header com controles -->
+                    <div id="testPipHeader" style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 35px;
+                        background: rgba(0,0,0,0.9);
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0 12px;
+                        z-index: 10;
+                        cursor: move;
+                        border-radius: 15px 15px 0 0;
+                        border-bottom: 1px solid #444;
+                    ">
+                        <span style="color: white; font-size: 13px; font-weight: bold; user-select: none;">📺 PIP de Teste</span>
+                        <button onclick="closeTestPip()" style="
+                            background: rgba(255,255,255,0.1);
+                            border: none;
+                            color: white;
+                            font-size: 18px;
+                            cursor: pointer;
+                            padding: 4px 8px;
+                            border-radius: 50%;
+                            width: 24px;
+                            height: 24px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">×</button>
+                    </div>
+                    
+                    <!-- Área de conteúdo -->
+                    <div style="
+                        position: absolute;
+                        top: 35px;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: #111;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 16px;
+                    ">
+                        Arraste pelo header! 🖱️
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(pipWindow);
+            
+            // Adicionar funcionalidade de arrastar
+            makeTestPipDraggable(pipWindow);
+            
+            console.log('✅ PIP de teste criada');
+        }
+
+        function closeTestPip() {
+            const pipWindow = document.getElementById('testPipWindow');
+            if (pipWindow) {
+                pipWindow.remove();
+                console.log('✅ PIP de teste fechada');
+            }
+        }
+
+        function makeTestPipDraggable(element) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+            
+            const header = element.querySelector('#testPipHeader');
+            if (header) {
+                header.style.cursor = 'move';
+                header.style.userSelect = 'none';
+            }
+
+            function getMousePos(e) {
+                return {
+                    x: e.clientX || (e.touches && e.touches[0].clientX),
+                    y: e.clientY || (e.touches && e.touches[0].clientY)
+                };
+            }
+
+            function startDrag(e) {
+                if (!header || !header.contains(e.target)) return;
+                
+                isDragging = true;
+                const pos = getMousePos(e);
+                startX = pos.x;
+                startY = pos.y;
+                
+                const rect = element.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+                
+                e.preventDefault();
+                console.log('🔍 Iniciando arrastar PIP de teste');
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                const pos = getMousePos(e);
+                
+                const deltaX = pos.x - startX;
+                const deltaY = pos.y - startY;
+                
+                const newX = initialX + deltaX;
+                const newY = initialY + deltaY;
+                
+                const maxX = window.innerWidth - element.offsetWidth;
+                const maxY = window.innerHeight - element.offsetHeight;
+                
+                const clampedX = Math.max(0, Math.min(newX, maxX));
+                const clampedY = Math.max(0, Math.min(newY, maxY));
+                
+                element.style.left = clampedX + 'px';
+                element.style.top = clampedY + 'px';
+                element.style.right = 'auto';
+                element.style.transform = 'none';
+            }
+
+            function endDrag(e) {
+                if (isDragging) {
+                    isDragging = false;
+                    console.log('🔍 Parando de arrastar PIP de teste');
+                }
+            }
+
+            element.addEventListener('mousedown', startDrag);
+            element.addEventListener('touchstart', startDrag);
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            
+            element.addEventListener('selectstart', (e) => e.preventDefault());
+        }
+
+        function testGamePip() {
+            // Abre o jogo de teste
+            const gameUrl = 'jogo-vertical-template-fixed.html?url=https://10944.play.gamezop.com/g/S1kGWUim8Ux&title=Shadow+Run&description=Corra+nas+sombras+em+uma+aventura+noturna!&orientation=vertical&return=' + encodeURIComponent(window.location.href);
+            window.open(gameUrl, '_blank');
+        }
+    </script>
+</body>
+</html>

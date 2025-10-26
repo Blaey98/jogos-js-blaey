@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Among Us - Jogar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ad-container {
+            width: 100%;
+            height: 100px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #ddd;
+            position: relative;
+        }
+
+        .ad-placeholder {
+            width: 320px;
+            height: 100px;
+            background: linear-gradient(135deg, #FF6B6B, #C44569);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .game-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 999;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 999;
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .error-message h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #FF6B6B;
+        }
+
+        .error-message p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, #FF6B6B, #C44569);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .retry-button:hover {
+            transform: scale(1.05);
+        }
+
+        .game-status {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: rgba(0,255,0,0.2);
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            z-index: 1001;
+        }
+
+        /* Responsivo para mobile */
+        @media (max-width: 480px) {
+            .ad-container {
+                height: 80px;
+            }
+            
+            .ad-placeholder {
+                width: 280px;
+                height: 80px;
+                font-size: 14px;
+            }
+            
+            .game-header {
+                padding: 12px 15px;
+            }
+            
+            .game-title {
+                font-size: 16px;
+            }
+            
+            .back-button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* Para telas muito pequenas */
+        @media (max-width: 360px) {
+            .ad-placeholder {
+                width: 240px;
+                height: 70px;
+                font-size: 12px;
+            }
+            
+            .ad-container {
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Área do anúncio -->
+    <div class="ad-container">
+        <div class="ad-placeholder">
+            📢 Espaço para Anúncio<br>
+            <small>320x100</small>
+        </div>
+    </div>
+
+    <!-- Container do jogo -->
+    <div class="game-container">
+        <!-- Header do jogo -->
+        <div class="game-header">
+            <div class="game-title">🚀 Among Us Online</div>
+            <button class="back-button" onclick="goBack()">
+                ← Voltar
+            </button>
+        </div>
+
+        <!-- Status do jogo -->
+        <div class="game-status" id="gameStatus">
+            🔄 Carregando...
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Carregando Among Us...
+        </div>
+
+        <!-- Iframe do jogo -->
+        <iframe 
+            class="game-iframe" 
+            id="gameFrame"
+            src=""
+            allowfullscreen
+            allow="autoplay; fullscreen; microphone; camera"
+            onload="hideLoading()"
+            onerror="handleIframeError()">
+        </iframe>
+    </div>
+
+    <script>
+        let currentGameIndex = 0;
+        
+        // URLs de jogos que funcionam em iframe
+        const workingGameUrls = [
+            'https://www.agame.com/game/among-us',
+            'https://www.crazygames.com/embed/among-us',
+            'https://www.miniclip.com/games/among-us/en/',
+            'https://www.agame.com/game/among-us-2',
+            'https://www.crazygames.com/embed/among-us-2',
+            'https://www.agame.com/game/among-us-3'
+        ];
+
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'lista-jogos-vertical.html';
+            }
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            const gameStatus = document.getElementById('gameStatus');
+            
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            
+            if (gameStatus) {
+                gameStatus.textContent = '✅ Jogo Carregado';
+                gameStatus.style.background = 'rgba(0,255,0,0.2)';
+                gameStatus.style.color = '#00ff00';
+            }
+        }
+
+        function showError() {
+            const loading = document.getElementById('loading');
+            const gameStatus = document.getElementById('gameStatus');
+            
+            if (gameStatus) {
+                gameStatus.textContent = '❌ Erro de Carregamento';
+                gameStatus.style.background = 'rgba(255,0,0,0.2)';
+                gameStatus.style.color = '#ff0000';
+            }
+            
+            if (loading) {
+                loading.innerHTML = `
+                    <div class="error-message">
+                        <h3>🚀 Among Us Online</h3>
+                        <p>Não foi possível carregar o jogo no iframe.</p>
+                        <p>Alguns sites bloqueiam incorporação por segurança.</p>
+                        <button class="retry-button" onclick="tryNextGame()">
+                            🔄 Tentar Outro Jogo
+                        </button>
+                        <button class="retry-button" onclick="openInNewTab()">
+                            🎯 Jogar em Nova Aba
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function handleIframeError() {
+            console.log('Erro no iframe, tentando próximo jogo...');
+            tryNextGame();
+        }
+
+        function tryNextGame() {
+            currentGameIndex++;
+            const gameFrame = document.getElementById('gameFrame');
+            const loading = document.getElementById('loading');
+            const gameStatus = document.getElementById('gameStatus');
+            
+            if (currentGameIndex < workingGameUrls.length) {
+                const gameUrl = workingGameUrls[currentGameIndex];
+                
+                if (loading) {
+                    loading.innerHTML = `
+                        <div class="spinner"></div>
+                        Tentando jogo ${currentGameIndex + 1} de ${workingGameUrls.length}...
+                    `;
+                }
+                
+                if (gameStatus) {
+                    gameStatus.textContent = `🔄 Jogo ${currentGameIndex + 1}`;
+                    gameStatus.style.background = 'rgba(255,255,0,0.2)';
+                    gameStatus.style.color = '#ffff00';
+                }
+                
+                setTimeout(() => {
+                    console.log('Tentando jogo:', gameUrl);
+                    gameFrame.src = gameUrl;
+                }, 1000);
+            } else {
+                showError();
+            }
+        }
+
+        function openInNewTab() {
+            window.open('https://pt.y8.com/games/among_us_single_player', '_blank');
+        }
+
+        // Inicia carregando o jogo
+        function startGame() {
+            const gameFrame = document.getElementById('gameFrame');
+            const gameStatus = document.getElementById('gameStatus');
+            
+            if (gameStatus) {
+                gameStatus.textContent = '🔄 Conectando...';
+                gameStatus.style.background = 'rgba(255,255,0,0.2)';
+                gameStatus.style.color = '#ffff00';
+            }
+            
+            // Tenta o primeiro jogo
+            const firstGameUrl = workingGameUrls[0];
+            console.log('Tentando carregar:', firstGameUrl);
+            gameFrame.src = firstGameUrl;
+        }
+
+        // Inicia o jogo quando a página carrega
+        window.addEventListener('load', startGame);
+
+        // Esconde o loading após 10 segundos como fallback
+        setTimeout(() => {
+            const loading = document.getElementById('loading');
+            if (loading && loading.style.display !== 'none') {
+                tryNextGame();
+            }
+        }, 10000);
+
+        // Adiciona suporte para teclas de navegação
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                goBack();
+            }
+        });
+
+        // Previne zoom em dispositivos móveis
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        // Otimizações para mobile
+        if (window.innerWidth <= 768) {
+            document.body.style.touchAction = 'manipulation';
+        }
+
+        // Monitora mudanças no iframe
+        const gameFrame = document.getElementById('gameFrame');
+        if (gameFrame) {
+            gameFrame.addEventListener('load', function() {
+                console.log('Iframe carregado com sucesso');
+                hideLoading();
+            });
+        }
+
+        // Função para recarregar o jogo
+        function reloadGame() {
+            const gameFrame = document.getElementById('gameFrame');
+            const loading = document.getElementById('loading');
+            const gameStatus = document.getElementById('gameStatus');
+            
+            if (loading) {
+                loading.style.display = 'block';
+                loading.innerHTML = `
+                    <div class="spinner"></div>
+                    Recarregando jogo...
+                `;
+            }
+            
+            if (gameStatus) {
+                gameStatus.textContent = '🔄 Recarregando...';
+                gameStatus.style.background = 'rgba(255,255,0,0.2)';
+                gameStatus.style.color = '#ffff00';
+            }
+            
+            // Reinicia do primeiro jogo
+            currentGameIndex = 0;
+            const firstGameUrl = workingGameUrls[0];
+            gameFrame.src = firstGameUrl;
+        }
+
+        // Adiciona botão de reload no header
+        setTimeout(() => {
+            const header = document.querySelector('.game-header');
+            if (header) {
+                const reloadButton = document.createElement('button');
+                reloadButton.innerHTML = '🔄';
+                reloadButton.style.cssText = `
+                    background: rgba(255,255,255,0.2);
+                    border: none;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    margin-left: 10px;
+                    transition: all 0.3s ease;
+                `;
+                reloadButton.onclick = reloadGame;
+                reloadButton.onmouseover = function() {
+                    this.style.background = 'rgba(255,255,255,0.3)';
+                    this.style.transform = 'scale(1.05)';
+                };
+                reloadButton.onmouseout = function() {
+                    this.style.background = 'rgba(255,255,255,0.2)';
+                    this.style.transform = 'scale(1)';
+                };
+                header.appendChild(reloadButton);
+            }
+        }, 1000);
+
+        // Log de debug
+        console.log('Among Us Funcionando carregado');
+        console.log('Jogos disponíveis:', workingGameUrls.length);
+    </script>
+</body>
+</html>

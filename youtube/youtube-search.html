@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>YouTube Search - Pesquisar Vídeos</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Pesquise vídeos do YouTube com facilidade">
+    <meta name="theme-color" content="#FF0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="YouTube Search">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="YouTube Search">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="youtube-shared.css">
+    
+    <style>
+        /* Estilos específicos para a página de pesquisa */
+        .search-page-header {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .search-page-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .search-page-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 5px 0 0 0;
+        }
+        
+        .trending-section {
+            margin-top: 30px;
+        }
+        
+        .trending-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+        
+        .trending-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .trending-item {
+            background-color: #212121;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .trending-item:hover {
+            background-color: #2a2a2a;
+        }
+        
+        .trending-number {
+            background-color: #ff0000;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .trending-info {
+            flex: 1;
+        }
+        
+        .trending-video-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .trending-channel {
+            font-size: 12px;
+            color: #aaa;
+            margin: 0;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+        }
+        
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .no-results-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .no-results-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .search-page-header {
+                padding: 16px;
+            }
+            
+            .search-page-title {
+                font-size: 20px;
+            }
+            
+            .trending-grid {
+                gap: 8px;
+            }
+            
+            .trending-item {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="search-container">
+            <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Pesquisar no YouTube..."
+                id="searchInput"
+            >
+            <button class="search-button" id="searchButton">
+                🔍
+            </button>
+        </div>
+    </header>
+
+    <!-- Search Page Header -->
+    <div class="search-page-header">
+        <h1 class="search-page-title">YouTube Search</h1>
+        <p class="search-page-subtitle">Encontre os melhores vídeos do YouTube</p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Loading State -->
+        <div class="loading" id="loadingState" style="display: none;">
+            <div class="spinner"></div>
+            <p>Pesquisando...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="error" id="errorState" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <p id="errorMessage"></p>
+            <button class="search-button" onclick="retrySearch()" style="margin-top: 16px;">
+                Tentar Novamente
+            </button>
+        </div>
+
+        <!-- Search History -->
+        <div class="recommendations" id="recommendationsSection">
+            <div class="section-title">Pesquisas recentes</div>
+            <div class="search-history" id="searchHistory"></div>
+        </div>
+
+        <!-- Video Grid -->
+        <div class="video-grid" id="videoGrid"></div>
+        
+        <!-- Trending Section -->
+        <div class="trending-section" id="trendingSection">
+            <div class="trending-title">Vídeos em Alta</div>
+            <div class="trending-grid" id="trendingGrid">
+                <!-- Vídeos em alta serão carregados aqui -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Shared JavaScript -->
+    <script src="youtube-shared.js"></script>
+    
+    <script>
+        // Elementos DOM específicos da página de pesquisa
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        const videoGrid = document.getElementById('videoGrid');
+        const searchHistoryContainer = document.getElementById('searchHistory');
+        const recommendationsSection = document.getElementById('recommendationsSection');
+        const trendingSection = document.getElementById('trendingSection');
+        const trendingGrid = document.getElementById('trendingGrid');
+
+        // Inicialização da página de pesquisa
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSearchHistory();
+            setupSearchEventListeners();
+            
+            // Carregar vídeos em paralelo para melhor performance
+            Promise.all([
+                loadRecommendedVideos(),
+                loadTrendingVideos()
+            ]).then(() => {
+                console.log('✅ Todos os vídeos carregados');
+            }).catch(error => {
+                console.log('⚠️ Erro ao carregar alguns vídeos:', error);
+            });
+            
+            searchInput.focus();
+        });
+
+        // Event Listeners específicos da página de pesquisa
+        function setupSearchEventListeners() {
+            if (searchButton) {
+                searchButton.addEventListener('click', performSearch);
+            }
+            
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            }
+        }
+
+        // Função de pesquisa específica para esta página
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                showError('Digite algo para pesquisar');
+                return;
+            }
+
+            showLoading();
+            await saveToSearchHistory(query);
+
+            try {
+                console.log('🔍 [YouTubeAPI] Iniciando pesquisa para:', query);
+                
+                // Timeout para evitar carregamento lento
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+                
+                // Primeiro, fazer a busca para obter os IDs dos vídeos
+                const searchUrl = `${YOUTUBE_BASE_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=20&key=${YOUTUBE_API_KEY}`;
+                
+                const searchResponse = await fetch(searchUrl, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                clearTimeout(timeoutId);
+                console.log('🔍 [YouTubeAPI] Status da resposta de busca:', searchResponse.status);
+
+                if (searchResponse.ok) {
+                    const searchData = await searchResponse.json();
+                    const searchItems = searchData.items || [];
+                    
+                    console.log('🔍 [YouTubeAPI] Itens encontrados na busca:', searchItems.length);
+                    
+                    if (searchItems.length > 0) {
+                        // Extrair os IDs dos vídeos
+                        const videoIds = searchItems
+                            .map(item => item.id.videoId)
+                            .filter(id => id)
+                            .join(',');
+                        
+                        console.log('🔍 [YouTubeAPI] IDs dos vídeos:', videoIds);
+                        
+                        // Buscar detalhes completos incluindo duração e estatísticas
+                        const detailsUrl = `${YOUTUBE_BASE_URL}/videos?part=snippet,contentDetails,statistics&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
+                        
+                        const detailsResponse = await fetch(detailsUrl);
+                        
+                        if (detailsResponse.ok) {
+                            const detailsData = await detailsResponse.json();
+                            const videoItems = detailsData.items || [];
+                            
+                            console.log('🔍 [YouTubeAPI] Vídeos com detalhes:', videoItems.length);
+                            
+                            currentVideos = videoItems.map(item => new YouTubeVideo(item));
+                            displayVideos(currentVideos);
+                            hideLoading();
+                            
+                            // Esconder seção de trending quando há resultados de pesquisa
+                            if (trendingSection) {
+                                trendingSection.style.display = 'none';
+                            }
+                        } else {
+                            console.log('⚠️ [YouTubeAPI] Erro na API de detalhes:', detailsResponse.status);
+                            
+                            // Fallback para busca simples
+                            currentVideos = searchItems.map(item => new YouTubeVideo(item));
+                            displayVideos(currentVideos);
+                            hideLoading();
+                            showNotification('⚠️ Duração dos vídeos não disponível', 'warning');
+                            
+                            // Esconder seção de trending quando há resultados de pesquisa
+                            if (trendingSection) {
+                                trendingSection.style.display = 'none';
+                            }
+                        }
+                    } else {
+                        console.log('ℹ️ [YouTubeAPI] Nenhum resultado encontrado');
+                        currentVideos = [];
+                        displayVideos([]);
+                        hideLoading();
+                        
+                        // Mostrar seção de trending quando não há resultados
+                        if (trendingSection) {
+                            trendingSection.style.display = 'block';
+                        }
+                    }
+                } else {
+                    console.log('❌ [YouTubeAPI] Erro na API de busca:', searchResponse.status);
+                    
+                    // Verificar se é erro de quota ou chave inválida
+                    if (searchResponse.status === 403 || searchResponse.status === 400) {
+                        console.log('⚠️ [YouTubeAPI] Quota excedida ou chave inválida, ativando modo fallback');
+                        apiFallbackMode = true;
+                        useFallbackVideos(query);
+                        return;
+                    }
+                    
+                    let errorMsg = `Erro na API: ${searchResponse.status}`;
+                    if (searchResponse.status === 404) {
+                        errorMsg = 'API não encontrada';
+                    }
+                    
+                    showError(errorMsg);
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('❌ [YouTubeAPI] Timeout na pesquisa, ativando modo fallback');
+                    apiFallbackMode = true;
+                    useFallbackVideos(query);
+                } else {
+                    console.log('❌ [YouTubeAPI] Erro de conexão, ativando modo fallback:', error);
+                    apiFallbackMode = true;
+                    useFallbackVideos(query);
+                }
+            }
+        }
+
+        // Função para carregar vídeos recomendados
+        async function loadRecommendedVideos() {
+            try {
+                // Carregar vídeos populares como recomendados
+                const url = `${YOUTUBE_BASE_URL}/videos?part=snippet,contentDetails,statistics&chart=mostPopular&maxResults=10&key=${YOUTUBE_API_KEY}`;
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const videos = data.items.map(item => new YouTubeVideo(item));
+                    
+                    // Mostrar apenas se não há pesquisa ativa
+                    if (currentVideos.length === 0) {
+                        displayVideos(videos);
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Erro ao carregar vídeos recomendados:', error);
+            }
+        }
+
+        // Função para carregar vídeos em alta
+        async function loadTrendingVideos() {
+            try {
+                const url = `${YOUTUBE_BASE_URL}/videos?part=snippet,contentDetails,statistics&chart=mostPopular&maxResults=10&key=${YOUTUBE_API_KEY}`;
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const videos = data.items.map(item => new YouTubeVideo(item));
+                    
+                    displayTrendingVideos(videos);
+                }
+            } catch (error) {
+                console.log('⚠️ Erro ao carregar vídeos em alta:', error);
+                // Usar vídeos de fallback para trending
+                displayTrendingVideos(FALLBACK_VIDEOS.slice(0, 5));
+            }
+        }
+
+        // Função para exibir vídeos em alta
+        function displayTrendingVideos(videos) {
+            if (!trendingGrid || !videos || videos.length === 0) return;
+            
+            trendingGrid.innerHTML = videos.map((video, index) => `
+                <div class="trending-item" onclick="openVideo('${video.id}')">
+                    <div class="trending-number">${index + 1}</div>
+                    <div class="trending-info">
+                        <h4 class="trending-video-title">${video.title}</h4>
+                        <p class="trending-channel">${video.channelTitle}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Função para exibir vídeos (sobrescreve a função compartilhada)
+        function displayVideos(videos) {
+            if (!videoGrid) return;
+            
+            if (!videos || videos.length === 0) {
+                videoGrid.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <h3 class="no-results-title">Nenhum vídeo encontrado</h3>
+                        <p class="no-results-text">Tente pesquisar por outros termos ou verifique sua conexão com a internet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            videoGrid.innerHTML = videos.map(video => `
+                <div class="video-card" onclick="openVideo('${video.id}')">
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
+                        <div class="video-duration">${formatDuration(video.duration)}</div>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${video.title}</h3>
+                        <p class="video-channel">${video.channelTitle}</p>
+                        <p class="video-meta">${formatViewCount(video.viewCount)} • ${formatDate(video.publishedAt)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Função para limpar pesquisa
+        function clearSearch() {
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            currentVideos = [];
+            if (videoGrid) {
+                videoGrid.innerHTML = '';
+            }
+            if (trendingSection) {
+                trendingSection.style.display = 'block';
+            }
+            loadRecommendedVideos();
+        }
+    </script>
+</body>
+</html>

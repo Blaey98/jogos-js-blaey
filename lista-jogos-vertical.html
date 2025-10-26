@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Jogos - Vertical</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .games-list {
+            padding: 20px;
+        }
+
+        .game-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .game-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .game-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            padding: 20px;
+        }
+
+        .game-thumb {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: scale(1.05);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .games-list {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.history.back()">←</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Jogos</h1>
+            <p>Escolha um jogo para jogar</p>
+        </div>
+        
+        <div class="games-list">
+            <div class="game-item">
+                <a href="jogo-blob-opera.html" class="game-link">
+                    <img src="https://cdn2.y8.com/cloudimage/342737/file/w180h135_webp-e2d494040aeb30dcafc8168fe0da4608.webp" 
+                         alt="Blob Opera" class="game-thumb">
+                    <div class="game-title">Blob Opera</div>
+                    <div class="play-button">Jogar Agora!</div>
+                </a>
+            </div>
+            
+            <div class="game-item">
+                <a href="jogo-among-us-funcionando.html" class="game-link">
+                    <img src="https://cdn2.y8.com/cloudimage/89979/file/w180h135_webp-ac0f212647c803c0424b1727d2339c14.webp" 
+                         alt="Among Us Online" class="game-thumb">
+                    <div class="game-title">Among Us Online</div>
+                    <div class="play-button">Jogar Agora!</div>
+                </a>
+            </div>
+            
+            <div class="game-item">
+                <a href="jogo-venge.html" class="game-link">
+                    <img src="https://via.placeholder.com/320x120/E91E63/white?text=Venge.io" 
+                         alt="Venge.io FPS" class="game-thumb">
+                    <div class="game-title">Venge.io FPS</div>
+                    <div class="play-button">Jogar Agora!</div>
+                </a>
+            </div>
+            
+            <div class="game-item">
+                <a href="jogo-robostorm.html" class="game-link">
+                    <img src="https://via.placeholder.com/320x120/4CAF50/white?text=Robostorm" 
+                         alt="Robostorm" class="game-thumb">
+                    <div class="game-title">Robostorm</div>
+                    <div class="play-button">Jogar Agora!</div>
+                </a>
+            </div>
+            
+            <div class="game-item">
+                <a href="jogo-teste-funcional.html" class="game-link">
+                    <img src="https://via.placeholder.com/320x120/4CAF50/white?text=Snake+Game" 
+                         alt="Snake Game" class="game-thumb">
+                    <div class="game-title">Snake Game</div>
+                    <div class="play-button">Jogar Agora!</div>
+                </a>
+            </div>
+            
+            <div class="game-item">
+                <a href="jogo-exemplo2.html" class="game-link">
+                    <img src="https://via.placeholder.com/320x120/FF9800/white?text=Outro+Jogo" 
+                         alt="Outro Jogo" class="game-thumb">
+                    <div class="game-title">Outro Jogo</div>
+                    <div class="play-button">Jogar Agora!</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

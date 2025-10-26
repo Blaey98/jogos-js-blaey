@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista Completa de Jogos - Portal de Jogos</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7154773731438541"
+     crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/gdpr-consent.css">
     <style>
         * {
             margin: 0;
@@ -286,8 +289,19 @@
         let filteredGames = [];
 
         function loadAllGames() {
+            console.log('🎮 Carregando jogos...');
+            console.log('📋 Array games:', typeof games, games ? games.length : 'undefined');
+            
+            if (typeof games === 'undefined' || !games || games.length === 0) {
+                console.error('❌ Erro: Array games não foi carregado!');
+                document.getElementById('gamesGrid').innerHTML = '<p style="color: red; text-align: center; padding: 20px;">❌ Erro: Não foi possível carregar os jogos!</p>';
+                return;
+            }
+            
             allGames = games; // Usa o array games do games-config.js
             filteredGames = [...allGames];
+            
+            console.log('✅ Jogos carregados com sucesso! Total:', allGames.length);
             
             updateStats();
             renderGames();
@@ -391,5 +405,6 @@
         // Carrega os jogos quando a página é carregada
         document.addEventListener('DOMContentLoaded', loadAllGames);
     </script>
+    <script src="js/google-cmp.js"></script>
 </body>
 </html>

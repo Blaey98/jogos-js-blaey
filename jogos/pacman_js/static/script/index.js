@@ -636,7 +636,7 @@
 			//绘制地图
 			map = stage.createMap({
 				x:60,
-				y:10,
+				y:100,
 				data:config['map'],
 				cache:true,
 				draw:function(context){
@@ -708,7 +708,7 @@
 			//物品地图
 			beans = stage.createMap({
 				x:60,
-				y:10,
+				y:100,
 				data:config['map'],
 				frames:8,
 				draw:function(context){
@@ -734,22 +734,22 @@
 			//关卡得分 - Fora do tabuleiro, acima
 			stage.createItem({
 				x:game.width/2,
-				y:35,
+				y:75,
 				draw:function(context){
 					// Score and Pacman icons on the same line
 					context.font = 'bold 20px PressStart2P';
 					context.textAlign = 'left';
 					context.textBaseline = 'middle';
 					context.fillStyle = '#C33';
-					context.fillText('SCORE: ', 80, this.y - 25);
+					context.fillText('SCORE: ', 80, this.y);
 					context.fillStyle = '#FFF';
-					context.fillText(_SCORE, 200, this.y - 25);
+					context.fillText(_SCORE, 200, this.y);
 					
 					// Draw heart icons first
 					var max = Math.min(_LIFE-1,5);
 					var startX = 360;
 					for(var i=0;i<max;i++){
-						var x=startX+25*i,y=this.y - 25;
+						var x=startX+25*i,y=this.y;
 						context.fillStyle = '#FF0000';
 						context.beginPath();
 						context.moveTo(x, y + 4);
@@ -763,7 +763,7 @@
 					
 					// x4 after heart icons with more space - white color
 					context.fillStyle = '#FFF';
-					context.fillText('x' + (_LIFE-1), startX + 100, this.y - 25);
+					context.fillText('x' + (_LIFE-1), startX + 100, this.y);
 				}
 			});
 			

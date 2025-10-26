@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Carregamento Automático</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .game-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .game-card:hover {
+            background: #e8f5e8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .game-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .game-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .game-type {
+            font-size: 11px;
+            color: #888;
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Carregamento Automático</h1>
+        
+        <div class="instructions">
+            <h3>📝 Instruções</h3>
+            <ol>
+                <li><strong>Clique em qualquer jogo abaixo</strong></li>
+                <li><strong>O jogo deve abrir automaticamente</strong> em uma nova aba</li>
+                <li><strong>Após 2 segundos</strong>, a página deve voltar para esta lista</li>
+                <li><strong>Teste com jogos externos</strong> (Gamezop/Famobi) e locais</li>
+            </ol>
+        </div>
+
+        <h3>🎮 Jogos para Testar</h3>
+        <div class="game-list">
+            <div class="game-card" onclick="testGame('https://10944.play.gamezop.com/g/S1kGWUim8Ux', 'Shadow Run', 'vertical')">
+                <div class="game-title">🏃 Shadow Run</div>
+                <div class="game-description">Corra nas sombras em uma aventura noturna!</div>
+                <div class="game-type">Gamezop - Vertical</div>
+            </div>
+            
+            <div class="game-card" onclick="testGame('https://play.famobi.com/drift-cup-racing', 'Drift Cup Racing', 'vertical')">
+                <div class="game-title">🏎️ Drift Cup Racing</div>
+                <div class="game-description">Copa de drift em corridas profissionais!</div>
+                <div class="game-type">Famobi - Vertical</div>
+            </div>
+            
+            <div class="game-card" onclick="testGame('jogos/pacman_js/index_mobile.html', 'Pacman', 'vertical')">
+                <div class="game-title">👻 Pacman</div>
+                <div class="game-description">O clássico jogo do Pacman!</div>
+                <div class="game-type">Local - Vertical</div>
+            </div>
+            
+            <div class="game-card" onclick="testGame('jogos/chess_js/index.html', 'Xadrez', 'horizontal')">
+                <div class="game-title">♟️ Xadrez</div>
+                <div class="game-description">O jogo de estratégia mais popular!</div>
+                <div class="game-type">Local - Horizontal</div>
+            </div>
+            
+            <div class="game-card" onclick="testGame('https://10944.play.gamezop.com/g/SkF7yhp7q0B', 'Darts', 'vertical')">
+                <div class="game-title">🎯 Darts</div>
+                <div class="game-description">Jogue dardos e teste sua pontaria!</div>
+                <div class="game-type">Gamezop - Vertical</div>
+            </div>
+            
+            <div class="game-card" onclick="testGame('https://play.famobi.com/racing-cars', 'Racing Cars', 'horizontal')">
+                <div class="game-title">🏁 Racing Cars</div>
+                <div class="game-description">Corridas de carros em alta velocidade!</div>
+                <div class="game-type">Famobi - Horizontal</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #f0f8ff; border-radius: 10px;">
+            <h3>🔍 Logs de Teste</h3>
+            <div id="testLogs" style="background: #000; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;">
+                Aguardando testes...<br>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addTestLog(message) {
+            const logs = document.getElementById('testLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `[${timestamp}] ${message}<br>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function testGame(url, title, orientation) {
+            addTestLog(`🎮 Testando: ${title} (${orientation})`);
+            addTestLog(`🔗 URL: ${url}`);
+            
+            // Determina o tipo de jogo
+            let gameType = 'Local';
+            if (url.includes('gamezop.com')) gameType = 'Gamezop';
+            else if (url.includes('famobi.com')) gameType = 'Famobi';
+            
+            addTestLog(`📊 Tipo: ${gameType}`);
+            
+            // Cria URL do template
+            const templateUrl = `jogo-vertical-template-fixed.html?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&description=${encodeURIComponent('Teste de carregamento automático')}&orientation=${orientation}&return=${encodeURIComponent(window.location.href)}`;
+            
+            addTestLog(`🚀 Abrindo template: ${templateUrl}`);
+            
+            // Abre o template
+            window.open(templateUrl, '_blank');
+            
+            addTestLog(`✅ Template aberto - Aguardando comportamento automático...`);
+        }
+
+        // Log inicial
+        addTestLog('🧪 Sistema de teste iniciado');
+        addTestLog('💡 Clique em qualquer jogo para testar o carregamento automático');
+    </script>
+</body>
+</html>

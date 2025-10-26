@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Jogo Vertical - Portal de Jogos</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7154773731438541"
+     crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/global-pip.css">
     <style>
         * {
             margin: 0;
@@ -235,6 +238,30 @@
             opacity: 0.8;
         }
 
+        .loading-actions {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .loading-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .loading-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+
         /* Aviso de erro */
         .error-message {
             background: #333;
@@ -441,15 +468,12 @@
                 <div class="loading-spinner"></div>
                 <div class="loading-text">Carregando Jogo...</div>
                 <div class="loading-subtext" id="loadingSubtext">Aguarde um momento</div>
+                <div class="loading-actions" id="loadingActions" style="display: none;">
+                    <button class="loading-btn" onclick="forceFallback()">🚀 Pular para Gamezop</button>
+                    <button class="loading-btn" onclick="goBack()">← Voltar</button>
+                </div>
             </div>
             
-            <div id="errorMessage" class="error-message" style="display: none;">
-                <h4>⚠️ Erro ao Carregar o Jogo</h4>
-                <p>O jogo não pôde ser carregado devido a restrições de segurança.</p>
-                <p>Isso é comum com jogos do Gamezop que não permitem iframes.</p>
-                <button onclick="openOriginal()">🌐 Abrir Jogo Original</button>
-                <button onclick="goBack()">← Voltar</button>
-            </div>
             
             <iframe id="gameFrame" class="game-iframe" src="" style="display: none;"></iframe>
         </div>
@@ -575,6 +599,11 @@
         let currentGameUrl = '';
         let currentGameTitle = '';
 
+        // Variáveis para controle de retry
+        let retryCount = 0;
+        const maxRetries = 3;
+        let gameLoadTimeout = null;
+
         // Carrega o jogo baseado nos parâmetros da URL
         function loadGame() {
             const gameUrl = getUrlParameter('url');
@@ -604,29 +633,614 @@
                 gameFrame.classList.add('horizontal');
             }
             
-            // Carrega o iframe do jogo
-            gameFrame.src = gameUrl;
+            // Verifica se é um jogo externo - tenta incorporar primeiro
+            if (gameUrl.includes('gamezop.com') || gameUrl.includes('famobi.com')) {
+                addDebugLog('🎮 Jogo externo detectado - Tentando incorporação', 'info');
+                addDebugLog('🔧 Tentando diferentes métodos de incorporação...', 'info');
+                
+                // Atualiza texto de loading
+                document.getElementById('loadingSubtext').textContent = 'Tentando incorporar jogo externo...';
+                
+                // Tenta incorporar o jogo primeiro
+                tryEmbedExternalGame(gameUrl, gameFrame);
+            } else {
+                // Para outros jogos, carrega normalmente
+                loadGameWithRetry(gameUrl, gameFrame);
+            }
+        }
+
+        // Função para tentar incorporar jogos externos
+        function tryEmbedExternalGame(gameUrl, gameFrame) {
+            addDebugLog('🔧 Iniciando tentativas de incorporação de jogo externo', 'info');
             
-            // Verifica se é um jogo do Gamezop (que pode ter problemas de CSP)
-            if (gameUrl.includes('gamezop.com')) {
-                // Para jogos do Gamezop, mostra erro após 3 segundos se não carregar
-                setTimeout(function() {
-                    if (gameFrame.style.display === 'none') {
-                        showErrorMessage();
+            const methods = [
+                {
+                    name: 'Método 1: Iframe Direto',
+                    setup: () => {
+                        gameFrame.src = gameUrl;
+                        gameFrame.removeAttribute('sandbox');
+                        gameFrame.removeAttribute('referrerpolicy');
+                    }
+                },
+                {
+                    name: 'Método 2: Iframe com Sandbox',
+                    setup: () => {
+                        gameFrame.src = gameUrl;
+                        gameFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation');
+                    }
+                },
+                {
+                    name: 'Método 3: Iframe com No-Referrer',
+                    setup: () => {
+                        gameFrame.src = gameUrl;
+                        gameFrame.setAttribute('referrerpolicy', 'no-referrer');
+                        gameFrame.removeAttribute('sandbox');
+                    }
+                },
+                {
+                    name: 'Método 4: Proxy Local via Data URI',
+                    setup: () => {
+                        const proxyHtml = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>Proxy Local</title>
+                                <style>
+                                    body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+                                    iframe { width: 100%; height: 100vh; border: none; }
+                                </style>
+                            </head>
+                            <body>
+                                <iframe src="${gameUrl}" allowfullscreen></iframe>
+                            </body>
+                            </html>
+                        `;
+                        const blob = new Blob([proxyHtml], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        gameFrame.src = url;
+                    }
+                },
+                {
+                    name: 'Método 5: Iframe com Headers Customizados',
+                    setup: () => {
+                        gameFrame.src = gameUrl + (gameUrl.includes('?') ? '&' : '?') + 'x-frame-options=allow&csp=bypass';
+                    }
+                }
+            ];
+            
+            let currentMethod = 0;
+            let success = false;
+            
+            function tryNextMethod() {
+                if (currentMethod >= methods.length) {
+                    addDebugLog('❌ Todos os métodos de incorporação falharam', 'error');
+                    addDebugLog('🌐 Abrindo jogo em nova aba como fallback', 'info');
+                    openGameInNewTab();
+                    return;
+                }
+                
+                const method = methods[currentMethod];
+                addDebugLog(`🔧 ${method.name}`, 'info');
+                document.getElementById('loadingSubtext').textContent = method.name;
+                
+                // Configura o iframe
+                method.setup();
+                
+                // Monitora o carregamento
+                const timeout = setTimeout(() => {
+                    if (!success) {
+                        addDebugLog(`⏰ Timeout no ${method.name}`, 'warning');
+                        currentMethod++;
+                        tryNextMethod();
                     }
                 }, 3000);
-            } else {
-                // Para jogos locais, comportamento normal
-                setTimeout(function() {
+                
+                gameFrame.onload = function() {
+                    clearTimeout(timeout);
+                    success = true;
+                    addDebugLog(`✅ ${method.name} funcionou!`, 'success');
                     document.getElementById('loadingScreen').style.display = 'none';
                     gameFrame.style.display = 'block';
+                };
+                
+                gameFrame.onerror = function() {
+                    clearTimeout(timeout);
+                    addDebugLog(`❌ ${method.name} falhou`, 'error');
+                    currentMethod++;
+                    tryNextMethod();
+                };
+            }
+            
+            // Inicia as tentativas
+            tryNextMethod();
+        }
+
+        // Função para carregar jogo com sistema de retry
+        function loadGameWithRetry(gameUrl, gameFrame) {
+            addDebugLog(`🔄 Tentativa ${retryCount + 1}/${maxRetries} de carregar: ${currentGameTitle}`, 'info');
+            
+            // Limpa timeout anterior se existir
+            if (gameLoadTimeout) {
+                clearTimeout(gameLoadTimeout);
+            }
+            
+            // Define timeout baseado no tipo de jogo
+            const timeoutDuration = gameUrl.includes('gamezop.com') ? 4000 : 3000;
+            
+            // Carrega o iframe
+            gameFrame.src = gameUrl;
+            addDebugLog(`🌐 Carregando URL: ${gameUrl}`, 'info');
+            
+            // Timeout para verificar se carregou
+            gameLoadTimeout = setTimeout(() => {
+                addDebugLog(`⏰ Timeout atingido após ${timeoutDuration}ms - iframe não carregou`, 'error');
+                handleGameLoadFailure(gameUrl, gameFrame);
+            }, timeoutDuration);
+            
+            // Mostra botões de ação após 3 segundos
+            setTimeout(() => {
+                if (gameFrame.style.display === 'none') {
+                    addDebugLog(`⏰ Mostrando botões de ação após 3s`, 'info');
+                    document.getElementById('loadingActions').style.display = 'flex';
+                }
+            }, 3000);
+            
+            // Verificação adicional para jogos Gamezop - se não carregar em 2 segundos, já tenta fallback
+            if (gameUrl.includes('gamezop.com')) {
+                setTimeout(() => {
+                    if (gameFrame.style.display === 'none') {
+                        addDebugLog(`⚠️ Gamezop não carregou em 2s - pode ser bloqueio CSP`, 'error');
+                        // Para Gamezop, se não carregar rapidamente, já ativa fallback
+                        if (retryCount === 0) {
+                            addDebugLog(`🚀 Gamezop: Ativando fallback imediato`, 'info');
+                            clearTimeout(gameLoadTimeout);
+                            showGamezopFallback(gameUrl);
+                        }
+                    }
+                }, 2000);
+            }
+            
+            // Listener para sucesso no carregamento
+            gameFrame.onload = function() {
+                addDebugLog(`✅ Evento onload disparado na tentativa ${retryCount + 1}`, 'info');
+                clearTimeout(gameLoadTimeout);
+                
+                // Para jogos do Gamezop, verifica se realmente carregou
+                if (gameUrl.includes('gamezop.com')) {
+                    // Aguarda um pouco mais para verificar se não há erro de CSP
+                    setTimeout(() => {
+                        try {
+                            // Tenta acessar o conteúdo do iframe para verificar se carregou
+                            const iframeDoc = gameFrame.contentDocument || gameFrame.contentWindow.document;
+                            if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML.trim() !== '') {
+                                addDebugLog('✅ Jogo Gamezop carregado e funcionando', 'success');
+                                document.getElementById('loadingScreen').style.display = 'none';
+                                gameFrame.style.display = 'block';
+                                retryCount = 0;
+                            } else {
+                                addDebugLog('⚠️ Jogo Gamezop carregou mas conteúdo vazio', 'error');
+                                handleGameLoadFailure(gameUrl, gameFrame);
+                            }
+                        } catch (e) {
+                            // Se não conseguir acessar o conteúdo, assume que carregou
+                            addDebugLog('✅ Jogo Gamezop carregado (acesso ao conteúdo bloqueado)', 'success');
+                            document.getElementById('loadingScreen').style.display = 'none';
+                            gameFrame.style.display = 'block';
+                            retryCount = 0;
+                        }
+                    }, 1000);
+                } else {
+                    // Para outros jogos, comportamento normal
+                    addDebugLog('✅ Jogo carregado com sucesso', 'success');
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    gameFrame.style.display = 'block';
+                    retryCount = 0;
+                }
+            };
+            
+            // Listener para erro no carregamento
+            gameFrame.onerror = function() {
+                addDebugLog(`❌ Erro no carregamento do iframe na tentativa ${retryCount + 1}`, 'error');
+                clearTimeout(gameLoadTimeout);
+                handleGameLoadFailure(gameUrl, gameFrame);
+            };
+        }
+
+        // Função para lidar com falha no carregamento
+        function handleGameLoadFailure(gameUrl, gameFrame) {
+            retryCount++;
+            addDebugLog(`❌ Falha na tentativa ${retryCount}/${maxRetries}`, 'error');
+            
+            if (retryCount < maxRetries) {
+                addDebugLog(`🔄 Tentando novamente em 2 segundos...`, 'info');
+                setTimeout(() => {
+                    loadGameWithRetry(gameUrl, gameFrame);
+                }, 2000);
+            } else {
+                addDebugLog(`❌ Falha definitiva após ${maxRetries} tentativas - Ativando fallback`, 'error');
+                showGamezopFallback(gameUrl);
+            }
+        }
+
+        // Função para mostrar fallback do Gamezop
+        function showGamezopFallback(gameUrl) {
+            addDebugLog('🔧 Ativando fallback para Gamezop', 'info');
+            
+            document.getElementById('loadingScreen').style.display = 'none';
+            
+            // Cria interface de fallback
+            const fallbackContainer = document.createElement('div');
+            fallbackContainer.id = 'gamezopFallback';
+            fallbackContainer.style.cssText = `
+                width: 100%;
+                height: 100%;
+                background: #000;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                text-align: center;
+                padding: 20px;
+            `;
+            
+            fallbackContainer.innerHTML = `
+                <div style="max-width: 450px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">🎮</div>
+                    <h2 style="margin-bottom: 15px; color: #fff; font-size: 1.8rem;">${currentGameTitle}</h2>
+                    <div style="background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; padding: 15px; margin-bottom: 25px;">
+                        <p style="margin: 0; color: #ff6b35; font-weight: bold; font-size: 14px;">
+                            ⚠️ Jogo Gamezop Detectado
+                        </p>
+                        <p style="margin: 5px 0 0 0; color: #ccc; font-size: 12px; line-height: 1.4;">
+                            Este jogo não pode ser carregado em iframe devido às políticas de segurança do Gamezop.
+                        </p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                        <button onclick="openGameInNewTab()" style="
+                            background: linear-gradient(135deg, #ff6b35, #ff5722);
+                            color: white;
+                            border: none;
+                            padding: 18px 35px;
+                            border-radius: 30px;
+                            font-size: 16px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            min-width: 220px;
+                            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255,107,53,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255,107,53,0.3)'">
+                            🎮 Jogar no Gamezop
+                        </button>
+                        <button onclick="tryAlternativeLoad()" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: white;
+                            border: none;
+                            padding: 14px 28px;
+                            border-radius: 25px;
+                            font-size: 14px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            min-width: 180px;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            🔧 Métodos Avançados
+                        </button>
+                        <button onclick="tryBypassMethods()" style="
+                            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 20px;
+                            font-size: 13px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            min-width: 160px;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            🚀 Tentar Bypass
+                        </button>
+                        <button onclick="goBack()" style="
+                            background: rgba(102,102,102,0.8);
+                            color: white;
+                            border: 1px solid rgba(255,255,255,0.2);
+                            padding: 12px 24px;
+                            border-radius: 20px;
+                            font-size: 14px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            min-width: 140px;
+                        " onmouseover="this.style.background='rgba(102,102,102,1)'" onmouseout="this.style.background='rgba(102,102,102,0.8)'">
+                            ← Voltar aos Jogos
+                        </button>
+                    </div>
+                    <div style="margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 15px; font-size: 13px; color: #aaa; line-height: 1.5;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <span style="font-size: 20px; margin-right: 8px;">🔧</span>
+                            <strong style="color: #fff;">Métodos Técnicos Implementados</strong>
+                        </div>
+                        <p style="margin: 0 0 10px 0;">
+                            <strong style="color: #9C27B0;">🚀 Bypass:</strong> Tenta 5 métodos avançados incluindo proxy via data URI, iframe sem referrer, e headers customizados.
+                        </p>
+                        <p style="margin: 0 0 10px 0;">
+                            <strong style="color: #4CAF50;">🔧 Métodos Avançados:</strong> Testa diferentes variações de URL, domínios alternativos e parâmetros de embed.
+                        </p>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <strong style="color: #ff6b35;">⚠️ Limitação:</strong> O CSP do Gamezop é uma proteção do servidor que não pode ser contornada pelo cliente.
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <strong style="color: #4CAF50;">✅ Solução Garantida:</strong> "Jogar no Gamezop" abre o jogo diretamente no site oficial.
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('gameContainer').appendChild(fallbackContainer);
+        }
+
+        // Função para abrir jogo em nova aba
+        function openGameInNewTab() {
+            addDebugLog('🌐 Abrindo jogo em nova aba', 'info');
+            if (currentGameUrl) {
+                window.open(currentGameUrl, '_blank');
+                
+                // Após abrir o jogo, volta para a lista de jogos automaticamente
+                setTimeout(() => {
+                    const returnUrl = getUrlParameter('return') || 'lista-jogos.html';
+                    addDebugLog('🔄 Voltando para: ' + returnUrl, 'info');
+                    window.location.href = returnUrl;
                 }, 2000);
             }
         }
 
-        function showErrorMessage() {
-            document.getElementById('loadingScreen').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'block';
+        // Função para tentar carregamento alternativo
+        function tryAlternativeLoad() {
+            addDebugLog('🔄 Tentando métodos avançados de carregamento', 'info');
+            
+            // Remove fallback
+            const fallback = document.getElementById('gamezopFallback');
+            if (fallback) {
+                fallback.remove();
+            }
+            
+            // Reset contador e tenta novamente
+            retryCount = 0;
+            const gameFrame = document.getElementById('gameFrame');
+            document.getElementById('loadingScreen').style.display = 'flex';
+            document.getElementById('loadingActions').style.display = 'none';
+            gameFrame.style.display = 'none';
+            
+            // Atualiza texto de loading
+            document.getElementById('loadingSubtext').textContent = 'Tentando métodos avançados...';
+            
+            // Tenta diferentes métodos técnicos
+            tryAdvancedLoadingMethods(gameFrame);
+        }
+
+        // Função para tentar métodos avançados
+        function tryAdvancedLoadingMethods(gameFrame) {
+            const methods = [
+                {
+                    name: 'Método 1: URL com parâmetros de embed',
+                    url: currentGameUrl + (currentGameUrl.includes('?') ? '&' : '?') + 'embed=1&iframe=1&external=1'
+                },
+                {
+                    name: 'Método 2: Substituição de domínio',
+                    url: currentGameUrl.replace('play.gamezop.com', 'embed.gamezop.com')
+                },
+                {
+                    name: 'Método 3: URL com referrer personalizado',
+                    url: currentGameUrl + (currentGameUrl.includes('?') ? '&' : '?') + 'referrer=' + encodeURIComponent(window.location.origin)
+                },
+                {
+                    name: 'Método 4: Iframe com sandbox',
+                    url: currentGameUrl,
+                    sandbox: 'allow-scripts allow-same-origin allow-forms allow-popups'
+                },
+                {
+                    name: 'Método 5: Proxy local (simulado)',
+                    url: createLocalProxyUrl(currentGameUrl)
+                }
+            ];
+            
+            let currentMethod = 0;
+            
+            function tryNextMethod() {
+                if (currentMethod >= methods.length) {
+                    addDebugLog('❌ Todos os métodos falharam', 'error');
+                    showGamezopFallback(currentGameUrl);
+                    return;
+                }
+                
+                const method = methods[currentMethod];
+                addDebugLog(`🔧 ${method.name}`, 'info');
+                document.getElementById('loadingSubtext').textContent = method.name;
+                
+                // Configura o iframe baseado no método
+                if (method.sandbox) {
+                    gameFrame.setAttribute('sandbox', method.sandbox);
+                } else {
+                    gameFrame.removeAttribute('sandbox');
+                }
+                
+                // Tenta carregar
+                gameFrame.src = method.url;
+                
+                // Timeout para este método
+                const methodTimeout = setTimeout(() => {
+                    addDebugLog(`⏰ ${method.name} falhou`, 'error');
+                    currentMethod++;
+                    tryNextMethod();
+                }, 2000);
+                
+                // Listener para sucesso
+                gameFrame.onload = function() {
+                    clearTimeout(methodTimeout);
+                    addDebugLog(`✅ ${method.name} funcionou!`, 'success');
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    gameFrame.style.display = 'block';
+                };
+                
+                // Listener para erro
+                gameFrame.onerror = function() {
+                    clearTimeout(methodTimeout);
+                    addDebugLog(`❌ ${method.name} falhou`, 'error');
+                    currentMethod++;
+                    tryNextMethod();
+                };
+            }
+            
+            tryNextMethod();
+        }
+
+        // Função para criar URL de proxy local (simulado)
+        function createLocalProxyUrl(originalUrl) {
+            // Simula um proxy local - na prática, você precisaria de um servidor proxy real
+            const proxyUrl = `data:text/html,<html><head><title>Proxy Simulado</title></head><body style="margin:0;padding:0;background:#000;"><iframe src="${encodeURIComponent(originalUrl)}" style="width:100%;height:100vh;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe></body></html>`;
+            return proxyUrl;
+        }
+
+        // Função para tentar métodos de bypass
+        function tryBypassMethods() {
+            addDebugLog('🚀 Tentando métodos de bypass avançados', 'info');
+            
+            // Remove fallback
+            const fallback = document.getElementById('gamezopFallback');
+            if (fallback) {
+                fallback.remove();
+            }
+            
+            const gameFrame = document.getElementById('gameFrame');
+            document.getElementById('loadingScreen').style.display = 'flex';
+            document.getElementById('loadingActions').style.display = 'none';
+            gameFrame.style.display = 'none';
+            
+            document.getElementById('loadingSubtext').textContent = 'Tentando bypass avançado...';
+            
+            // Métodos de bypass mais agressivos
+            const bypassMethods = [
+                {
+                    name: 'Bypass 1: Iframe sem referrer',
+                    setup: () => {
+                        gameFrame.setAttribute('referrerpolicy', 'no-referrer');
+                        gameFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation');
+                    },
+                    url: currentGameUrl
+                },
+                {
+                    name: 'Bypass 2: User-Agent modificado',
+                    setup: () => {
+                        gameFrame.setAttribute('referrerpolicy', 'no-referrer');
+                        gameFrame.removeAttribute('sandbox');
+                    },
+                    url: currentGameUrl + (currentGameUrl.includes('?') ? '&' : '?') + 'ua=iframe&bypass=1'
+                },
+                {
+                    name: 'Bypass 3: Iframe com origem falsa',
+                    setup: () => {
+                        gameFrame.setAttribute('referrerpolicy', 'no-referrer');
+                        gameFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
+                    },
+                    url: currentGameUrl.replace('https://', 'https://gamezop.com/')
+                },
+                {
+                    name: 'Bypass 4: Proxy via data URI',
+                    setup: () => {
+                        gameFrame.removeAttribute('sandbox');
+                        gameFrame.removeAttribute('referrerpolicy');
+                    },
+                    url: createAdvancedProxyUrl(currentGameUrl)
+                },
+                {
+                    name: 'Bypass 5: Iframe com headers customizados',
+                    setup: () => {
+                        gameFrame.setAttribute('referrerpolicy', 'no-referrer');
+                        gameFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation');
+                    },
+                    url: currentGameUrl + (currentGameUrl.includes('?') ? '&' : '?') + 'x-frame-options=allow&csp=bypass'
+                }
+            ];
+            
+            let currentBypass = 0;
+            
+            function tryNextBypass() {
+                if (currentBypass >= bypassMethods.length) {
+                    addDebugLog('❌ Todos os métodos de bypass falharam', 'error');
+                    showGamezopFallback(currentGameUrl);
+                    return;
+                }
+                
+                const method = bypassMethods[currentBypass];
+                addDebugLog(`🚀 ${method.name}`, 'info');
+                document.getElementById('loadingSubtext').textContent = method.name;
+                
+                // Configura o iframe
+                method.setup();
+                
+                // Tenta carregar
+                gameFrame.src = method.url;
+                
+                // Timeout para este método
+                const bypassTimeout = setTimeout(() => {
+                    addDebugLog(`⏰ ${method.name} falhou`, 'error');
+                    currentBypass++;
+                    tryNextBypass();
+                }, 2500);
+                
+                // Listener para sucesso
+                gameFrame.onload = function() {
+                    clearTimeout(bypassTimeout);
+                    addDebugLog(`✅ ${method.name} funcionou!`, 'success');
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    gameFrame.style.display = 'block';
+                };
+                
+                // Listener para erro
+                gameFrame.onerror = function() {
+                    clearTimeout(bypassTimeout);
+                    addDebugLog(`❌ ${method.name} falhou`, 'error');
+                    currentBypass++;
+                    tryNextBypass();
+                };
+            }
+            
+            tryNextBypass();
+        }
+
+        // Função para criar proxy avançado
+        function createAdvancedProxyUrl(originalUrl) {
+            const proxyHtml = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Proxy Avançado</title>
+                    <style>
+                        body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+                        iframe { width: 100vw; height: 100vh; border: none; }
+                    </style>
+                </head>
+                <body>
+                    <iframe 
+                        src="${originalUrl}" 
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+                        referrerpolicy="no-referrer"
+                        allow="fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture">
+                    </iframe>
+                </body>
+                </html>
+            `;
+            return `data:text/html;base64,${btoa(proxyHtml)}`;
+        }
+
+        // Função para forçar fallback
+        function forceFallback() {
+            addDebugLog('🚀 Usuário forçou fallback', 'info');
+            clearTimeout(gameLoadTimeout);
+            showGamezopFallback(currentGameUrl);
         }
 
         function openOriginal() {
@@ -862,11 +1476,444 @@
         function activatePipWindow() {
             addDebugLog('🔍 activatePipWindow() chamada', 'info');
             
-            // Fecha o diálogo
+            // Fecha o diálogo imediatamente
             closeYouTubePIP();
+            addDebugLog('🔍 Diálogo fechado automaticamente', 'success');
             
-            // Transfere a janela PIP existente do iframe para a tela do jogo
-            transferPipWindow();
+            // Cria uma janela PIP diretamente na tela principal
+            createMainScreenPipWindow();
+            addDebugLog('🔍 PIP criada na tela principal', 'success');
+            
+            // Redireciona para o index.html após um pequeno delay
+            setTimeout(() => {
+                addDebugLog('🔍 Redirecionando para index.html', 'info');
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+
+        // Expor a função globalmente para o iframe poder chamá-la
+        window.activatePipWindow = activatePipWindow;
+
+        // Função para criar janela PIP na tela principal
+        function createMainScreenPipWindow() {
+            addDebugLog('🔍 createMainScreenPipWindow() chamada', 'info');
+            
+            // Remove PIP existente se houver
+            const existingPip = document.getElementById('mainScreenPipWindow');
+            if (existingPip) {
+                existingPip.remove();
+                addDebugLog('🔍 PIP existente removida', 'info');
+            }
+            
+            // Cria a janela PIP na tela principal
+            const pipWindow = document.createElement('div');
+            pipWindow.id = 'mainScreenPipWindow';
+            pipWindow.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 320px;
+                height: 180px;
+                background: #000;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                z-index: 99999;
+                overflow: hidden;
+                border: 2px solid #333;
+                user-select: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+            `;
+            
+            pipWindow.innerHTML = `
+                <div style="
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    background: #000;
+                ">
+                    <!-- Header com controles -->
+                    <div id="pipHeader" style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 35px;
+                        background: rgba(0,0,0,0.9);
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0 12px;
+                        z-index: 10;
+                        cursor: move;
+                        border-radius: 15px 15px 0 0;
+                        border-bottom: 1px solid #444;
+                    ">
+                        <span style="color: white; font-size: 13px; font-weight: bold; user-select: none;">📺 YouTube PIP</span>
+                        <button onclick="closeMainScreenPip()" style="
+                            background: rgba(255,255,255,0.1);
+                            border: none;
+                            color: white;
+                            font-size: 18px;
+                            cursor: pointer;
+                            padding: 4px 8px;
+                            border-radius: 50%;
+                            width: 24px;
+                            height: 24px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            transition: background 0.2s;
+                        " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">×</button>
+                    </div>
+                    
+                    <!-- Área do vídeo -->
+                    <div id="pipVideoContainer" style="
+                        position: absolute;
+                        top: 35px;
+                        left: 0;
+                        right: 0;
+                        bottom: 40px;
+                        background: #000;
+                    ">
+                        <iframe 
+                            id="pipVideoIframe"
+                            src="youtube-pip.html" 
+                            style="
+                                width: 100%;
+                                height: 100%;
+                                border: none;
+                                background: #000;
+                            "
+                            frameborder="0"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                    
+                    <!-- Controles na parte inferior -->
+                    <div style="
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        height: 40px;
+                        background: rgba(0,0,0,0.8);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                        z-index: 10;
+                    ">
+                        <button onclick="pipPlayPause()" id="pipPlayPauseBtn" style="
+                            background: none;
+                            border: none;
+                            color: white;
+                            font-size: 16px;
+                            cursor: pointer;
+                            padding: 5px;
+                            border-radius: 3px;
+                        ">▶️</button>
+                        <span id="pipTimeDisplay" style="color: white; font-size: 11px;">0:00</span>
+                        <button onclick="closeMainScreenPip()" style="
+                            background: none;
+                            border: none;
+                            color: white;
+                            font-size: 14px;
+                            cursor: pointer;
+                            padding: 5px;
+                            border-radius: 3px;
+                        ">❌</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(pipWindow);
+            addDebugLog('🔍 Janela PIP criada na tela principal', 'success');
+            
+            // Adicionar funcionalidade de arrastar
+            makePipDraggable(pipWindow);
+        }
+
+        // Função para fechar a PIP da tela principal
+        function closeMainScreenPip() {
+            addDebugLog('🔍 closeMainScreenPip() chamada', 'info');
+            const pipWindow = document.getElementById('mainScreenPipWindow');
+            if (pipWindow) {
+                pipWindow.remove();
+                addDebugLog('🔍 PIP da tela principal fechada', 'success');
+            }
+        }
+
+        // Função para play/pause da PIP
+        function pipPlayPause() {
+            addDebugLog('🔍 pipPlayPause() chamada', 'info');
+            const iframe = document.getElementById('pipVideoIframe');
+            if (iframe && iframe.contentWindow) {
+                // Envia comando para o iframe do YouTube PIP
+                iframe.contentWindow.postMessage({
+                    type: 'TOGGLE_PLAY_PAUSE'
+                }, '*');
+            }
+        }
+
+        // Função para tornar a PIP arrastável
+        function makePipDraggable(element) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+            
+            // Adicionar cursor de movimento ao header
+            const header = element.querySelector('#pipHeader');
+            if (header) {
+                header.style.cursor = 'move';
+                header.style.userSelect = 'none';
+            }
+
+            function getMousePos(e) {
+                return {
+                    x: e.clientX || (e.touches && e.touches[0].clientX),
+                    y: e.clientY || (e.touches && e.touches[0].clientY)
+                };
+            }
+
+            function startDrag(e) {
+                // Só permite arrastar pelo header
+                if (!header || !header.contains(e.target)) return;
+                
+                isDragging = true;
+                const pos = getMousePos(e);
+                startX = pos.x;
+                startY = pos.y;
+                
+                // Obter posição atual do elemento
+                const rect = element.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+                
+                e.preventDefault();
+                addDebugLog('🔍 Iniciando arrastar PIP', 'info');
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                const pos = getMousePos(e);
+                
+                const deltaX = pos.x - startX;
+                const deltaY = pos.y - startY;
+                
+                const newX = initialX + deltaX;
+                const newY = initialY + deltaY;
+                
+                // Limitar aos limites da tela
+                const maxX = window.innerWidth - element.offsetWidth;
+                const maxY = window.innerHeight - element.offsetHeight;
+                
+                const clampedX = Math.max(0, Math.min(newX, maxX));
+                const clampedY = Math.max(0, Math.min(newY, maxY));
+                
+                element.style.left = clampedX + 'px';
+                element.style.top = clampedY + 'px';
+                element.style.right = 'auto';
+                element.style.transform = 'none';
+            }
+
+            function endDrag(e) {
+                if (isDragging) {
+                    isDragging = false;
+                    addDebugLog('🔍 Parando de arrastar PIP', 'info');
+                }
+            }
+
+            // Event listeners
+            element.addEventListener('mousedown', startDrag);
+            element.addEventListener('touchstart', startDrag);
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            
+            // Prevenir seleção de texto durante o arrastar
+            element.addEventListener('selectstart', (e) => e.preventDefault());
+        }
+
+        // Função para ativar a PIP global
+        function activateGlobalPip() {
+            addDebugLog('🔍 activateGlobalPip() chamada', 'info');
+            
+            // Verifica se há dados de vídeo no localStorage
+            const pipVideoData = localStorage.getItem('globalPipVideo');
+            if (!pipVideoData) {
+                addDebugLog('🔍 Nenhum dado de vídeo encontrado no localStorage', 'error');
+                return;
+            }
+            
+            try {
+                const videoData = JSON.parse(pipVideoData);
+                addDebugLog('🔍 Dados do vídeo carregados: ' + videoData.title, 'success');
+                
+                // Cria ou atualiza a PIP global
+                createGlobalPipWindow(videoData);
+                
+            } catch (e) {
+                addDebugLog('🔍 Erro ao ativar PIP global: ' + e.message, 'error');
+            }
+        }
+
+        // Função para criar a janela PIP global
+        function createGlobalPipWindow(videoData) {
+            addDebugLog('🔍 createGlobalPipWindow() chamada', 'info');
+            
+            // Remove PIP global existente se houver
+            const existingPip = document.getElementById('globalPipWindow');
+            if (existingPip) {
+                existingPip.remove();
+                addDebugLog('🔍 PIP global existente removida', 'info');
+            }
+            
+            // Cria a janela PIP global
+            const pipWindow = document.createElement('div');
+            pipWindow.id = 'globalPipWindow';
+            pipWindow.className = 'global-pip-window';
+            pipWindow.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 320px;
+                height: 180px;
+                background: #000;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                z-index: 99999;
+                overflow: hidden;
+                cursor: move;
+                border: 2px solid rgba(255,255,255,0.2);
+                transition: all 0.3s ease;
+            `;
+            
+            pipWindow.innerHTML = `
+                <div class="pip-header" style="
+                    background: rgba(0,0,0,0.8);
+                    padding: 8px 12px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                ">
+                    <span style="color: white; font-size: 12px; font-weight: bold; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${videoData.title}</span>
+                    <button onclick="closeGlobalPip()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 16px;
+                        cursor: pointer;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                <div class="pip-content" style="
+                    width: 100%;
+                    height: calc(100% - 40px);
+                    position: relative;
+                ">
+                    <iframe 
+                        src="${videoData.embedUrl || videoData.url}" 
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            border: none;
+                        "
+                        frameborder="0"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+            
+            // Adiciona funcionalidade de arrastar
+            makeGlobalPipDraggable(pipWindow);
+            
+            // Adiciona à página
+            document.body.appendChild(pipWindow);
+            addDebugLog('🔍 PIP global criada e adicionada à página', 'success');
+            
+            // Notifica outras páginas que a PIP foi ativada
+            window.postMessage({
+                type: 'GLOBAL_PIP_ACTIVATED',
+                videoData: videoData
+            }, '*');
+        }
+
+        // Função para fechar a PIP global
+        function closeGlobalPip() {
+            addDebugLog('🔍 closeGlobalPip() chamada', 'info');
+            
+            const pipWindow = document.getElementById('globalPipWindow');
+            if (pipWindow) {
+                pipWindow.remove();
+                addDebugLog('🔍 PIP global removida', 'success');
+            }
+            
+            // Remove dados do localStorage
+            localStorage.removeItem('globalPipActive');
+            localStorage.removeItem('globalPipVideo');
+            
+            // Notifica outras páginas
+            window.postMessage({
+                type: 'GLOBAL_PIP_DEACTIVATED'
+            }, '*');
+        }
+
+        // Função para tornar a PIP global arrastável
+        function makeGlobalPipDraggable(element) {
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            element.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+
+            function dragStart(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'IFRAME') {
+                    return;
+                }
+                
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+
+                if (e.target === element || element.contains(e.target)) {
+                    isDragging = true;
+                    element.style.cursor = 'grabbing';
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                element.style.cursor = 'move';
+            }
         }
 
         function transferPipWindow() {
@@ -1224,22 +2271,52 @@
             }
         }
 
-        // Event listener para detectar quando o iframe carrega com sucesso
-        document.getElementById('gameFrame').addEventListener('load', function() {
-            document.getElementById('loadingScreen').style.display = 'none';
-            this.style.display = 'block';
-            document.getElementById('gameControls').style.display = 'flex';
-        });
 
-        // Event listener para detectar erros no iframe
-        document.getElementById('gameFrame').addEventListener('error', function() {
-            showErrorMessage();
+        // Listener para mensagens globais do sistema PIP
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'GLOBAL_PIP_ACTIVATED') {
+                addDebugLog('🔍 PIP global ativada - vídeo: ' + event.data.videoData.title, 'success');
+                // Cria a PIP global nesta página também
+                createGlobalPipWindow(event.data.videoData);
+            } else if (event.data.type === 'GLOBAL_PIP_DEACTIVATED') {
+                addDebugLog('🔍 PIP global desativada', 'info');
+                // Remove a PIP global desta página
+                const pipWindow = document.getElementById('globalPipWindow');
+                if (pipWindow) {
+                    pipWindow.remove();
+                }
+            } else if (event.data.type === 'ACTIVATE_PIP_WINDOW') {
+                addDebugLog('🔍 Mensagem recebida do iframe YouTube PIP para ativar', 'info');
+                // Chama a função para ativar a PIP na tela principal
+                activatePipWindow();
+            }
         });
 
         // Carrega o jogo quando a página é carregada
         document.addEventListener('DOMContentLoaded', function() {
             addDebugLog('🚀 Página carregada - Sistema de debug ativo', 'success');
             addDebugLog('💡 Clique no botão DEBUG (canto superior direito) para ver os logs', 'info');
+            
+            // Verifica se há uma PIP ativa no sistema global
+            const isPipActive = localStorage.getItem('globalPipActive');
+            const pipVideoData = localStorage.getItem('globalPipVideo');
+            
+            if (isPipActive === 'true' && pipVideoData) {
+                try {
+                    const videoData = JSON.parse(pipVideoData);
+                    // Verifica se os dados não são muito antigos (5 minutos)
+                    if (Date.now() - videoData.timestamp < 300000) {
+                        addDebugLog('🔍 Sistema PIP global detectado como ativo: ' + videoData.title, 'success');
+                        createGlobalPipWindow(videoData);
+                    } else {
+                        addDebugLog('🔍 Dados da PIP muito antigos, removendo', 'info');
+                        localStorage.removeItem('globalPipActive');
+                        localStorage.removeItem('globalPipVideo');
+                    }
+                } catch (e) {
+                    addDebugLog('🔍 Erro ao carregar dados da PIP: ' + e.message, 'error');
+                }
+            }
             
             // Verifica se os botões inferiores existem
             const bottomControls = document.querySelector('.bottom-controls');

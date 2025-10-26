@@ -1219,6 +1219,18 @@ const games = [
         featured: false,
         orientation: 'vertical'
     },
+    {
+        id: 'temple-run-2',
+        title: 'Temple Run 2',
+        description: 'O famoso jogo de corrida infinita. Corra, pule e desvie de obstáculos!',
+        icon: '🏃‍♂️',
+        path: 'jogo-temple-run-2.html',
+        status: 'available',
+        category: 'arcade',
+        tags: ['running', 'endless', 'temple', 'forestry'],
+        featured: true,
+        orientation: 'vertical'
+    },
 
     // Jogos em breve
     {

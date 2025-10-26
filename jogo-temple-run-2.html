@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temple Run 2 - Jogos Online</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7154773731438541"
+     crossorigin="anonymous"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .ad-container {
+            width: 100%;
+            height: 60px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #ddd;
+            position: relative;
+        }
+
+        .ad-placeholder {
+            width: 100%;
+            max-width: 320px;
+            height: 50px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .game-container {
+            width: 100%;
+            height: calc(100vh - 60px);
+            position: relative;
+            background: #000;
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 10;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .game-status {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .fallback-buttons {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .fallback-button {
+            display: block;
+            margin: 10px auto;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .fallback-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .home-button {
+            position: absolute;
+            top: 15px;
+            right: 60px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            opacity: 0.7;
+        }
+
+        .home-button:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .ad-container {
+                height: 50px;
+            }
+            
+            .ad-placeholder {
+                height: 40px;
+                font-size: 12px;
+            }
+            
+            .close-button {
+                top: 10px;
+                right: 10px;
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+            }
+            
+            .home-button {
+                top: 10px;
+                right: 50px;
+                width: 25px;
+                height: 25px;
+                font-size: 14px;
+            }
+            
+            .game-status {
+                top: 10px;
+                left: 10px;
+                font-size: 10px;
+                padding: 3px 6px;
+            }
+            
+            .fallback-button {
+                padding: 12px 25px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ad-container">
+        <div class="ad-placeholder">
+            Espaço para Anúncio 320x50
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Carregando Temple Run 2...
+        </div>
+
+        <div class="game-status" id="gameStatus">
+            Tentando conectar...
+        </div>
+
+        <button class="close-button" onclick="window.close()">×</button>
+        <button class="home-button" onclick="goHome()">⌂</button>
+
+        <iframe 
+            class="game-iframe" 
+            id="gameFrame"
+            src=""
+            allowfullscreen
+            allow="autoplay; fullscreen; microphone; camera"
+            onload="hideLoading()"
+            onerror="handleIframeError()">
+        </iframe>
+
+        <div class="fallback-buttons" id="fallbackButtons">
+            <h3 style="color: white; margin-bottom: 20px;">Temple Run 2</h3>
+            <a href="https://www.forestrygames.com/2021/08/temple-run-2-endless-running-video-game.html" 
+               target="_blank" class="fallback-button">
+                Jogar Temple Run 2 - Forestry Games
+            </a>
+            <a href="https://poki.com/en/g/temple-run-2" 
+               target="_blank" class="fallback-button">
+                Jogar Temple Run 2 - Poki
+            </a>
+            <a href="https://www.crazygames.com/game/temple-run-2" 
+               target="_blank" class="fallback-button">
+                Jogar Temple Run 2 - CrazyGames
+            </a>
+            <a href="https://www.miniclip.com/games/temple-run-2/en/" 
+               target="_blank" class="fallback-button">
+                Jogar Temple Run 2 - Miniclip
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const templeRunUrls = [
+            "https://www.forestrygames.com/2021/08/temple-run-2-endless-running-video-game.html",
+            "https://poki.com/en/g/temple-run-2",
+            "https://www.crazygames.com/embed/temple-run-2",
+            "https://www.miniclip.com/games/temple-run-2/en/",
+            "https://www.y8.com/games/temple_run_2",
+            "https://pt.y8.com/games/temple_run_2"
+        ];
+
+        let currentGameIndex = 0;
+        const gameFrame = document.getElementById('gameFrame');
+        const gameStatus = document.getElementById('gameStatus');
+        const fallbackButtons = document.getElementById('fallbackButtons');
+
+        function updateStatus(message) {
+            gameStatus.textContent = message;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            updateStatus('Temple Run 2 carregado!');
+        }
+
+        function handleIframeError() {
+            console.log(`Erro ao carregar URL ${currentGameIndex + 1}/${templeRunUrls.length}`);
+            
+            currentGameIndex++;
+            
+            if (currentGameIndex < templeRunUrls.length) {
+                updateStatus(`Tentativa ${currentGameIndex + 1}/${templeRunUrls.length}...`);
+                setTimeout(() => {
+                    gameFrame.src = templeRunUrls[currentGameIndex];
+                }, 1000);
+            } else {
+                updateStatus('Não foi possível carregar o jogo');
+                document.getElementById('loading').style.display = 'none';
+                fallbackButtons.style.display = 'block';
+            }
+        }
+
+        function goHome() {
+            window.location.href = 'lista-jogos.html';
+        }
+
+        // Iniciar carregamento
+        function startGame() {
+            updateStatus('Iniciando Temple Run 2...');
+            gameFrame.src = templeRunUrls[currentGameIndex];
+        }
+
+        // Adicionar botão home dinamicamente
+        function createHomeButton() {
+            const homeButton = document.createElement('button');
+            homeButton.className = 'home-button';
+            homeButton.innerHTML = '⌂';
+            homeButton.onclick = goHome;
+            document.querySelector('.game-container').appendChild(homeButton);
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            createHomeButton();
+            startGame();
+        });
+
+        // Detectar se iframe está sendo bloqueado
+        setTimeout(() => {
+            if (currentGameIndex === 0 && !gameFrame.contentDocument) {
+                console.log('Iframe pode estar sendo bloqueado, tentando próxima URL...');
+                handleIframeError();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

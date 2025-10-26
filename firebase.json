@@ -1,13 +1,18 @@
 {
   "hosting": {
-    "public": "public",
+    "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**",
+      "**/src/**",
+      "**/motor dama/**",
       "**/*.md",
-      "**/serve_*.py",
-      "firebase-debug.log"
+      "**/deploy*.sh",
+      "**/start*.sh",
+      "**/start*.py",
+      "**/docker-compose.yml",
+      "**/package*.json"
     ],
     "rewrites": [
       {
@@ -17,20 +22,19 @@
     ],
     "headers": [
       {
-        "source": "**/*.@(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=31536000"
-          }
-        ]
-      },
-      {
         "source": "**",
         "headers": [
           {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
+            "key": "X-Frame-Options",
+            "value": "ALLOWALL"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
           }
         ]
       }

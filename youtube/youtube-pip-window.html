@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>YouTube PiP - Janela Flutuante</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Janela flutuante do YouTube com Picture-in-Picture">
+    <meta name="theme-color" content="#FF0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="YouTube PiP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="YouTube PiP">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="youtube-shared.css">
+    
+    <style>
+        /* Estilos específicos para a janela PiP */
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            overflow: hidden;
+        }
+        
+        .pip-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 180px;
+            background-color: #000;
+            border-radius: 12px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 2147483647; /* Máximo z-index para ficar sobre tudo */
+            display: block;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Garantir que fique sobre todas as aplicações */
+            -webkit-app-region: no-drag;
+            pointer-events: auto;
+            /* Melhorar movimento */
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            /* Garantir visibilidade no mobile */
+            visibility: visible;
+            opacity: 1;
+            /* Forçar renderização no mobile */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            /* Evitar que o mobile esconda o elemento */
+            -webkit-perspective: 1000;
+            perspective: 1000;
+        }
+        
+        /* PiP Global - funciona em todas as telas */
+        .pip-window.pip-global {
+            z-index: 2147483647 !important;
+            position: fixed !important;
+            pointer-events: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+            background-color: #000 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            -webkit-app-region: no-drag !important;
+            -webkit-transform: translateZ(0) !important;
+            transform: translateZ(0) !important;
+            -webkit-backface-visibility: hidden !important;
+            backface-visibility: hidden !important;
+            -webkit-perspective: 1000 !important;
+            perspective: 1000 !important;
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.6),
+                0 6px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        .pip-window:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.4),
+                0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .pip-video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+        }
+        
+        .pip-drag-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+            cursor: grab;
+            pointer-events: auto;
+            background: transparent;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        .pip-drag-overlay:active {
+            cursor: grabbing;
+        }
+        
+        .pip-drag-overlay.dragging {
+            pointer-events: auto;
+            cursor: grabbing;
+        }
+        
+        .pip-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Ocultar controles nativos do YouTube */
+        .pip-video-container iframe {
+            pointer-events: none !important;
+        }
+        
+        /* Overlay para interceptar cliques no iframe */
+        .pip-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            background: transparent;
+            pointer-events: auto;
+        }
+        
+        /* PiP Close Button */
+        .pip-close-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 0, 0, 0.8);
+            border: 2px solid #fff;
+            color: #ffffff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 30;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+        
+        .pip-close-button:hover {
+            background: rgba(255, 0, 0, 0.8);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(255, 0, 0, 0.4);
+        }
+        
+        .pip-close-button:active {
+            transform: scale(0.95);
+            background: rgba(255, 0, 0, 0.9);
+        }
+        
+        /* PiP Size Control Buttons */
+        .pip-size-controls {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 15;
+            pointer-events: auto;
+        }
+        
+        .pip-window:hover .pip-size-controls {
+            opacity: 1;
+        }
+        
+        .pip-size-button {
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 300;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            pointer-events: auto;
+            z-index: 20;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        
+        .pip-size-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .pip-size-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* PiP Controls - Bottom */
+        .pip-controls-bottom {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 15;
+            pointer-events: auto;
+        }
+        
+        .pip-time-display {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            min-width: 60px;
+            text-align: center;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.5px;
+        }
+        
+        .pip-window:hover .pip-controls-bottom {
+            opacity: 1;
+        }
+        
+        .pip-progress-container {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            pointer-events: auto;
+            z-index: 16;
+        }
+        
+        .pip-progress-bar {
+            height: 100%;
+            background: #2d5a2d;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.02s ease-out;
+        }
+        
+        .pip-progress-handle {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            width: 14px;
+            height: 14px;
+            background: #2d5a2d;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: grab;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            pointer-events: auto;
+            z-index: 17;
+        }
+        
+        .pip-progress-container:hover .pip-progress-handle {
+            opacity: 1;
+        }
+        
+        .pip-progress-handle:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .pip-play-button-bottom {
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #ffffff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 300;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            flex-shrink: 0;
+            pointer-events: auto;
+            z-index: 20;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        
+        .pip-play-button-bottom:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .pip-play-button-bottom:active {
+            transform: scale(0.95);
+        }
+        
+        .pip-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        
+        .pip-loading-text {
+            font-size: 12px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .pip-window {
+                width: 300px;
+                height: 169px;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .pip-window {
+                width: calc(100vw - 20px);
+                height: calc((100vw - 20px) * 0.5625);
+                right: 10px;
+                left: 10px;
+                position: fixed !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                z-index: 2147483647 !important;
+                -webkit-transform: translateZ(0) !important;
+                transform: translateZ(0) !important;
+                -webkit-backface-visibility: hidden !important;
+                backface-visibility: hidden !important;
+                -webkit-perspective: 1000 !important;
+                perspective: 1000 !important;
+                touch-action: manipulation;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                background-color: #000 !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            
+            .pip-close-button,
+            .pip-size-button,
+            .pip-play-button-bottom {
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                z-index: 25 !important;
+                min-width: 44px !important;
+                min-height: 44px !important;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3) !important;
+                touch-action: manipulation !important;
+            }
+            
+            .pip-close-button {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 24px !important;
+                background: rgba(255, 0, 0, 0.9) !important;
+                border: 3px solid #fff !important;
+                opacity: 1 !important;
+                z-index: 35 !important;
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.5) !important;
+            }
+            
+            .pip-size-button {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 16px !important;
+            }
+            
+            .pip-play-button-bottom {
+                width: 48px !important;
+                height: 48px !important;
+            }
+            
+            .pip-size-controls,
+            .pip-controls-bottom {
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+        }
+        
+        /* Estado vazio */
+        .pip-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .pip-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .pip-empty-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .pip-empty-text {
+            font-size: 12px;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <!-- PiP Window -->
+    <div class="pip-window pip-global" id="pipWindow">
+        <div class="pip-video-container">
+            <div class="pip-size-controls">
+                <button class="pip-size-button" id="pipMinimizeButton" title="Diminuir">−</button>
+                <button class="pip-size-button" id="pipMaximizeButton" title="Aumentar">+</button>
+            </div>
+            <button class="pip-close-button" id="pipCloseButton" title="Fechar">×</button>
+            <div class="pip-controls-bottom">
+                <div class="pip-time-display" id="pipTimeDisplay">0:00</div>
+                <div class="pip-progress-container" id="pipProgressContainer">
+                    <div class="pip-progress-bar" id="pipProgressBar"></div>
+                    <div class="pip-progress-handle" id="pipProgressHandle"></div>
+                </div>
+                <button class="pip-play-button-bottom" id="pipPlayButtonBottom">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="playIconBottom">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="pauseIconBottom" style="display: none;">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="pip-drag-overlay" id="pipDragOverlay"></div>
+            <div class="pip-video-overlay" id="pipVideoOverlay"></div>
+            <div id="pipVideoContainer">
+                <!-- Estado vazio inicial -->
+                <div class="pip-empty-state" id="pipEmptyState">
+                    <div class="pip-empty-icon">📺</div>
+                    <div class="pip-empty-title">YouTube PiP</div>
+                    <div class="pip-empty-text">Ative um vídeo para começar a usar a janela flutuante</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared JavaScript -->
+    <script src="youtube-shared.js"></script>
+    
+    <script>
+        // Elementos DOM específicos da janela PiP
+        const pipWindow = document.getElementById('pipWindow');
+        const pipVideoContainer = document.getElementById('pipVideoContainer');
+        const pipCloseButton = document.getElementById('pipCloseButton');
+        const pipMinimizeButton = document.getElementById('pipMinimizeButton');
+        const pipMaximizeButton = document.getElementById('pipMaximizeButton');
+        const pipPlayButtonBottom = document.getElementById('pipPlayButtonBottom');
+        const playIconBottom = document.getElementById('playIconBottom');
+        const pauseIconBottom = document.getElementById('pauseIconBottom');
+        const pipDragOverlay = document.getElementById('pipDragOverlay');
+        const pipVideoOverlay = document.getElementById('pipVideoOverlay');
+        const pipProgressContainer = document.getElementById('pipProgressContainer');
+        const pipProgressBar = document.getElementById('pipProgressBar');
+        const pipProgressHandle = document.getElementById('pipProgressHandle');
+        const pipTimeDisplay = document.getElementById('pipTimeDisplay');
+        const pipEmptyState = document.getElementById('pipEmptyState');
+
+        // Variáveis para arrastar
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let pipStartX = 0;
+        let pipStartY = 0;
+
+        // Inicialização da janela PiP
+        document.addEventListener('DOMContentLoaded', function() {
+            setupPiPEventListeners();
+            setupDragAndDrop();
+            
+            // Verificar se há vídeo ativo no localStorage
+            checkForActiveVideo();
+        });
+
+        // Event Listeners específicos da janela PiP
+        function setupPiPEventListeners() {
+            // PiP Controls
+            if (pipPlayButtonBottom) {
+                pipPlayButtonBottom.addEventListener('click', togglePiPPlayback);
+            }
+            
+            if (pipCloseButton) {
+                pipCloseButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎬 Botão X do PiP clicado');
+                    closePiP();
+                });
+                
+                // Adicionar listener específico para touch no mobile
+                pipCloseButton.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎬 Botão X do PiP tocado (mobile)');
+                    closePiP();
+                });
+            }
+            
+            if (pipMinimizeButton) {
+                pipMinimizeButton.addEventListener('click', minimizePiP);
+            }
+            
+            if (pipMaximizeButton) {
+                pipMaximizeButton.addEventListener('click', maximizePiP);
+            }
+            
+            if (pipProgressContainer) {
+                pipProgressContainer.addEventListener('click', seekVideo);
+            }
+            
+            if (pipProgressHandle) {
+                pipProgressHandle.addEventListener('mousedown', startProgressDrag);
+            }
+        }
+
+        // Configurar arrastar e soltar
+        function setupDragAndDrop() {
+            if (!pipDragOverlay) return;
+
+            // Mouse events
+            pipDragOverlay.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+
+            // Touch events
+            pipDragOverlay.addEventListener('touchstart', startDrag, { passive: false });
+            document.addEventListener('touchmove', drag, { passive: false });
+            document.addEventListener('touchend', stopDrag, { passive: false });
+        }
+
+        // Iniciar arrastar
+        function startDrag(e) {
+            isDragging = true;
+            
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            dragStartX = clientX;
+            dragStartY = clientY;
+            
+            const rect = pipWindow.getBoundingClientRect();
+            pipStartX = rect.left;
+            pipStartY = rect.top;
+            
+            pipDragOverlay.classList.add('dragging');
+            
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+        }
+
+        // Arrastar
+        function drag(e) {
+            if (!isDragging) return;
+            
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            const deltaX = clientX - dragStartX;
+            const deltaY = clientY - dragStartY;
+            
+            let newX = pipStartX + deltaX;
+            let newY = pipStartY + deltaY;
+            
+            // Limitar aos limites da tela
+            const maxX = window.innerWidth - pipWindow.offsetWidth;
+            const maxY = window.innerHeight - pipWindow.offsetHeight;
+            
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+            
+            pipWindow.style.left = newX + 'px';
+            pipWindow.style.top = newY + 'px';
+            pipWindow.style.right = 'auto';
+            pipWindow.style.bottom = 'auto';
+            
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+        }
+
+        // Parar arrastar
+        function stopDrag(e) {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            pipDragOverlay.classList.remove('dragging');
+            
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+        }
+
+        // Verificar se há vídeo ativo
+        function checkForActiveVideo() {
+            const isPipActive = localStorage.getItem('globalPipActive');
+            const pipVideoData = localStorage.getItem('globalPipVideo');
+            
+            if (isPipActive === 'true' && pipVideoData) {
+                try {
+                    const videoData = JSON.parse(pipVideoData);
+                    // Verifica se os dados não são muito antigos (5 minutos)
+                    if (Date.now() - videoData.timestamp < 300000) {
+                        activatePiP(videoData);
+                    } else {
+                        showEmptyState();
+                    }
+                } catch (e) {
+                    console.error('Erro ao carregar dados da PIP:', e);
+                    showEmptyState();
+                }
+            } else {
+                showEmptyState();
+            }
+        }
+
+        // Mostrar estado vazio
+        function showEmptyState() {
+            if (pipEmptyState) {
+                pipEmptyState.style.display = 'flex';
+            }
+            if (pipVideoContainer) {
+                pipVideoContainer.innerHTML = `
+                    <div class="pip-empty-state">
+                        <div class="pip-empty-icon">📺</div>
+                        <div class="pip-empty-title">YouTube PiP</div>
+                        <div class="pip-empty-text">Ative um vídeo para começar a usar a janela flutuante</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para ativar PiP (sobrescreve a função compartilhada)
+        function activatePiP(video) {
+            if (!pipWindow || !pipVideoContainer) return;
+            
+            // Esconder estado vazio
+            if (pipEmptyState) {
+                pipEmptyState.style.display = 'none';
+            }
+            
+            // Criar iframe do YouTube
+            const iframe = document.createElement('iframe');
+            iframe.src = video.embedUrl + '?autoplay=1&enablejsapi=1&controls=0&modestbranding=1&rel=0';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            
+            // Limpar container e adicionar iframe
+            pipVideoContainer.innerHTML = '';
+            pipVideoContainer.appendChild(iframe);
+            
+            // Ativar janela PiP
+            pipWindow.classList.add('active', 'pip-global');
+            
+            // Salvar referência do player
+            pipPlayer = iframe;
+            
+            console.log('🎬 PiP ativado para:', video.title);
+        }
+
+        // Função para fechar PiP (sobrescreve a função compartilhada)
+        function closePiP() {
+            if (pipWindow) {
+                pipWindow.classList.remove('active', 'pip-global');
+            }
+            
+            if (pipVideoContainer) {
+                pipVideoContainer.innerHTML = '';
+            }
+            
+            if (pipPlayer) {
+                pipPlayer = null;
+            }
+            
+            // Limpar localStorage
+            localStorage.removeItem('globalPipVideo');
+            localStorage.removeItem('globalPipActive');
+            
+            // Notificar outras janelas
+            window.postMessage({
+                type: 'GLOBAL_PIP_DEACTIVATED'
+            }, '*');
+            
+            // Mostrar estado vazio
+            showEmptyState();
+            
+            console.log('🎬 PiP fechado');
+        }
+
+        // Função para minimizar PiP
+        function minimizePiP() {
+            if (pipWindow) {
+                pipWindow.style.width = '200px';
+                pipWindow.style.height = '113px';
+            }
+        }
+
+        // Função para maximizar PiP
+        function maximizePiP() {
+            if (pipWindow) {
+                pipWindow.style.width = '400px';
+                pipWindow.style.height = '225px';
+            }
+        }
+
+        // Listener para mensagens globais do sistema PIP
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'GLOBAL_PIP_ACTIVATED') {
+                // Se outra página ativou a PIP global, ativa localmente também
+                if (event.data.videoData) {
+                    activatePiP(event.data.videoData);
+                }
+            } else if (event.data.type === 'GLOBAL_PIP_DEACTIVATED') {
+                // Se outra página desativou a PIP global, desativa localmente também
+                closePiP();
+            } else if (event.data.type === 'TOGGLE_PLAY_PAUSE') {
+                // Comando da janela PIP principal para play/pause
+                console.log('🎬 [YouTube] Comando de play/pause recebido da janela PIP principal');
+                togglePiPPlayback();
+            }
+        });
+
+        // Encerrar vídeo quando sair da página
+        window.addEventListener('beforeunload', function() {
+            if (pipPlayer) {
+                closePiP();
+            }
+        });
+
+        // Encerrar vídeo quando a página perder foco (opcional)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && pipPlayer) {
+                // Opcional: pausar quando a página perder foco
+                // closePiP();
+            }
+        });
+    </script>
+</body>
+</html>
